@@ -1,59 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
+import 'core/locale_provider.dart';
+import 'core/router.dart';
 import 'core/supabase_client.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   await initSupabase();
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+    final locale = ref.watch(appLocaleProvider);
+
+    return MaterialApp.router(
       title: 'WG App',
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
-      home: const ConnectionCheckPage(),
-    );
-  }
-}
-
-class ConnectionCheckPage extends StatefulWidget {
-  const ConnectionCheckPage({super.key});
-
-  @override
-  State<ConnectionCheckPage> createState() => _ConnectionCheckPageState();
-}
-
-class _ConnectionCheckPageState extends State<ConnectionCheckPage> {
-  late final Future<int> _catalogCount = _fetchCatalogCount();
-
-  Future<int> _fetchCatalogCount() async {
-    final response = await supabase.from('catalog_items').select();
-    return response.length;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('WG App')),
-      body: Center(
-        child: FutureBuilder<int>(
-          future: _catalogCount,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const CircularProgressIndicator();
-            }
-            if (snapshot.hasError) {
-              return Text('Supabase error: ${snapshot.error}');
-            }
-            return Text('Connected to Supabase. catalog_items rows visible: ${snapshot.data}');
-          },
-        ),
-      ),
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: router,
     );
   }
 }

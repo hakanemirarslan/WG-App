@@ -44,12 +44,12 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [x] Git deposu ve ilk commit (commit oncesi gizli anahtar kontrolu)
 
 ### Hafta 1: Dart'a alisma + Auth + dil **[SPEC 11, 12, 13]**
-- [ ] Klasor yapisi kuruldu
-- [ ] `core/money.dart` + testleri (cent <-> gosterim, parse)
-- [ ] l10n altyapisi (`app_de.arb`, `app_en.arb`), ilk metinler
-- [ ] Kayit, giris, cikis; oturum sayfa yenilenince devam ediyor
-- [ ] Profil: gorunen ad, dil secimi (DE/EN), `profiles.locale`'e kaydediliyor
-- [ ] go_router ile giris durumuna gore yonlendirme; path-tabanli URL (hash yok)
+- [x] Klasor yapisi kuruldu (`features/groups`, `shopping_list`, `expenses`, `catalog`, `balances` ilgili haftada acilacak)
+- [x] `core/money.dart` + testleri (cent <-> gosterim, parse)
+- [x] l10n altyapisi (`app_de.arb`, `app_en.arb`), ilk metinler
+- [x] Kayit, giris, cikis; oturum sayfa yenilenince devam ediyor
+- [x] Profil: gorunen ad, dil secimi (DE/EN), `profiles.locale`'e kaydediliyor
+- [x] go_router ile giris durumuna gore yonlendirme; path-tabanli URL (hash yok)
 
 ### Hafta 2: Gruplar **[SPEC 10, 15]**
 - [ ] Grup olustur (`create_group`), grup secim ekrani
@@ -120,3 +120,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 
 <!-- Her oturum sonunda buraya 1-2 satir: ne bitti, nerede kaldin, siradaki adim. -->
 - 2026-10-17: Hafta 0 bitti. Git repo + ilk commit, Flutter projesi olusturuldu (web+android), paketler eklendi, `lib/core/supabase_client.dart` ile baglanti kuruldu, `flutter run -d chrome` ile acilip `catalog_items` sorgusu atildi (RLS nedeniyle 0 satir, beklenen). `flutter analyze` temiz. Henuz domain kodu yok, `flutter test` icin test dosyasi yok (Hafta 1'de `money.dart` ile baslayacak). Siradaki adim: Hafta 1 - klasor yapisi, `core/money.dart` + testleri, l10n, auth (kayit/giris/cikis), dil secimi.
+- 2026-10-17: Hafta 1 bitti. `core/money.dart` + 11 test; l10n altyapisi (`l10n.yaml`, `app_de.arb`/`app_en.arb`, uretilen dosyalar gitignore'da); `features/auth` (kayit/giris/cikis, Supabase oturum stream'i) ve `features/settings` (gorunen ad + dil, `profiles` tablosuna yaziyor); `core/router.dart` go_router ile oturum durumuna gore yonlendirme, path-tabanli URL (`usePathUrlStrategy`). Riverpod 3'te `StateProvider` icin `package:flutter_riverpod/legacy.dart` import etmek gerekti (v3'te varsayilan export'tan cikarilmis). Gercek Supabase projesinde "Confirm email" baslangicta acik kalmisti, kapatilinca kayit/oturum aninda acildi (bkz. SPEC 15). Tum akis (kayit, sayfa yenileme, ayarlar, cikis, giris) elle web'de denendi, calisiyor. Siradaki adim: Hafta 2 - gruplar (`create_group`, davet linki, `/join/<code>`, ayrilma), sema bosluklari SPEC 13 madde 4-5.

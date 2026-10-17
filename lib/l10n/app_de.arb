@@ -1,0 +1,29 @@
+{
+  "@@locale": "de",
+
+  "appTitle": "WG App",
+
+  "loginTitle": "Anmelden",
+  "signupTitle": "Registrieren",
+
+  "emailLabel": "E-Mail",
+  "passwordLabel": "Passwort",
+  "displayNameLabel": "Anzeigename",
+
+  "loginButton": "Anmelden",
+  "signupButton": "Registrieren",
+  "logoutButton": "Abmelden",
+
+  "noAccountSwitchToSignup": "Noch kein Konto? Registrieren",
+  "haveAccountSwitchToLogin": "Schon ein Konto? Anmelden",
+
+  "authErrorGeneric": "Etwas ist schiefgelaufen: {message}",
+
+  "homeTitle": "Start",
+  "settingsTitle": "Einstellungen",
+  "languageLabel": "Sprache",
+  "germanLanguage": "Deutsch",
+  "englishLanguage": "Englisch",
+  "saveButton": "Speichern",
+  "settingsSavedMessage": "Einstellungen gespeichert"
+}

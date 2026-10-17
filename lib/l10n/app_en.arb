@@ -1,0 +1,40 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "WG App",
+  "@appTitle": {
+    "description": "Shown in the browser tab / app bar."
+  },
+
+  "loginTitle": "Log in",
+  "signupTitle": "Sign up",
+
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "displayNameLabel": "Display name",
+
+  "loginButton": "Log in",
+  "signupButton": "Sign up",
+  "logoutButton": "Log out",
+
+  "noAccountSwitchToSignup": "No account yet? Sign up",
+  "haveAccountSwitchToLogin": "Already have an account? Log in",
+
+  "authErrorGeneric": "Something went wrong: {message}",
+  "@authErrorGeneric": {
+    "description": "Shown when login/signup fails.",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+
+  "homeTitle": "Home",
+  "settingsTitle": "Settings",
+  "languageLabel": "Language",
+  "germanLanguage": "German",
+  "englishLanguage": "English",
+  "saveButton": "Save",
+  "settingsSavedMessage": "Settings saved"
+}
