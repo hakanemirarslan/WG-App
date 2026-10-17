@@ -33,15 +33,15 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 ## Haftalik MVP plani (4-6 hafta)
 
 ### Hafta 0: Kurulum (1-2 gun) **[SPEC 15]**
-- [ ] Proje klasoru OneDrive disinda bir yerde (ornek `C:\dev\wg-app`); senkronize klasorler build dosyalariyla sorun cikarir
-- [ ] Supabase projesi acildi, `supabase/schema.sql` SQL Editor'de calistirildi (hata cikarsa mesaji kaydet)
-- [ ] Supabase'de gelistirme icin e-posta dogrulamasi kapatildi (Authentication > Providers > Email > "Confirm email"; arayuz degismis olabilir), yoksa test kayitlari dogrulama maili bekler
-- [ ] Flutter SDK kuruldu (`flutter doctor` temiz; Windows icin Chrome ve Android Studio/cmdline-tools kontrolu)
-- [ ] Proje bu klasorun icinde olusturuldu: `flutter create . --project-name wg_app --platforms web,android`
-- [ ] Paketler eklendi: `supabase_flutter`, `go_router`, `flutter_riverpod`, `intl`
-- [ ] `env.example.json` -> `env.json` kopyalandi, URL + **anon** key dolduruldu; `.gitignore` `env.json`'u iceriyor
-- [ ] Bos uygulama `flutter run -d chrome --dart-define-from-file=env.json` ile aciliyor, Supabase'e bir sorgu atiliyor
-- [ ] Git deposu ve ilk commit (commit oncesi gizli anahtar kontrolu)
+- [x] Proje klasoru OneDrive disinda bir yerde (ornek `C:\dev\wg-app`); senkronize klasorler build dosyalariyla sorun cikarir
+- [x] Supabase projesi acildi, `supabase/schema.sql` SQL Editor'de calistirildi (hata cikarsa mesaji kaydet)
+- [x] Supabase'de gelistirme icin e-posta dogrulamasi kapatildi (Authentication > Providers > Email > "Confirm email"; arayuz degismis olabilir), yoksa test kayitlari dogrulama maili bekler
+- [x] Flutter SDK kuruldu (`flutter doctor` temiz; Windows icin Chrome ve Android Studio/cmdline-tools kontrolu)
+- [x] Proje bu klasorun icinde olusturuldu: `flutter create . --project-name wg_app --platforms web,android`
+- [x] Paketler eklendi: `supabase_flutter`, `go_router`, `flutter_riverpod`, `intl`
+- [x] `env.example.json` -> `env.json` kopyalandi, URL + **anon** key dolduruldu; `.gitignore` `env.json`'u iceriyor
+- [x] Bos uygulama `flutter run -d chrome --dart-define-from-file=env.json` ile aciliyor, Supabase'e bir sorgu atiliyor
+- [x] Git deposu ve ilk commit (commit oncesi gizli anahtar kontrolu)
 
 ### Hafta 1: Dart'a alisma + Auth + dil **[SPEC 11, 12, 13]**
 - [ ] Klasor yapisi kuruldu
@@ -119,3 +119,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 ## Calisma notlari (kendin icin)
 
 <!-- Her oturum sonunda buraya 1-2 satir: ne bitti, nerede kaldin, siradaki adim. -->
+- 2026-10-17: Hafta 0 bitti. Git repo + ilk commit, Flutter projesi olusturuldu (web+android), paketler eklendi, `lib/core/supabase_client.dart` ile baglanti kuruldu, `flutter run -d chrome` ile acilip `catalog_items` sorgusu atildi (RLS nedeniyle 0 satir, beklenen). `flutter analyze` temiz. Henuz domain kodu yok, `flutter test` icin test dosyasi yok (Hafta 1'de `money.dart` ile baslayacak). Siradaki adim: Hafta 1 - klasor yapisi, `core/money.dart` + testleri, l10n, auth (kayit/giris/cikis), dil secimi.
