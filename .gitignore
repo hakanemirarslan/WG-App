@@ -1,0 +1,29 @@
+# Secrets (Supabase keys etc.): never commit
+env.json
+.env
+.env.*
+!env.example.json
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+
+# OS
+.DS_Store
+Thumbs.db
