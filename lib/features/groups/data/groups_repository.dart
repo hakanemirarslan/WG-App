@@ -26,15 +26,30 @@ class Member {
       );
 }
 
-/// Error codes raised by the `security definer` functions in schema.sql.
+/// Error codes raised by the `security definer` functions in schema.sql
+/// (groups, members and expenses).
 /// The server sends them as the exception message.
-enum GroupError { invalidInvite, lastAdmin, notAdmin, notAMember, unknown }
+enum GroupError {
+  invalidInvite,
+  lastAdmin,
+  notAdmin,
+  notAMember,
+  notAllowed,
+  invalidParticipant,
+  sharesMismatch,
+  invalidAmount,
+  unknown,
+}
 
 GroupError groupErrorFrom(Object error) {
   final message = error is PostgrestException ? error.message : '$error';
   if (message.contains('invalid_or_expired_invite')) return GroupError.invalidInvite;
   if (message.contains('last_admin')) return GroupError.lastAdmin;
   if (message.contains('not_admin')) return GroupError.notAdmin;
+  if (message.contains('not_allowed')) return GroupError.notAllowed;
+  if (message.contains('invalid_participant')) return GroupError.invalidParticipant;
+  if (message.contains('shares_mismatch')) return GroupError.sharesMismatch;
+  if (message.contains('invalid_amount')) return GroupError.invalidAmount;
   if (message.contains('not_a_member') || message.contains('target_not_member')) {
     return GroupError.notAMember;
   }

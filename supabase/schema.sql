@@ -272,6 +272,119 @@ begin
 end;
 $$;
 
+-- Harcama + paylar + kalemler TEK islemde kaydet (yeni: eid null, duzenleme: eid dolu).
+-- share_list: [{"user_id": "...", "share_cents": 334}, ...]   item_list: ["<group_item_id>", ...]
+-- Hata kodlari: not_a_member, invalid_amount, invalid_shares, shares_mismatch,
+--   expense_not_found, not_allowed, invalid_participant, invalid_item
+create or replace function public.save_expense(
+  gid uuid, eid uuid, payer uuid, amount integer, descr text, exp_date date,
+  share_list jsonb, item_list jsonb default '[]'
+)
+returns uuid
+language plpgsql security definer set search_path = public
+as $$
+declare
+  old_payer uuid;
+  old_creator uuid;
+  result_id uuid := eid;
+  share_count integer;
+  share_total bigint;
+begin
+  if not public.is_group_member(gid) then
+    raise exception 'not_a_member';
+  end if;
+  if amount is null or amount < 1 or amount > 10000000 then
+    raise exception 'invalid_amount';
+  end if;
+
+  if share_list is null or jsonb_typeof(share_list) <> 'array' or jsonb_array_length(share_list) = 0 then
+    raise exception 'invalid_shares';
+  end if;
+  select count(*), coalesce(sum((s->>'share_cents')::integer), 0)
+    into share_count, share_total
+    from jsonb_array_elements(share_list) s;
+  if share_count <> (select count(distinct s->>'user_id') from jsonb_array_elements(share_list) s)
+     or exists (select 1 from jsonb_array_elements(share_list) s where (s->>'share_cents')::integer < 0) then
+    raise exception 'invalid_shares';
+  end if;
+  if share_total <> amount then
+    raise exception 'shares_mismatch';
+  end if;
+
+  if eid is not null then
+    select paid_by, created_by into old_payer, old_creator
+      from public.expenses where id = eid and group_id = gid;
+    if not found then
+      raise exception 'expense_not_found';
+    end if;
+    if old_creator <> auth.uid() and not exists (
+      select 1 from public.memberships m
+      where m.group_id = gid and m.user_id = auth.uid() and m.role = 'admin' and m.left_at is null
+    ) then
+      raise exception 'not_allowed';
+    end if;
+  end if;
+
+  -- Payer and participants must be active members; when editing, people who
+  -- already were on this expense may stay even if they left the group since.
+  if exists (
+    select 1
+    from (
+      select payer as uid
+      union
+      select (s->>'user_id')::uuid from jsonb_array_elements(share_list) s
+    ) p
+    where not exists (
+            select 1 from public.memberships m
+            where m.group_id = gid and m.user_id = p.uid and m.left_at is null)
+      and not (eid is not null and (
+            p.uid = old_payer
+            or exists (select 1 from public.expense_shares es
+                       where es.expense_id = eid and es.user_id = p.uid)))
+  ) then
+    raise exception 'invalid_participant';
+  end if;
+
+  if exists (
+    select 1 from jsonb_array_elements_text(coalesce(item_list, '[]'::jsonb)) i
+    where not exists (
+      select 1 from public.group_items gi
+      where gi.id = i::uuid and gi.group_id = gid)
+  ) then
+    raise exception 'invalid_item';
+  end if;
+
+  if eid is null then
+    insert into public.expenses (group_id, paid_by, amount_cents, description, expense_date, created_by)
+    values (gid, payer, amount, nullif(btrim(descr), ''), coalesce(exp_date, current_date), auth.uid())
+    returning id into result_id;
+  else
+    update public.expenses
+    set paid_by = payer, amount_cents = amount,
+        description = nullif(btrim(descr), ''), expense_date = coalesce(exp_date, current_date)
+    where id = eid;
+    delete from public.expense_shares where expense_id = eid;
+    delete from public.expense_items where expense_id = eid;
+  end if;
+
+  insert into public.expense_shares (expense_id, user_id, share_cents)
+  select result_id, (s->>'user_id')::uuid, (s->>'share_cents')::integer
+  from jsonb_array_elements(share_list) s;
+
+  insert into public.expense_items (expense_id, group_item_id)
+  select result_id, i::uuid from jsonb_array_elements_text(coalesce(item_list, '[]'::jsonb)) i;
+
+  -- Only new expenses count as "usage" for the frequently-used list (SPEC 7).
+  if eid is null then
+    update public.group_items
+    set use_count = use_count + 1, last_used_at = now()
+    where id in (select i::uuid from jsonb_array_elements_text(coalesce(item_list, '[]'::jsonb)) i);
+  end if;
+
+  return result_id;
+end;
+$$;
+
 -- Urun kullanildikca siklik sayacini artir
 create or replace function public.touch_group_item(item_id uuid)
 returns void
@@ -349,18 +462,26 @@ create policy "shopping_delete" on public.shopping_entries for delete using (
   )
 );
 
--- expenses
-create policy "expenses_all" on public.expenses for all
-  using (public.is_group_member(group_id)) with check (public.is_group_member(group_id));
+-- expenses / expense_items / expense_shares: yazma SADECE save_expense RPC'siyle
+-- (toplam, uyelik ve yetki kontrolleri orada). Dogrudan insert/update policy'si yok.
+-- Silme: harcamayi olusturan veya admin (paylar/kalemler cascade ile silinir).
+create policy "expenses_select" on public.expenses for select
+  using (public.is_group_member(group_id));
+create policy "expenses_delete" on public.expenses for delete using (
+  public.is_group_member(group_id) and (
+    created_by = auth.uid() or exists (
+      select 1 from public.memberships m
+      where m.group_id = expenses.group_id and m.user_id = auth.uid()
+        and m.role = 'admin' and m.left_at is null
+    )
+  )
+);
 
--- expense_items / expense_shares: harcamanin grubuna gore
-create policy "expense_items_all" on public.expense_items for all
-  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)))
-  with check (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)));
+create policy "expense_items_select" on public.expense_items for select
+  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)));
 
-create policy "expense_shares_all" on public.expense_shares for all
-  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)))
-  with check (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)));
+create policy "expense_shares_select" on public.expense_shares for select
+  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)));
 
 -- settlements
 create policy "settlements_all" on public.settlements for all

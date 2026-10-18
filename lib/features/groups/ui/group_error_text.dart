@@ -9,6 +9,10 @@ String groupErrorText(AppLocalizations l10n, Object error) {
     GroupError.lastAdmin => l10n.errorLastAdmin,
     GroupError.notAdmin => l10n.errorNotAdmin,
     GroupError.notAMember => l10n.errorNotAMember,
+    GroupError.notAllowed => l10n.errorNotAllowed,
+    GroupError.invalidParticipant => l10n.errorInvalidParticipant,
+    GroupError.sharesMismatch => l10n.sharesMismatchMessage,
+    GroupError.invalidAmount => l10n.invalidAmountMessage,
     GroupError.unknown => l10n.errorGeneric,
   };
   // Debug builds also show the raw error so unexpected failures are diagnosable.

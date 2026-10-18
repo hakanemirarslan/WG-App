@@ -7,6 +7,9 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/ui/login_page.dart';
 import '../features/auth/ui/signup_page.dart';
+import '../features/expenses/ui/expense_detail_page.dart';
+import '../features/expenses/ui/expense_form_page.dart';
+import '../features/expenses/ui/expenses_page.dart';
 import '../features/groups/ui/group_page.dart';
 import '../features/groups/ui/group_shell.dart';
 import '../features/groups/ui/groups_page.dart';
@@ -37,12 +40,15 @@ class GoRouterRefreshStream extends ChangeNotifier {
 String authPath(String path, String? from) =>
     from == null ? path : Uri(path: path, queryParameters: {'from': from}).toString();
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final refreshListenable = GoRouterRefreshStream(authRepository.onAuthStateChange);
   ref.onDispose(refreshListenable.dispose);
 
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: '/',
     refreshListenable: refreshListenable,
     redirect: (context, state) {
@@ -90,9 +96,35 @@ final routerProvider = Provider<GoRouter>((ref) {
               StatefulShellBranch(routes: [
                 GoRoute(
                   path: 'expenses',
-                  builder: (context, state) => ComingSoonTab(
-                    title: AppLocalizations.of(context)!.tabExpenses,
-                  ),
+                  builder: (context, state) =>
+                      ExpensesPage(groupId: state.pathParameters['id']!),
+                  routes: [
+                    // Full-screen pages on the root navigator (no bottom bar).
+                    GoRoute(
+                      path: 'new',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) =>
+                          ExpenseFormPage(groupId: state.pathParameters['id']!),
+                    ),
+                    GoRoute(
+                      path: ':expenseId',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => ExpenseDetailPage(
+                        groupId: state.pathParameters['id']!,
+                        expenseId: state.pathParameters['expenseId']!,
+                      ),
+                      routes: [
+                        GoRoute(
+                          path: 'edit',
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) => ExpenseFormPage(
+                            groupId: state.pathParameters['id']!,
+                            expenseId: state.pathParameters['expenseId']!,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ]),
               StatefulShellBranch(routes: [
