@@ -86,6 +86,7 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [ ] Sema bosluklari: SPEC 13, madde 6
 
 ### Hafta 6: Cila ve yayin **[SPEC 15, 16]**
+- [ ] Gorsel tasarim (tum ozellikler bittikten sonra, bilincli olarak en sona birakildi): merkezi `lib/core/theme.dart` (renk, yazi tipi, bilesen stilleri, acik/koyu tema), ekranlarda tema disi renk/stil kalmadi
 - [ ] Bos / hata / yukleniyor durumlari tum ekranlarda
 - [ ] Telefon genisliginde (iPhone Safari dahil) kullanilabilirlik; PWA manifest + ikon, "Ana Ekrana Ekle" denendi
 - [ ] `flutter build web` + deploy (Firebase Hosting / Vercel / Netlify) ve **tum yollari `index.html`'e yonlendirme kurali**; `/join/<code>` canlida sayfa yenilemede calisiyor
