@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -109,6 +109,7 @@ class _GroupPageState extends ConsumerState<GroupPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(l10n.errorGeneric),
+              if (kDebugMode) SelectableText('$error'),
               TextButton(
                 onPressed: () => ref.invalidate(groupMembersProvider(widget.groupId)),
                 child: Text(l10n.retryButton),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -89,6 +90,7 @@ class GroupsPage extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(l10n.errorGeneric),
+              if (kDebugMode) SelectableText('$error'),
               TextButton(
                 onPressed: () => ref.invalidate(myGroupsProvider),
                 child: Text(l10n.retryButton),

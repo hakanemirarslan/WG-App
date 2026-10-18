@@ -60,6 +60,12 @@ create table public.group_items (
   check (catalog_item_id is not null or custom_name is not null)
 );
 
+-- Ayni urun bir grupta tek kez: katalog urunu id ile, serbest urun buyuk/kucuk harf duyarsiz isimle
+create unique index group_items_catalog_unique
+  on public.group_items (group_id, catalog_item_id) where catalog_item_id is not null;
+create unique index group_items_custom_unique
+  on public.group_items (group_id, lower(custom_name)) where custom_name is not null;
+
 -- Eksik listesi: fiyat/odeme YOK, sadece "neye ihtiyacimiz var"
 create table public.shopping_entries (
   id             uuid primary key default gen_random_uuid(),
@@ -237,6 +243,35 @@ begin
 end;
 $$;
 
+-- Grubun urun kaydini bul ya da olustur (yarisa dayanikli). Ya katalog id'si ya serbest isim verilir.
+-- Hata kodlari: not_a_member, invalid_item
+create or replace function public.get_or_create_group_item(gid uuid, cat_id uuid, custom text)
+returns uuid
+language plpgsql security definer set search_path = public
+as $$
+declare item_id uuid; clean_name text := nullif(btrim(custom), '');
+begin
+  if not public.is_group_member(gid) then
+    raise exception 'not_a_member';
+  end if;
+  if (cat_id is null) = (clean_name is null) then
+    raise exception 'invalid_item';
+  end if;
+  if cat_id is not null then
+    insert into public.group_items (group_id, catalog_item_id) values (gid, cat_id)
+    on conflict (group_id, catalog_item_id) where catalog_item_id is not null do nothing;
+    select id into item_id from public.group_items
+    where group_id = gid and catalog_item_id = cat_id;
+  else
+    insert into public.group_items (group_id, custom_name) values (gid, clean_name)
+    on conflict (group_id, lower(custom_name)) where custom_name is not null do nothing;
+    select id into item_id from public.group_items
+    where group_id = gid and lower(custom_name) = lower(clean_name);
+  end if;
+  return item_id;
+end;
+$$;
+
 -- Urun kullanildikca siklik sayacini artir
 create or replace function public.touch_group_item(item_id uuid)
 returns void
@@ -297,8 +332,22 @@ create policy "group_items_all" on public.group_items for all
   using (public.is_group_member(group_id)) with check (public.is_group_member(group_id));
 
 -- shopping_entries
-create policy "shopping_all" on public.shopping_entries for all
+-- Okuma, ekleme, durum guncelleme: tum aktif uyeler. Silme: ekleyen veya admin (SPEC 6).
+create policy "shopping_select" on public.shopping_entries for select
+  using (public.is_group_member(group_id));
+create policy "shopping_insert" on public.shopping_entries for insert
+  with check (public.is_group_member(group_id) and added_by = auth.uid());
+create policy "shopping_update" on public.shopping_entries for update
   using (public.is_group_member(group_id)) with check (public.is_group_member(group_id));
+create policy "shopping_delete" on public.shopping_entries for delete using (
+  public.is_group_member(group_id) and (
+    added_by = auth.uid() or exists (
+      select 1 from public.memberships
+      where group_id = shopping_entries.group_id and user_id = auth.uid()
+        and role = 'admin' and left_at is null
+    )
+  )
+);
 
 -- expenses
 create policy "expenses_all" on public.expenses for all

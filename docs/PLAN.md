@@ -60,13 +60,13 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [x] Sema bosluklari: SPEC 13, madde 4 (kapandi); madde 5 harcama haftasina (Hafta 4) tasindi
 
 ### Hafta 3: Eksik listesi + urun secici **[SPEC 6, 7]**
-- [ ] Katalog verisi okunuyor, kategoriye gore listeleniyor
-- [ ] Urun secici sheet: arama (DE/EN, umlaut duyarsiz), sik kullanilanlar, serbest ekleme
-- [ ] `group_items` olusturma + `touch_group_item` sayaci
-- [ ] Listeye ekleme (not ile), ayni urun tekrari kontrolu
-- [ ] "Alindi" isaretleme, "Son alinanlar", geri alma
-- [ ] Realtime: baska tarayicida yenilemeden guncelleniyor
-- [ ] Sema bosluklari: SPEC 13, madde 3 ve 7
+- [x] Katalog verisi okunuyor, kategoriye gore listeleniyor
+- [x] Urun secici sheet: arama (DE/EN, umlaut duyarsiz), sik kullanilanlar, serbest ekleme
+- [x] `group_items` olusturma + `touch_group_item` sayaci
+- [x] Listeye ekleme (not ile), ayni urun tekrari kontrolu
+- [x] "Alindi" isaretleme, "Son alinanlar", geri alma
+- [x] Realtime: baska tarayicida yenilemeden guncelleniyor
+- [x] Sema bosluklari: SPEC 13, madde 3 ve 7
 
 ### Hafta 4: Harcamalar **[SPEC 3, 8]**
 - [ ] Bolusum mantigi (`domain/split.dart`) + testleri: esit, tutar, pay orani, yuvarlama (334/333/333)
@@ -122,3 +122,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-17: Hafta 0 bitti. Git repo + ilk commit, Flutter projesi olusturuldu (web+android), paketler eklendi, `lib/core/supabase_client.dart` ile baglanti kuruldu, `flutter run -d chrome` ile acilip `catalog_items` sorgusu atildi (RLS nedeniyle 0 satir, beklenen). `flutter analyze` temiz. Henuz domain kodu yok, `flutter test` icin test dosyasi yok (Hafta 1'de `money.dart` ile baslayacak). Siradaki adim: Hafta 1 - klasor yapisi, `core/money.dart` + testleri, l10n, auth (kayit/giris/cikis), dil secimi.
 - 2026-10-17: Hafta 1 bitti. `core/money.dart` + 11 test; l10n altyapisi (`l10n.yaml`, `app_de.arb`/`app_en.arb`, uretilen dosyalar gitignore'da); `features/auth` (kayit/giris/cikis, Supabase oturum stream'i) ve `features/settings` (gorunen ad + dil, `profiles` tablosuna yaziyor); `core/router.dart` go_router ile oturum durumuna gore yonlendirme, path-tabanli URL (`usePathUrlStrategy`). Riverpod 3'te `StateProvider` icin `package:flutter_riverpod/legacy.dart` import etmek gerekti (v3'te varsayilan export'tan cikarilmis). Gercek Supabase projesinde "Confirm email" baslangicta acik kalmisti, kapatilinca kayit/oturum aninda acildi (bkz. SPEC 15). Tum akis (kayit, sayfa yenileme, ayarlar, cikis, giris) elle web'de denendi, calisiyor. Siradaki adim: Hafta 2 - gruplar (`create_group`, davet linki, `/join/<code>`, ayrilma), sema bosluklari SPEC 13 madde 4-5.
 - 2026-10-18: Hafta 2 bitti. `leave_group` (not_a_member, last_admin) guncellendi, `set_member_role` RPC'si eklendi (SPEC 13 madde 4 kapandi). `features/groups`: grup listesi/olusturma, `/group/:id` (uyeler, admin devri, davet linki, ayrilma), `/join/:code`; girissiz kullanici `/login?from=...` ile geri donuyor. Elle denendi, sorunsuz. Madde 5 (paid_by/share uyelik dogrulamasi) Hafta 4'e kaldi. Siradaki adim: Hafta 3 - katalog, urun secici, alisveris listesi, realtime.
+- 2026-10-19: Hafta 3 bitti. Alt gezinme kabugu (Liste/Harcamalar/Saldo/Grup; sekmeler `/group/:id` altinda alt rota, cunku go_router StatefulShellBranch varsayilan rotasinda path parametresi istemiyor). `features/catalog` + `features/shopping_list`: urun secici sheet (umlaut duyarsiz arama `domain/text_search.dart`, sik kullanilanlar, serbest urun), `get_or_create_group_item` RPC, tekrar kontrolu, alindi/geri al/sil, Realtime (DELETE olaylari group_id ile filtrelenemedigi icin filtresiz ikinci abonelik). Sema: unique index'ler, `shopping_entries` silme yetkisi ekleyen/admin. Iki kullaniciyla elle denendi. Dersler: Supabase SQL Editor'e yapistirirken eski metin kalintisi sorun cikardi (once Ctrl+A/Delete); Riverpod 3 hata ekraninda `ProviderException` asil hatayi 'A provider threw...' altinda gosteriyor. Siradaki adim: Hafta 4 - `domain/split.dart` + testler, harcama formu, harcama RPC'si, SPEC 13 madde 1, 2, 5.

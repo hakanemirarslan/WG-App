@@ -8,9 +8,12 @@ import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/ui/login_page.dart';
 import '../features/auth/ui/signup_page.dart';
 import '../features/groups/ui/group_page.dart';
+import '../features/groups/ui/group_shell.dart';
 import '../features/groups/ui/groups_page.dart';
 import '../features/groups/ui/join_page.dart';
 import '../features/settings/ui/settings_page.dart';
+import '../features/shopping_list/ui/shopping_list_page.dart';
+import '../l10n/app_localizations.dart';
 import 'supabase_client.dart';
 
 /// Turns a Stream into a [Listenable] so go_router can re-evaluate its
@@ -66,9 +69,50 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(path: '/signup', builder: (context, state) => const SignupPage()),
       GoRoute(path: '/home', builder: (context, state) => const GroupsPage()),
+      // Tabs are children of /group/:id because go_router requires each
+      // StatefulShellBranch's default route to have no path parameters of its own.
       GoRoute(
         path: '/group/:id',
-        builder: (context, state) => GroupPage(groupId: state.pathParameters['id']!),
+        redirect: (context, state) =>
+            state.uri.pathSegments.length == 2 ? '${state.uri.path}/list' : null,
+        routes: [
+          StatefulShellRoute.indexedStack(
+            builder: (context, state, navigationShell) =>
+                GroupShell(navigationShell: navigationShell),
+            branches: [
+              StatefulShellBranch(routes: [
+                GoRoute(
+                  path: 'list',
+                  builder: (context, state) =>
+                      ShoppingListPage(groupId: state.pathParameters['id']!),
+                ),
+              ]),
+              StatefulShellBranch(routes: [
+                GoRoute(
+                  path: 'expenses',
+                  builder: (context, state) => ComingSoonTab(
+                    title: AppLocalizations.of(context)!.tabExpenses,
+                  ),
+                ),
+              ]),
+              StatefulShellBranch(routes: [
+                GoRoute(
+                  path: 'balance',
+                  builder: (context, state) => ComingSoonTab(
+                    title: AppLocalizations.of(context)!.tabBalance,
+                  ),
+                ),
+              ]),
+              StatefulShellBranch(routes: [
+                GoRoute(
+                  path: 'members',
+                  builder: (context, state) =>
+                      GroupPage(groupId: state.pathParameters['id']!),
+                ),
+              ]),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/join/:code',
