@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/locale_provider.dart';
+import '../../../core/router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../settings/providers/profile_providers.dart';
 import '../providers/auth_providers.dart';
@@ -119,7 +120,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       : Text(l10n.signupButton),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/login'),
+                  onPressed: () => context.go(authPath('/login', GoRouterState.of(context).uri.queryParameters['from'])),
                   child: Text(l10n.haveAccountSwitchToLogin),
                 ),
               ],

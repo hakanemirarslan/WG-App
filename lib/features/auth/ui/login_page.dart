@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_providers.dart';
 
@@ -86,7 +87,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       : Text(l10n.loginButton),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/signup'),
+                  onPressed: () => context.go(authPath('/signup', GoRouterState.of(context).uri.queryParameters['from'])),
                   child: Text(l10n.noAccountSwitchToSignup),
                 ),
               ],

@@ -181,12 +181,60 @@ end;
 $$;
 
 -- Gruptan ayril (kayit silinmez, left_at doldurulur)
+-- Hata kodlari: not_a_member, last_admin
 create or replace function public.leave_group(gid uuid)
 returns void
-language sql security definer set search_path = public
+language plpgsql security definer set search_path = public
 as $$
+declare my_role text;
+begin
+  select role into my_role from public.memberships
+  where group_id = gid and user_id = auth.uid() and left_at is null;
+  if my_role is null then
+    raise exception 'not_a_member';
+  end if;
+  if my_role = 'admin' and not exists (
+    select 1 from public.memberships
+    where group_id = gid and role = 'admin' and left_at is null and user_id <> auth.uid()
+  ) then
+    raise exception 'last_admin';
+  end if;
   update public.memberships set left_at = now()
   where group_id = gid and user_id = auth.uid();
+end;
+$$;
+
+-- Bir uyenin rolunu degistir (admin devri). Sadece aktif admin cagirabilir.
+-- Hata kodlari: invalid_role, not_admin, target_not_member, last_admin
+create or replace function public.set_member_role(gid uuid, target uuid, new_role text)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if new_role not in ('admin', 'member') then
+    raise exception 'invalid_role';
+  end if;
+  if not exists (
+    select 1 from public.memberships
+    where group_id = gid and user_id = auth.uid() and role = 'admin' and left_at is null
+  ) then
+    raise exception 'not_admin';
+  end if;
+  if not exists (
+    select 1 from public.memberships
+    where group_id = gid and user_id = target and left_at is null
+  ) then
+    raise exception 'target_not_member';
+  end if;
+  if new_role = 'member' and not exists (
+    select 1 from public.memberships
+    where group_id = gid and role = 'admin' and left_at is null and user_id <> target
+  ) then
+    raise exception 'last_admin';
+  end if;
+  update public.memberships set role = new_role
+  where group_id = gid and user_id = target;
+end;
 $$;
 
 -- Urun kullanildikca siklik sayacini artir

@@ -52,12 +52,12 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [x] go_router ile giris durumuna gore yonlendirme; path-tabanli URL (hash yok)
 
 ### Hafta 2: Gruplar **[SPEC 10, 15]**
-- [ ] Grup olustur (`create_group`), grup secim ekrani
-- [ ] Davet linki uret/paylas, `/join/<code>` ile katilma (girissiz ise once giris); lokalde sayfa yenilemede calisiyor
-- [ ] Uye listesi, rol gosterimi
-- [ ] Gruptan ayrilma (tek admin kurali, bakiye uyarisi hazirligi)
-- [ ] Iki tarayici profiliyle elle test: baska grubun verisi gorunmuyor
-- [ ] Sema bosluklari: SPEC 13, madde 4 ve 5
+- [x] Grup olustur (`create_group`), grup secim ekrani
+- [x] Davet linki uret/paylas, `/join/<code>` ile katilma (girissiz ise once giris); lokalde sayfa yenilemede calisiyor
+- [x] Uye listesi, rol gosterimi
+- [x] Gruptan ayrilma (tek admin kurali, bakiye uyarisi hazirligi)
+- [x] Iki tarayici profiliyle elle test: baska grubun verisi gorunmuyor
+- [x] Sema bosluklari: SPEC 13, madde 4 (kapandi); madde 5 harcama haftasina (Hafta 4) tasindi
 
 ### Hafta 3: Eksik listesi + urun secici **[SPEC 6, 7]**
 - [ ] Katalog verisi okunuyor, kategoriye gore listeleniyor
@@ -121,3 +121,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 <!-- Her oturum sonunda buraya 1-2 satir: ne bitti, nerede kaldin, siradaki adim. -->
 - 2026-10-17: Hafta 0 bitti. Git repo + ilk commit, Flutter projesi olusturuldu (web+android), paketler eklendi, `lib/core/supabase_client.dart` ile baglanti kuruldu, `flutter run -d chrome` ile acilip `catalog_items` sorgusu atildi (RLS nedeniyle 0 satir, beklenen). `flutter analyze` temiz. Henuz domain kodu yok, `flutter test` icin test dosyasi yok (Hafta 1'de `money.dart` ile baslayacak). Siradaki adim: Hafta 1 - klasor yapisi, `core/money.dart` + testleri, l10n, auth (kayit/giris/cikis), dil secimi.
 - 2026-10-17: Hafta 1 bitti. `core/money.dart` + 11 test; l10n altyapisi (`l10n.yaml`, `app_de.arb`/`app_en.arb`, uretilen dosyalar gitignore'da); `features/auth` (kayit/giris/cikis, Supabase oturum stream'i) ve `features/settings` (gorunen ad + dil, `profiles` tablosuna yaziyor); `core/router.dart` go_router ile oturum durumuna gore yonlendirme, path-tabanli URL (`usePathUrlStrategy`). Riverpod 3'te `StateProvider` icin `package:flutter_riverpod/legacy.dart` import etmek gerekti (v3'te varsayilan export'tan cikarilmis). Gercek Supabase projesinde "Confirm email" baslangicta acik kalmisti, kapatilinca kayit/oturum aninda acildi (bkz. SPEC 15). Tum akis (kayit, sayfa yenileme, ayarlar, cikis, giris) elle web'de denendi, calisiyor. Siradaki adim: Hafta 2 - gruplar (`create_group`, davet linki, `/join/<code>`, ayrilma), sema bosluklari SPEC 13 madde 4-5.
+- 2026-10-18: Hafta 2 bitti. `leave_group` (not_a_member, last_admin) guncellendi, `set_member_role` RPC'si eklendi (SPEC 13 madde 4 kapandi). `features/groups`: grup listesi/olusturma, `/group/:id` (uyeler, admin devri, davet linki, ayrilma), `/join/:code`; girissiz kullanici `/login?from=...` ile geri donuyor. Elle denendi, sorunsuz. Madde 5 (paid_by/share uyelik dogrulamasi) Hafta 4'e kaldi. Siradaki adim: Hafta 3 - katalog, urun secici, alisveris listesi, realtime.

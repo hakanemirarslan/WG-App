@@ -163,7 +163,7 @@ Bos durumlar (ornek: henuz kalem yok) ve hata/yukleniyor durumlari her ekranda t
 1. **Harcama duzenleme/silme yetkisi:** Su an RLS her uyeye her harcamayi degistirme izni veriyor. Bolum 8'e gore update/delete sadece `created_by` veya admin'e kisitlanmali.
 2. **Pay toplami dogrulamasi:** `SUM(share_cents) = amount_cents` kurali sadece uygulama tarafinda. Savunma icin DB tarafinda de (trigger veya RPC ile atomik kayit) dusunulmeli. Harcama + paylar + kalemler **tek islemde** yazilmali (bir RPC onerilir).
 3. **`group_items` tekilligi:** `(group_id, catalog_item_id)` icin unique kisit yok (Bolum 7).
-4. **`join_group` / `leave_group` kurallari:** Tek admin ayrilma engeli ve kullaniciya donen hata kodlari sema tarafinda yok.
+4. ~~**`join_group` / `leave_group` kurallari**~~ **Kapandi (Hafta 2):** `leave_group` uye olmayana `not_a_member`, tek admin'e `last_admin` hatasi verir. Admin devri icin `set_member_role(gid, target, new_role)` RPC'si eklendi (hatalar: `invalid_role`, `not_admin`, `target_not_member`, `last_admin`). `join_group` hata kodu `invalid_or_expired_invite`.
 5. **Katilimci/odeyen aktif uye mi:** `expenses.paid_by` ve `expense_shares.user_id` ayni grubun uyesi olmali, su an dogrulanmiyor.
 6. **Settlement dogrulamasi:** `from_user` ve `to_user` ayni grubun uyesi olmali ve birbirinden farkli olmali.
 7. **`shopping_entries` realtime** icin RLS ile birlikte beklenen filtreleme davranisi Hafta 3'te test edilmeli.

@@ -7,10 +7,10 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/ui/login_page.dart';
 import '../features/auth/ui/signup_page.dart';
-import '../features/settings/providers/profile_providers.dart';
+import '../features/groups/ui/group_page.dart';
+import '../features/groups/ui/groups_page.dart';
+import '../features/groups/ui/join_page.dart';
 import '../features/settings/ui/settings_page.dart';
-import '../l10n/app_localizations.dart';
-import 'locale_provider.dart';
 import 'supabase_client.dart';
 
 /// Turns a Stream into a [Listenable] so go_router can re-evaluate its
@@ -29,6 +29,11 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
+/// Builds `/login` or `/signup`, keeping the page the user originally wanted
+/// (e.g. `/join/<code>`) in `?from=` so we can return there after auth.
+String authPath(String path, String? from) =>
+    from == null ? path : Uri(path: path, queryParameters: {'from': from}).toString();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final refreshListenable = GoRouterRefreshStream(authRepository.onAuthStateChange);
@@ -43,9 +48,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/login' || state.matchedLocation == '/signup';
 
       if (!isLoggedIn) {
-        return isAuthRoute ? null : '/login';
+        if (isAuthRoute) return null;
+        // Remember deep links such as /join/<code>; plain '/' needs no return trip.
+        final target = state.matchedLocation == '/' ? null : state.uri.toString();
+        return authPath('/login', target);
       }
-      if (isAuthRoute || state.matchedLocation == '/') {
+      if (isAuthRoute) {
+        return state.uri.queryParameters['from'] ?? '/home';
+      }
+      if (state.matchedLocation == '/') {
         return '/home';
       }
       return null;
@@ -54,36 +65,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/', builder: (context, state) => const SizedBox.shrink()),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(path: '/signup', builder: (context, state) => const SignupPage()),
-      GoRoute(path: '/home', builder: (context, state) => const HomePlaceholderPage()),
+      GoRoute(path: '/home', builder: (context, state) => const GroupsPage()),
+      GoRoute(
+        path: '/group/:id',
+        builder: (context, state) => GroupPage(groupId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/join/:code',
+        builder: (context, state) => JoinPage(code: state.pathParameters['code']!),
+      ),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsPage()),
     ],
   );
 });
-
-/// Stands in for the group selection screen until Hafta 2 builds it.
-/// Also syncs the app-wide locale to `profiles.locale` on login (SPEC 12).
-class HomePlaceholderPage extends ConsumerWidget {
-  const HomePlaceholderPage({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(myProfileProvider, (previous, next) {
-      next.whenData((profile) {
-        ref.read(appLocaleProvider.notifier).state = Locale(profile.locale);
-      });
-    });
-    final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.homeTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => GoRouter.of(context).go('/settings'),
-          ),
-        ],
-      ),
-      body: const Center(child: Text('Hafta 2: gruplar')),
-    );
-  }
-}
