@@ -140,5 +140,14 @@
   "balancesMismatchMessage": "The balances do not add up to zero. Please check the expenses.",
   "openBalanceWarning": "Your account is not settled ({amount}).",
   "@openBalanceWarning": {"placeholders": {"amount": {"type": "String"}}},
-  "monthlySummaryButton": "Monthly summary"
+  "monthlySummaryButton": "Monthly summary",
+  "monthlyTotalLabel": "Total spent",
+  "paidLabel": "Paid",
+  "shareLabel": "Share",
+  "endBalanceLabel": "Balance at month end",
+  "noExpensesThisMonth": "No expenses this month.",
+  "previousMonthTooltip": "Previous month",
+  "nextMonthTooltip": "Next month",
+  "expenseCount": "{count, plural, =1{1 expense} other{{count} expenses}}",
+  "@expenseCount": {"placeholders": {"count": {"type": "int"}}}
 }

@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../balances/providers/balances_providers.dart';
 import '../data/groups_repository.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
@@ -63,11 +65,30 @@ class _GroupPageState extends ConsumerState<GroupPage> {
 
   Future<void> _leave() async {
     final l10n = AppLocalizations.of(context)!;
+    final lang = Localizations.localeOf(context).languageCode;
+    // Leaving with an open balance is allowed (SPEC 10) but the user is warned.
+    final myBalance = ref
+        .read(balancesProvider(widget.groupId))
+        .value
+        ?.balances[supabase.auth.currentUser!.id];
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.leaveGroupConfirmTitle),
-        content: Text(l10n.leaveGroupConfirmBody),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.leaveGroupConfirmBody),
+            if (myBalance != null && myBalance != 0) ...[
+              const SizedBox(height: 12),
+              Text(
+                l10n.openBalanceWarning(formatCents(myBalance, locale: lang)),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -95,6 +116,7 @@ class _GroupPageState extends ConsumerState<GroupPage> {
     final l10n = AppLocalizations.of(context)!;
     final groupAsync = ref.watch(groupProvider(widget.groupId));
     final membersAsync = ref.watch(groupMembersProvider(widget.groupId));
+    ref.watch(balancesProvider(widget.groupId)); // loaded for the leave warning
     final myId = supabase.auth.currentUser!.id;
 
     return Scaffold(

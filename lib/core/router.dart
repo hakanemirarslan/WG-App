@@ -8,6 +8,7 @@ import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/ui/login_page.dart';
 import '../features/auth/ui/signup_page.dart';
 import '../features/balances/ui/balance_page.dart';
+import '../features/balances/ui/monthly_summary_page.dart';
 import '../features/expenses/ui/expense_detail_page.dart';
 import '../features/expenses/ui/expense_form_page.dart';
 import '../features/expenses/ui/expenses_page.dart';
@@ -132,6 +133,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                   path: 'balance',
                   builder: (context, state) =>
                       BalancePage(groupId: state.pathParameters['id']!),
+                  routes: [
+                    GoRoute(
+                      path: 'summary',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) =>
+                          MonthlySummaryPage(groupId: state.pathParameters['id']!),
+                    ),
+                  ],
                 ),
               ]),
               StatefulShellBranch(routes: [

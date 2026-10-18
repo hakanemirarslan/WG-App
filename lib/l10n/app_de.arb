@@ -119,5 +119,13 @@
   "markPaidConfirmBody": "{from} hat {to} {amount} bezahlt. Das kann nicht rückgängig gemacht werden.",
   "balancesMismatchMessage": "Die Salden ergeben zusammen nicht null. Bitte prüfe die Ausgaben.",
   "openBalanceWarning": "Dein Konto ist nicht ausgeglichen ({amount}).",
-  "monthlySummaryButton": "Monatsübersicht"
+  "monthlySummaryButton": "Monatsübersicht",
+  "monthlyTotalLabel": "Gesamtausgaben",
+  "paidLabel": "Bezahlt",
+  "shareLabel": "Anteil",
+  "endBalanceLabel": "Saldo am Monatsende",
+  "noExpensesThisMonth": "Keine Ausgaben in diesem Monat.",
+  "previousMonthTooltip": "Vorheriger Monat",
+  "nextMonthTooltip": "Nächster Monat",
+  "expenseCount": "{count, plural, =1{1 Ausgabe} other{{count} Ausgaben}}"
 }

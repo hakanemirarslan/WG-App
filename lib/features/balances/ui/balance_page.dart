@@ -138,6 +138,12 @@ class BalancePage extends ConsumerWidget {
                         )
                       : null,
                 ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.calendar_month),
+                onPressed: () => context.push('/group/$groupId/balance/summary'),
+                label: Text(l10n.monthlySummaryButton),
+              ),
             ],
           );
         },
