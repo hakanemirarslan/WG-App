@@ -385,6 +385,39 @@ begin
 end;
 $$;
 
+-- "Odendi" kaydi (SPEC 9). Cagiran aktif uye ve odeyen ya da alan taraflardan biri olmali.
+-- Ikisi de grubun uyesi olmali (ayrilmis olsa da: eski uyenin borcu kapanabilsin).
+-- Hata kodlari: not_a_member, invalid_settlement, invalid_amount, not_allowed, invalid_participant
+create or replace function public.record_settlement(gid uuid, from_id uuid, to_id uuid, amount integer)
+returns uuid
+language plpgsql security definer set search_path = public
+as $$
+declare new_id uuid;
+begin
+  if not public.is_group_member(gid) then
+    raise exception 'not_a_member';
+  end if;
+  if from_id = to_id then
+    raise exception 'invalid_settlement';
+  end if;
+  if amount is null or amount < 1 or amount > 10000000 then
+    raise exception 'invalid_amount';
+  end if;
+  if auth.uid() <> from_id and auth.uid() <> to_id then
+    raise exception 'not_allowed';
+  end if;
+  if (select count(*) from public.memberships
+      where group_id = gid and user_id in (from_id, to_id)) <> 2 then
+    raise exception 'invalid_participant';
+  end if;
+
+  insert into public.settlements (group_id, from_user, to_user, amount_cents)
+  values (gid, from_id, to_id, amount)
+  returning id into new_id;
+  return new_id;
+end;
+$$;
+
 -- Urun kullanildikca siklik sayacini artir
 create or replace function public.touch_group_item(item_id uuid)
 returns void
@@ -483,15 +516,16 @@ create policy "expense_items_select" on public.expense_items for select
 create policy "expense_shares_select" on public.expense_shares for select
   using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)));
 
--- settlements
-create policy "settlements_all" on public.settlements for all
-  using (public.is_group_member(group_id)) with check (public.is_group_member(group_id));
+-- settlements: yazma SADECE record_settlement RPC'siyle, burada sadece okuma
+create policy "settlements_select" on public.settlements for select
+  using (public.is_group_member(group_id));
 
 -- ============================================================
 -- 4) GERCEK ZAMANLI SENKRON (liste anlik guncellensin)
 -- ============================================================
 alter publication supabase_realtime add table public.shopping_entries;
 alter publication supabase_realtime add table public.expenses;
+alter publication supabase_realtime add table public.settlements;
 
 -- ============================================================
 -- 5) ORNEK KATALOG (baslangic icin; sonra genislet)

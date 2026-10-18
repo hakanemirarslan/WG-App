@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/ui/login_page.dart';
 import '../features/auth/ui/signup_page.dart';
+import '../features/balances/ui/balance_page.dart';
 import '../features/expenses/ui/expense_detail_page.dart';
 import '../features/expenses/ui/expense_form_page.dart';
 import '../features/expenses/ui/expenses_page.dart';
@@ -16,7 +17,6 @@ import '../features/groups/ui/groups_page.dart';
 import '../features/groups/ui/join_page.dart';
 import '../features/settings/ui/settings_page.dart';
 import '../features/shopping_list/ui/shopping_list_page.dart';
-import '../l10n/app_localizations.dart';
 import 'supabase_client.dart';
 
 /// Turns a Stream into a [Listenable] so go_router can re-evaluate its
@@ -130,9 +130,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               StatefulShellBranch(routes: [
                 GoRoute(
                   path: 'balance',
-                  builder: (context, state) => ComingSoonTab(
-                    title: AppLocalizations.of(context)!.tabBalance,
-                  ),
+                  builder: (context, state) =>
+                      BalancePage(groupId: state.pathParameters['id']!),
                 ),
               ]),
               StatefulShellBranch(routes: [

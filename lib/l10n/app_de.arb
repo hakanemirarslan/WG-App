@@ -58,7 +58,6 @@
   "tabExpenses": "Ausgaben",
   "tabBalance": "Saldo",
   "tabGroup": "Gruppe",
-  "comingSoon": "Kommt bald",
   "addItemButton": "Artikel hinzufügen",
   "openItemsEmpty": "Gerade ist nichts zu besorgen. Tippe auf +, um etwas hinzuzufügen.",
   "recentlyBoughtTitle": "Zuletzt gekauft",
@@ -108,5 +107,17 @@
   "errorInvalidParticipant": "Alle Beteiligten müssen aktive Gruppenmitglieder sein.",
   "itemsTitle": "Was wurde gekauft? (optional)",
   "chooseItemsButton": "Artikel auswählen",
-  "pickerDoneButton": "Fertig ({count})"
+  "pickerDoneButton": "Fertig ({count})",
+  "balancesTitle": "Salden",
+  "suggestedPaymentsTitle": "Vorgeschlagene Zahlungen",
+  "allSettledUp": "Alles ausgeglichen.",
+  "isOwedLabel": "bekommt",
+  "owesLabel": "schuldet",
+  "transferLine": "{from} zahlt an {to}",
+  "markPaidButton": "Als bezahlt markieren",
+  "markPaidConfirmTitle": "Diese Zahlung erfassen?",
+  "markPaidConfirmBody": "{from} hat {to} {amount} bezahlt. Das kann nicht rückgängig gemacht werden.",
+  "balancesMismatchMessage": "Die Salden ergeben zusammen nicht null. Bitte prüfe die Ausgaben.",
+  "openBalanceWarning": "Dein Konto ist nicht ausgeglichen ({amount}).",
+  "monthlySummaryButton": "Monatsübersicht"
 }

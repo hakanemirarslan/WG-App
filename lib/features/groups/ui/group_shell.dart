@@ -34,22 +34,3 @@ class GroupShell extends StatelessWidget {
     );
   }
 }
-
-/// Stands in for tabs that later weeks build (expenses: Hafta 4, balance: Hafta 5).
-class ComingSoonTab extends StatelessWidget {
-  const ComingSoonTab({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
-        title: Text(title),
-      ),
-      body: Center(child: Text(l10n.comingSoon)),
-    );
-  }
-}
