@@ -7,6 +7,9 @@ import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../domain/split.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../catalog/data/catalog_repository.dart';
+import '../../catalog/providers/catalog_providers.dart';
+import '../../catalog/ui/product_picker_sheet.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../../groups/ui/group_error_text.dart';
 import '../data/expenses_repository.dart';
@@ -95,6 +98,7 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
   final Map<String, TextEditingController> _shareAmountControllers = {};
   final Map<String, TextEditingController> _weightControllers = {};
   late final Set<String> _selected;
+  List<PickedProduct> _items = [];
   late String _payerId;
   late DateTime _date;
   SplitMode _mode = SplitMode.equal;
@@ -122,6 +126,7 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
       _payerId = initial.paidBy;
       _date = initial.date;
       _descriptionController.text = initial.description ?? '';
+      _items = [for (final item in initial.items) item.product];
 
       // The split mode is not stored: show "equal" if the saved shares are
       // exactly what an equal split would give, otherwise the saved amounts.
@@ -211,6 +216,17 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
     });
   }
 
+  Future<void> _chooseItems() async {
+    final chosen = await showProductMultiPicker(context, widget.groupId, initial: _items);
+    if (chosen != null) setState(() => _items = chosen);
+  }
+
+  String _itemLabel(PickedProduct product, List<CatalogItem> catalog) {
+    if (product.customName != null) return product.customName!;
+    final matches = catalog.where((c) => c.id == product.catalogItemId);
+    return matches.isEmpty ? '' : matches.first.localized(_lang);
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -231,6 +247,16 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
 
     setState(() => _isSaving = true);
     try {
+      // Turn the picks into the group's product records (created if new).
+      final catalogRepository = ref.read(catalogRepositoryProvider);
+      final itemIds = <String>[
+        for (final product in _items)
+          await catalogRepository.getOrCreateGroupItem(
+            widget.groupId,
+            catalogItemId: product.catalogItemId,
+            customName: product.customName,
+          ),
+      ];
       await ref.read(expensesRepositoryProvider).saveExpense(
             groupId: widget.groupId,
             expenseId: widget.initial?.id,
@@ -239,6 +265,7 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
             description: _descriptionController.text,
             date: _date,
             shares: result.shares!,
+            itemIds: itemIds,
           );
       ref.invalidate(expensesProvider(widget.groupId));
       if (mounted) context.pop();
@@ -306,6 +333,26 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
             TextField(
               controller: _descriptionController,
               decoration: InputDecoration(labelText: l10n.descriptionLabel),
+            ),
+            const SizedBox(height: 16),
+            Text(l10n.itemsTitle, style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                for (final product in _items)
+                  InputChip(
+                    label: Text(_itemLabel(product, ref.watch(catalogProvider).value ?? const [])),
+                    onDeleted: () => setState(() => _items.remove(product)),
+                  ),
+                ActionChip(
+                  avatar: const Icon(Icons.add),
+                  label: Text(l10n.chooseItemsButton),
+                  onPressed: _chooseItems,
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             Text(l10n.splitBetweenTitle, style: Theme.of(context).textTheme.titleSmall),

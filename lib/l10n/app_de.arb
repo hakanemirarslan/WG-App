@@ -105,5 +105,8 @@
   "editButton": "Bearbeiten",
   "formerMemberSuffix": "(ehemaliges Mitglied)",
   "errorNotAllowed": "Nur die Person, die die Ausgabe erstellt hat, oder ein Admin darf sie ändern.",
-  "errorInvalidParticipant": "Alle Beteiligten müssen aktive Gruppenmitglieder sein."
+  "errorInvalidParticipant": "Alle Beteiligten müssen aktive Gruppenmitglieder sein.",
+  "itemsTitle": "Was wurde gekauft? (optional)",
+  "chooseItemsButton": "Artikel auswählen",
+  "pickerDoneButton": "Fertig ({count})"
 }

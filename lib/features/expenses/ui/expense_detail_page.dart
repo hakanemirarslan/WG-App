@@ -87,6 +87,16 @@ class ExpenseDetailPage extends ConsumerWidget {
                 '${DateFormat.yMMMd(lang).format(expense.date)} · '
                 '${l10n.paidByName(expense.paidByName)}',
               ),
+              if (expense.items.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final item in expense.items) Chip(label: Text(item.name.localized(lang))),
+                  ],
+                ),
+              ],
               const Divider(height: 32),
               Text(l10n.splitBetweenTitle, style: Theme.of(context).textTheme.titleSmall),
               for (final share in expense.shares)

@@ -6,24 +6,30 @@ import '../../../l10n/app_localizations.dart';
 import '../data/catalog_repository.dart';
 import '../providers/catalog_providers.dart';
 
-/// What the user picked: a catalog product or a new free-text one.
-/// Exactly one of the two fields is set.
-class PickedProduct {
-  final String? catalogItemId;
-  final String? customName;
-
-  const PickedProduct.catalog(String this.catalogItemId) : customName = null;
-  const PickedProduct.custom(String this.customName) : catalogItemId = null;
-}
-
 /// Bottom sheet product picker (SPEC 7): search, frequently used, catalog by
 /// category, and "add 'xyz'" for products that do not exist yet.
+/// Single choice: closes with the tapped product (shopping list).
 Future<PickedProduct?> showProductPicker(BuildContext context, String groupId) {
   return showModalBottomSheet<PickedProduct>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     builder: (context) => _ProductPickerSheet(groupId: groupId),
+  );
+}
+
+/// Multi choice (expense form, SPEC 7): taps toggle products, "Done" closes
+/// with all of them. Dismissing the sheet returns null and keeps [initial].
+Future<List<PickedProduct>?> showProductMultiPicker(
+  BuildContext context,
+  String groupId, {
+  List<PickedProduct> initial = const [],
+}) {
+  return showModalBottomSheet<List<PickedProduct>>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (context) => _ProductPickerSheet(groupId: groupId, multi: true, initial: initial),
   );
 }
 
@@ -36,20 +42,70 @@ String categoryLabel(AppLocalizations l10n, String category) {
 }
 
 class _ProductPickerSheet extends ConsumerStatefulWidget {
-  const _ProductPickerSheet({required this.groupId});
+  const _ProductPickerSheet({
+    required this.groupId,
+    this.multi = false,
+    this.initial = const [],
+  });
 
   final String groupId;
+  final bool multi;
+  final List<PickedProduct> initial;
 
   @override
   ConsumerState<_ProductPickerSheet> createState() => _ProductPickerSheetState();
 }
 
 class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
+  final _searchController = TextEditingController();
+  late final Map<String, PickedProduct> _chosen;
   String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _chosen = {for (final product in widget.initial) product.key: product};
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   bool _matches(String query, Iterable<String?> names) {
     return names.any((name) => name != null && normalizeForSearch(name).contains(query));
   }
+
+  /// Single mode closes the sheet with the product; multi mode toggles it.
+  void _onTap(PickedProduct product) {
+    if (!widget.multi) {
+      Navigator.pop(context, product);
+      return;
+    }
+    setState(() {
+      if (_chosen.remove(product.key) == null) _chosen[product.key] = product;
+    });
+  }
+
+  /// "Add 'xyz'": in multi mode keep the sheet open and clear the search.
+  void _onAddCustom(String name) {
+    final product = PickedProduct.custom(name);
+    if (!widget.multi) {
+      Navigator.pop(context, product);
+      return;
+    }
+    setState(() {
+      _chosen[product.key] = product;
+      _query = '';
+      _searchController.clear();
+    });
+  }
+
+  Widget? _checkmark(PickedProduct product) =>
+      widget.multi && _chosen.containsKey(product.key)
+          ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
+          : null;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +123,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
+              controller: _searchController,
               autofocus: true,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
@@ -91,6 +148,20 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
               },
             ),
           ),
+          if (widget.multi)
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => Navigator.pop(context, _chosen.values.toList()),
+                    child: Text(l10n.pickerDoneButton(_chosen.length)),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -125,14 +196,13 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
     if (matchingFrequent.isNotEmpty) {
       children.add(_SectionHeader(l10n.frequentTitle));
       for (final item in matchingFrequent) {
+        final product = item.catalogItemId != null
+            ? PickedProduct.catalog(item.catalogItemId!)
+            : PickedProduct.custom(item.name.customName!);
         children.add(ListTile(
           title: Text(item.name.localized(lang)),
-          onTap: () => Navigator.pop(
-            context,
-            item.catalogItemId != null
-                ? PickedProduct.catalog(item.catalogItemId!)
-                : PickedProduct.custom(item.name.customName!),
-          ),
+          trailing: _checkmark(product),
+          onTap: () => _onTap(product),
         ));
       }
     }
@@ -143,9 +213,11 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
         currentCategory = item.category;
         children.add(_SectionHeader(categoryLabel(l10n, item.category)));
       }
+      final product = PickedProduct.catalog(item.id);
       children.add(ListTile(
         title: Text(item.localized(lang)),
-        onTap: () => Navigator.pop(context, PickedProduct.catalog(item.id)),
+        trailing: _checkmark(product),
+        onTap: () => _onTap(product),
       ));
     }
 
@@ -155,7 +227,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
         ListTile(
           leading: const Icon(Icons.add),
           title: Text(l10n.addCustomProduct(rawQuery)),
-          onTap: () => Navigator.pop(context, PickedProduct.custom(rawQuery)),
+          onTap: () => _onAddCustom(rawQuery),
         ),
       );
     }

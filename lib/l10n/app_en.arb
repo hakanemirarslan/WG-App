@@ -122,5 +122,9 @@
   "editButton": "Edit",
   "formerMemberSuffix": "(former member)",
   "errorNotAllowed": "Only the creator or an admin can change this expense.",
-  "errorInvalidParticipant": "Everyone involved must be an active member of the group."
+  "errorInvalidParticipant": "Everyone involved must be an active member of the group.",
+  "itemsTitle": "What was bought (optional)",
+  "chooseItemsButton": "Choose items",
+  "pickerDoneButton": "Done ({count})",
+  "@pickerDoneButton": {"placeholders": {"count": {"type": "int"}}}
 }

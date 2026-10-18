@@ -69,12 +69,12 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [x] Sema bosluklari: SPEC 13, madde 3 ve 7
 
 ### Hafta 4: Harcamalar **[SPEC 3, 8]**
-- [ ] Bolusum mantigi (`domain/split.dart`) + testleri: esit, tutar, pay orani, yuvarlama (334/333/333)
-- [ ] Harcama formu: tutar, odeyen, kimleri kapsiyor, mod secimi
-- [ ] Opsiyonel kalemler (urun secici cok secimli), otomatik aciklama
-- [ ] Harcama + paylar + kalemler tek islemde kayit (RPC)
-- [ ] Harcama listesi, detay, duzenleme/silme (yetki kurali)
-- [ ] Sema bosluklari: SPEC 13, madde 1 (dogrulanmis acik), 2 ve 5
+- [x] Bolusum mantigi (`domain/split.dart`) + testleri: esit, tutar, pay orani, yuvarlama (334/333/333)
+- [x] Harcama formu: tutar, odeyen, kimleri kapsiyor, mod secimi
+- [x] Opsiyonel kalemler (urun secici cok secimli), otomatik aciklama
+- [x] Harcama + paylar + kalemler tek islemde kayit (RPC)
+- [x] Harcama listesi, detay, duzenleme/silme (yetki kurali)
+- [x] Sema bosluklari: SPEC 13, madde 1 (dogrulanmis acik), 2 ve 5
 
 ### Hafta 5: Bakiye ve hesaplasma **[SPEC 4, 5, 9]**
 - [ ] `domain/debt_simplifier.dart` + 6 zorunlu test senaryosu (once testler)
@@ -123,3 +123,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-17: Hafta 1 bitti. `core/money.dart` + 11 test; l10n altyapisi (`l10n.yaml`, `app_de.arb`/`app_en.arb`, uretilen dosyalar gitignore'da); `features/auth` (kayit/giris/cikis, Supabase oturum stream'i) ve `features/settings` (gorunen ad + dil, `profiles` tablosuna yaziyor); `core/router.dart` go_router ile oturum durumuna gore yonlendirme, path-tabanli URL (`usePathUrlStrategy`). Riverpod 3'te `StateProvider` icin `package:flutter_riverpod/legacy.dart` import etmek gerekti (v3'te varsayilan export'tan cikarilmis). Gercek Supabase projesinde "Confirm email" baslangicta acik kalmisti, kapatilinca kayit/oturum aninda acildi (bkz. SPEC 15). Tum akis (kayit, sayfa yenileme, ayarlar, cikis, giris) elle web'de denendi, calisiyor. Siradaki adim: Hafta 2 - gruplar (`create_group`, davet linki, `/join/<code>`, ayrilma), sema bosluklari SPEC 13 madde 4-5.
 - 2026-10-18: Hafta 2 bitti. `leave_group` (not_a_member, last_admin) guncellendi, `set_member_role` RPC'si eklendi (SPEC 13 madde 4 kapandi). `features/groups`: grup listesi/olusturma, `/group/:id` (uyeler, admin devri, davet linki, ayrilma), `/join/:code`; girissiz kullanici `/login?from=...` ile geri donuyor. Elle denendi, sorunsuz. Madde 5 (paid_by/share uyelik dogrulamasi) Hafta 4'e kaldi. Siradaki adim: Hafta 3 - katalog, urun secici, alisveris listesi, realtime.
 - 2026-10-19: Hafta 3 bitti. Alt gezinme kabugu (Liste/Harcamalar/Saldo/Grup; sekmeler `/group/:id` altinda alt rota, cunku go_router StatefulShellBranch varsayilan rotasinda path parametresi istemiyor). `features/catalog` + `features/shopping_list`: urun secici sheet (umlaut duyarsiz arama `domain/text_search.dart`, sik kullanilanlar, serbest urun), `get_or_create_group_item` RPC, tekrar kontrolu, alindi/geri al/sil, Realtime (DELETE olaylari group_id ile filtrelenemedigi icin filtresiz ikinci abonelik). Sema: unique index'ler, `shopping_entries` silme yetkisi ekleyen/admin. Iki kullaniciyla elle denendi. Dersler: Supabase SQL Editor'e yapistirirken eski metin kalintisi sorun cikardi (once Ctrl+A/Delete); Riverpod 3 hata ekraninda `ProviderException` asil hatayi 'A provider threw...' altinda gosteriyor. Siradaki adim: Hafta 4 - `domain/split.dart` + testler, harcama formu, harcama RPC'si, SPEC 13 madde 1, 2, 5.
+- 2026-10-19: Hafta 4 bitti. `domain/split.dart` (esit/agirlik/tutar, 334/333/333 yuvarlama) + 22 test; `core/money.dart`'a `parseShareCents` ve `formatCentsPlain`; `save_expense` RPC (atomik kayit, toplam/uyelik/yetki kontrolu) ve expenses/expense_items/expense_shares icin dogrudan yazma policy'leri kaldirildi (SPEC 13 madde 1, 2, 5 kapandi); `features/expenses`: liste (Realtime), form (ekleme/duzenleme, 3 bolusum modu, odeyen, tarih, urunler), detay, silme. Urun secici cok secimli modu (`showProductMultiPicker`); acilama bos birakilirsa baslik gosterimde urun adlarindan uretiliyor. Bolusum modu saklanmiyor: duzenlemede paylar esit bolusumle ayniysa 'Gleich', degilse 'Betraege' acilir. Elle iki kullaniciyla denendi. Siradaki adim: Hafta 5 - `domain/debt_simplifier.dart` + 6 zorunlu test (once testler), bakiye hesabi, bakiye ekrani, 'Odendi' settlement, aylik ozet, SPEC 13 madde 6.

@@ -25,6 +25,22 @@ class ProductName {
   }
 }
 
+/// What the user picked: a catalog product or a new free-text one.
+/// Exactly one of the two fields is set.
+class PickedProduct {
+  final String? catalogItemId;
+  final String? customName;
+
+  const PickedProduct.catalog(String this.catalogItemId) : customName = null;
+  const PickedProduct.custom(String this.customName) : catalogItemId = null;
+
+  /// Identity for "already chosen?" checks. Free text compares the way the
+  /// database does (case-insensitive), so "milch" and "Milch" are one product.
+  String get key => catalogItemId != null
+      ? 'catalog:$catalogItemId'
+      : 'custom:${customName!.trim().toLowerCase()}';
+}
+
 class CatalogItem {
   final String id;
   final String nameDe;

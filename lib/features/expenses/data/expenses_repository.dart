@@ -12,6 +12,24 @@ class ExpenseShareDetail {
   ExpenseShareDetail({required this.userId, required this.name, required this.shareCents});
 }
 
+class ExpenseItem {
+  final ProductName name;
+  final PickedProduct product;
+
+  ExpenseItem({required this.name, required this.product});
+
+  /// [map] is a `group_items` row (with `catalog_item_id` and the embedded catalog names).
+  factory ExpenseItem.fromGroupItemMap(Map<String, dynamic> map) {
+    final catalogItemId = map['catalog_item_id'] as String?;
+    return ExpenseItem(
+      name: ProductName.fromGroupItemMap(map),
+      product: catalogItemId != null
+          ? PickedProduct.catalog(catalogItemId)
+          : PickedProduct.custom(map['custom_name'] as String),
+    );
+  }
+}
+
 class Expense {
   final String id;
   final String paidBy;
@@ -21,7 +39,7 @@ class Expense {
   final DateTime date;
   final String createdBy;
   final List<ExpenseShareDetail> shares;
-  final List<ProductName> items;
+  final List<ExpenseItem> items;
 
   Expense({
     required this.id,
@@ -56,7 +74,7 @@ class Expense {
       ]..sort((a, b) => a.name.compareTo(b.name)),
       items: [
         for (final item in items)
-          ProductName.fromGroupItemMap(item['group_items'] as Map<String, dynamic>),
+          ExpenseItem.fromGroupItemMap(item['group_items'] as Map<String, dynamic>),
       ],
     );
   }
@@ -66,7 +84,7 @@ class Expense {
   String? displayTitle(String languageCode) {
     if (description != null) return description;
     if (items.isEmpty) return null;
-    return items.map((item) => item.localized(languageCode)).join(', ');
+    return items.map((item) => item.name.localized(languageCode)).join(', ');
   }
 }
 
@@ -78,7 +96,7 @@ class ExpensesRepository {
           'id, paid_by, amount_cents, description, expense_date, created_by, '
           'payer:profiles!expenses_paid_by_fkey(display_name), '
           'expense_shares(user_id, share_cents, profiles(display_name)), '
-          'expense_items(group_items(custom_name, catalog_items(name_de, name_en)))',
+          'expense_items(group_items(catalog_item_id, custom_name, catalog_items(name_de, name_en)))',
         )
         .eq('group_id', groupId)
         .order('expense_date', ascending: false)
