@@ -77,13 +77,13 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [x] Sema bosluklari: SPEC 13, madde 1 (dogrulanmis acik), 2 ve 5
 
 ### Hafta 5: Bakiye ve hesaplasma **[SPEC 4, 5, 9]**
-- [ ] `domain/debt_simplifier.dart` + 6 zorunlu test senaryosu (once testler)
-- [ ] Bakiye hesabi (harcama + pay + settlement), toplam = 0 kontrolu
-- [ ] Bakiye ekrani, onerilen odemeler
-- [ ] "Odendi" ile settlement kaydi
-- [ ] Aylik ozet ekrani
-- [ ] Eski uye bakiyesi gosterimi
-- [ ] Sema bosluklari: SPEC 13, madde 6
+- [x] `domain/debt_simplifier.dart` + 6 zorunlu test senaryosu (once testler)
+- [x] Bakiye hesabi (harcama + pay + settlement), toplam = 0 kontrolu
+- [x] Bakiye ekrani, onerilen odemeler
+- [x] "Odendi" ile settlement kaydi
+- [x] Aylik ozet ekrani
+- [x] Eski uye bakiyesi gosterimi
+- [x] Sema bosluklari: SPEC 13, madde 6
 
 ### Hafta 6: Cila ve yayin **[SPEC 15, 16]**
 - [ ] Gorsel tasarim (tum ozellikler bittikten sonra, bilincli olarak en sona birakildi): merkezi `lib/core/theme.dart` (renk, yazi tipi, bilesen stilleri, acik/koyu tema), ekranlarda tema disi renk/stil kalmadi
@@ -125,3 +125,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-18: Hafta 2 bitti. `leave_group` (not_a_member, last_admin) guncellendi, `set_member_role` RPC'si eklendi (SPEC 13 madde 4 kapandi). `features/groups`: grup listesi/olusturma, `/group/:id` (uyeler, admin devri, davet linki, ayrilma), `/join/:code`; girissiz kullanici `/login?from=...` ile geri donuyor. Elle denendi, sorunsuz. Madde 5 (paid_by/share uyelik dogrulamasi) Hafta 4'e kaldi. Siradaki adim: Hafta 3 - katalog, urun secici, alisveris listesi, realtime.
 - 2026-10-19: Hafta 3 bitti. Alt gezinme kabugu (Liste/Harcamalar/Saldo/Grup; sekmeler `/group/:id` altinda alt rota, cunku go_router StatefulShellBranch varsayilan rotasinda path parametresi istemiyor). `features/catalog` + `features/shopping_list`: urun secici sheet (umlaut duyarsiz arama `domain/text_search.dart`, sik kullanilanlar, serbest urun), `get_or_create_group_item` RPC, tekrar kontrolu, alindi/geri al/sil, Realtime (DELETE olaylari group_id ile filtrelenemedigi icin filtresiz ikinci abonelik). Sema: unique index'ler, `shopping_entries` silme yetkisi ekleyen/admin. Iki kullaniciyla elle denendi. Dersler: Supabase SQL Editor'e yapistirirken eski metin kalintisi sorun cikardi (once Ctrl+A/Delete); Riverpod 3 hata ekraninda `ProviderException` asil hatayi 'A provider threw...' altinda gosteriyor. Siradaki adim: Hafta 4 - `domain/split.dart` + testler, harcama formu, harcama RPC'si, SPEC 13 madde 1, 2, 5.
 - 2026-10-19: Hafta 4 bitti. `domain/split.dart` (esit/agirlik/tutar, 334/333/333 yuvarlama) + 22 test; `core/money.dart`'a `parseShareCents` ve `formatCentsPlain`; `save_expense` RPC (atomik kayit, toplam/uyelik/yetki kontrolu) ve expenses/expense_items/expense_shares icin dogrudan yazma policy'leri kaldirildi (SPEC 13 madde 1, 2, 5 kapandi); `features/expenses`: liste (Realtime), form (ekleme/duzenleme, 3 bolusum modu, odeyen, tarih, urunler), detay, silme. Urun secici cok secimli modu (`showProductMultiPicker`); acilama bos birakilirsa baslik gosterimde urun adlarindan uretiliyor. Bolusum modu saklanmiyor: duzenlemede paylar esit bolusumle ayniysa 'Gleich', degilse 'Betraege' acilir. Elle iki kullaniciyla denendi. Siradaki adim: Hafta 5 - `domain/debt_simplifier.dart` + 6 zorunlu test (once testler), bakiye hesabi, bakiye ekrani, 'Odendi' settlement, aylik ozet, SPEC 13 madde 6.
+- 2026-10-19: Hafta 5 bitti. `domain/debt_simplifier.dart` (6 zorunlu senaryo + davranis testleri), `domain/balance.dart` ve `domain/monthly_summary.dart` (testli, 67 test toplam); `record_settlement` RPC + settlements icin dogrudan yazma kapali (SPEC 13 madde 6 kapandi; tum sema bosluklari artik kapali); `features/balances`: canli bakiye ekrani (isaretli tutarlar), onerilen odemeler, 'Odendi' onay penceresiyle, aylik ozet (ay sonu bakiyesi o ayin sonuna kadar), gruptan ayrilirken 'hesabin kapanmadi' uyarisi, eski uye '(ehemaliges Mitglied)' etiketiyle. Ayarlar'dan geri donus `push` ile duzeltildi. Elle iki kullaniciyla denendi. Denenmedi: transferin tarafi olmayan ucuncu kullanicida 'Odendi' dugmesinin gizlenmesi (ucuncu hesap yoktu; yetki sunucuda `record_settlement` ile de zorlaniyor) ve gercekten gruptan ayrilip eski uye olarak bakiye gosterimi. Geri alma V1'de yok. Siradaki adim: Hafta 6 - bos/hata/yukleniyor durumlari, telefon genisligi, PWA, deploy, gizlilik karari, gorsel tasarim (en sona), README.
