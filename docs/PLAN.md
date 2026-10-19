@@ -91,6 +91,7 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [x] Bos / hata / yukleniyor durumlari tum ekranlarda
 - [ ] Telefon genisliginde kullanilabilirlik (Chrome cihaz modu 390 px ile tum ekranlar elle kontrol); PWA manifest + ikon kodu hazir, "Ana Ekrana Ekle" denemesi "Yayin" blogunda
 - [ ] Gizlilik: Datenschutzerklaerung / Impressum konusunda kullanici arastirma yapti ve karar verdi (SPEC 16); hesap silme davranisi netlesti
+  - Teknik envanter hazir: `docs/GIZLILIK-ENVANTERI.md`. Hesap silme davranisi kararlandi (anonimlestirme, tek admin ise en eski uyeye devir); uygulama V2'de. Kalan: Datenschutzerklaerung / Impressum arastirmasi (kullanici).
 - [ ] README: neden bu proje, Splitwise'dan farki, mimari, ekran goruntuleri (canli link yayinda eklenir)
 - [x] Sema bosluklari listesi (SPEC 13) tamamen kapandi
 
@@ -98,6 +99,7 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 
 Kullanici simdilik canliya almaya hazir degil; bu maddeler bilincli olarak ertelendi.
 - [ ] `flutter build web` + deploy (Firebase Hosting / Vercel / Netlify) ve **tum yollari `index.html`'e yonlendirme kurali**; `/join/<code>` canlida sayfa yenilemede calisiyor
+- [ ] `flutter build web --no-web-resources-cdn` ile derle: CanvasKit ve yedek fontlar `gstatic.com` yerine kendi alan adindan gelsin (SPEC 16: ucuncu taraf istegi yok); build ciktisinda `gstatic` gecmedigi dogrulanir
 - [ ] Kalici alan adi secildi (davet linkleri `/join/<code>` ileride mobil uygulamada da calisacak, adres sonradan degismemeli; SPEC 15)
 - [ ] Supabase Auth: Site URL + Redirect URL canli adres; e-posta dogrulama karari
 - [ ] Supabase ucretsiz katman durdurma/yedek durumu kontrol edildi
@@ -107,6 +109,7 @@ Kullanici simdilik canliya almaya hazir degil; bu maddeler bilincli olarak ertel
 
 ## Sonraki surumler (V2+)
 
+- **Uygulama icinden hesap silme** (iOS magaza surumunden once zorunlu): `delete_my_account()` RPC'si, `profiles` anonimlestirme (`deleted_at`), tek admin ise rol en eski aktif uyeye devri, "Geloeschter Nutzer" etiketi. Tasarim: `docs/GIZLILIK-ENVANTERI.md`
 - Tekrarlayan giderler (kira, internet, elektrik, Rundfunkbeitrag)
 - **Python servisi (FastAPI): fis fotografindan kalem okuma.** OCR/LLM cagrilari Flutter'da yapilmaz, bu yuzden Python'un dogal yeri burasi. Akis: Flutter fotografi yukler -> FastAPI servisi Supabase token'ini dogrular -> OCR/LLM ile kalemleri cikarir -> kalemler harcama formuna taslak olarak gelir. Barindirma: Fly.io / Render / Railway. `expense_items` tablosu buna hazir.
 - PayPal.me / IBAN odeme linkleri
@@ -135,3 +138,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-19: Hafta 5 bitti. `domain/debt_simplifier.dart` (6 zorunlu senaryo + davranis testleri), `domain/balance.dart` ve `domain/monthly_summary.dart` (testli, 67 test toplam); `record_settlement` RPC + settlements icin dogrudan yazma kapali (SPEC 13 madde 6 kapandi; tum sema bosluklari artik kapali); `features/balances`: canli bakiye ekrani (isaretli tutarlar), onerilen odemeler, 'Odendi' onay penceresiyle, aylik ozet (ay sonu bakiyesi o ayin sonuna kadar), gruptan ayrilirken 'hesabin kapanmadi' uyarisi, eski uye '(ehemaliges Mitglied)' etiketiyle. Ayarlar'dan geri donus `push` ile duzeltildi. Elle iki kullaniciyla denendi. Denenmedi: transferin tarafi olmayan ucuncu kullanicida 'Odendi' dugmesinin gizlenmesi (ucuncu hesap yoktu; yetki sunucuda `record_settlement` ile de zorlaniyor) ve gercekten gruptan ayrilip eski uye olarak bakiye gosterimi. Geri alma V1'de yok. Siradaki adim: Hafta 6 - bos/hata/yukleniyor durumlari, telefon genisligi, PWA, deploy, gizlilik karari, gorsel tasarim (en sona), README.
 - 2026-10-19: Hafta 6 baslandi: bos/hata/yukleniyor durumlari icin ortak `core/error_view.dart`, PWA ikon/manifest ve ozet satiri tasmasi bitti. Deploy ve canli adrese bagli maddeler "Yayin (hazir olunca)" blogune tasindi (kullanici henuz hazir degil). Siradaki adim: gizlilik arastirmasi karari ya da tema (`core/theme.dart`).
 - 2026-10-19: Gorsel tasarim ilk surum: `core/theme.dart` (acik/koyu, gomulu Nunito), `core/widgets.dart` (`AppCard`, `SectionHeader`, `AuthHeader`, `balanceColor`), liste/harcama/bakiye/ozet/giris ekranlari kartlara tasindi, bakiyede 'Dein Saldo' ozet karti, PWA renkleri ve ikonlar guncellendi. Palet gecici, kullanici sonra degistirecek. Elle (Chrome, acik/koyu, 390 px) gorsel kontrol henuz yapilmadi. Siradaki adim: gorsel kontrol + palet kararı, sonra gizlilik arastirmasi ve README.
+- 2026-10-19: Gizlilik teknik tarafi: `docs/GIZLILIK-ENVANTERI.md` yazildi (toplanan veri, Google CDN bulgusu, hesap silme tasarimi). Karar: hesap silme uygulamasi V2'ye; tek admin silinirse en eski aktif uyeye devir; tek etiket 'Geloeschter Nutzer'. Datenschutz/Impressum arastirmasi kullanicida. Siradaki adim: README (canli link haric) ve tasarimin gozle kontrolu.
