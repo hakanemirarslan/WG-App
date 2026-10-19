@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../domain/debt_simplifier.dart';
@@ -30,11 +31,13 @@ class BalancePage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.markPaidConfirmTitle),
-        content: Text(l10n.markPaidConfirmBody(
-          data.names[transfer.from] ?? '',
-          data.names[transfer.to] ?? '',
-          formatCents(transfer.cents, locale: lang),
-        )),
+        content: Text(
+          l10n.markPaidConfirmBody(
+            data.names[transfer.from] ?? '',
+            data.names[transfer.to] ?? '',
+            formatCents(transfer.cents, locale: lang),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -49,7 +52,9 @@ class BalancePage extends ConsumerWidget {
     );
     if (confirmed != true) return;
     try {
-      await ref.read(settlementsRepositoryProvider).recordSettlement(
+      await ref
+          .read(settlementsRepositoryProvider)
+          .recordSettlement(
             groupId: groupId,
             from: transfer.from,
             to: transfer.to,
@@ -94,7 +99,7 @@ class BalancePage extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               if (!data.consistent)
-                Card(
+                AppCard(
                   color: scheme.errorContainer,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
@@ -104,7 +109,28 @@ class BalancePage extends ConsumerWidget {
                     ),
                   ),
                 ),
-              Text(l10n.balancesTitle, style: Theme.of(context).textTheme.titleMedium),
+              AppCard(
+                color: scheme.primaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Text(
+                        l10n.yourBalanceLabel,
+                        style: Theme.of(context).textTheme.labelLarge
+                            ?.copyWith(color: scheme.onPrimaryContainer),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _signed(data.balances[myId] ?? 0, lang),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(color: scheme.onPrimaryContainer),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SectionHeader(l10n.balancesTitle),
               for (final id in visible)
                 _BalanceTile(
                   name: data.names[id] ?? '',
@@ -112,31 +138,30 @@ class BalancePage extends ConsumerWidget {
                   cents: data.balances[id]!,
                   lang: lang,
                 ),
-              const Divider(height: 32),
-              Text(
-                l10n.suggestedPaymentsTitle,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              SectionHeader(l10n.suggestedPaymentsTitle),
               if (data.transfers.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(l10n.allSettledUp),
                 ),
               for (final transfer in data.transfers)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.transferLine(
-                    data.names[transfer.from] ?? '',
-                    data.names[transfer.to] ?? '',
-                  )),
-                  subtitle: Text(formatCents(transfer.cents, locale: lang)),
-                  // Only the payer or the receiver may record the payment (SPEC 9).
-                  trailing: transfer.from == myId || transfer.to == myId
-                      ? OutlinedButton(
-                          onPressed: () => _markPaid(context, ref, data, transfer),
-                          child: Text(l10n.markPaidButton),
-                        )
-                      : null,
+                AppCard(
+                  child: ListTile(
+                    title: Text(
+                      l10n.transferLine(
+                        data.names[transfer.from] ?? '',
+                        data.names[transfer.to] ?? '',
+                      ),
+                    ),
+                    subtitle: Text(formatCents(transfer.cents, locale: lang)),
+                    // Only the payer or the receiver may record the payment (SPEC 9).
+                    trailing: transfer.from == myId || transfer.to == myId
+                        ? OutlinedButton(
+                            onPressed: () => _markPaid(context, ref, data, transfer),
+                            child: Text(l10n.markPaidButton),
+                          )
+                        : null,
+                  ),
                 ),
               const SizedBox(height: 16),
               OutlinedButton.icon(
@@ -168,23 +193,22 @@ class _BalanceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    final color = cents > 0
-        ? Colors.green.shade700
-        : cents < 0
-            ? scheme.error
-            : null;
+    final color = balanceColor(context, cents);
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const CircleAvatar(child: Icon(Icons.person)),
-      title: Text(isFormer ? '$name ${l10n.formerMemberSuffix}' : name),
-      subtitle: cents == 0 ? null : Text(cents > 0 ? l10n.isOwedLabel : l10n.owesLabel),
-      trailing: Text(
-        // Signed, so owed (+) and owing (-) are distinguishable without colour.
-        '${cents > 0 ? '+' : ''}${formatCents(cents, locale: lang)}',
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color),
+    return AppCard(
+      child: ListTile(
+        leading: const CircleAvatar(child: Icon(Icons.person)),
+        title: Text(isFormer ? '$name ${l10n.formerMemberSuffix}' : name),
+        subtitle: cents == 0 ? null : Text(cents > 0 ? l10n.isOwedLabel : l10n.owesLabel),
+        trailing: Text(
+          // Signed, so owed (+) and owing (-) are distinguishable without colour.
+          _signed(cents, lang),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color),
+        ),
       ),
     );
   }
 }
+
+String _signed(int cents, String lang) =>
+    '${cents > 0 ? '+' : ''}${formatCents(cents, locale: lang)}';

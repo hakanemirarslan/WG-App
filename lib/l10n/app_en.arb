@@ -127,6 +127,7 @@
   "chooseItemsButton": "Choose items",
   "pickerDoneButton": "Done ({count})",
   "@pickerDoneButton": {"placeholders": {"count": {"type": "int"}}},
+  "yourBalanceLabel": "Your balance",
   "balancesTitle": "Balances",
   "suggestedPaymentsTitle": "Suggested payments",
   "allSettledUp": "All settled up.",

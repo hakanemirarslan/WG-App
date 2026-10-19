@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
@@ -35,10 +36,8 @@ class ExpensesPage extends ConsumerWidget {
       ),
       body: expensesAsync.when(
         loading: () => const LoadingView(),
-        error: (error, _) => ErrorView(
-          error: error,
-          onRetry: () => ref.invalidate(expensesProvider(groupId)),
-        ),
+        error: (error, _) =>
+            ErrorView(error: error, onRetry: () => ref.invalidate(expensesProvider(groupId))),
         data: (expenses) {
           if (expenses.isEmpty) {
             return EmptyView(message: l10n.expensesEmpty);
@@ -48,22 +47,23 @@ class ExpensesPage extends ConsumerWidget {
               ref.invalidate(expensesProvider(groupId));
               await ref.read(expensesProvider(groupId).future);
             },
-            child: ListView.separated(
-              padding: const EdgeInsets.only(bottom: 88),
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
               itemCount: expenses.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final expense = expenses[index];
-                return ListTile(
-                  title: Text(expense.displayTitle(lang) ?? l10n.defaultExpenseTitle),
-                  subtitle: Text(
-                    '${dateFormat.format(expense.date)} · ${l10n.paidByName(expense.paidByName)}',
+                return AppCard(
+                  child: ListTile(
+                    title: Text(expense.displayTitle(lang) ?? l10n.defaultExpenseTitle),
+                    subtitle: Text(
+                      '${dateFormat.format(expense.date)} · ${l10n.paidByName(expense.paidByName)}',
+                    ),
+                    trailing: Text(
+                      formatCents(expense.amountCents, locale: lang),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    onTap: () => context.push('/group/$groupId/expenses/${expense.id}'),
                   ),
-                  trailing: Text(
-                    formatCents(expense.amountCents, locale: lang),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  onTap: () => context.push('/group/$groupId/expenses/${expense.id}'),
                 );
               },
             ),

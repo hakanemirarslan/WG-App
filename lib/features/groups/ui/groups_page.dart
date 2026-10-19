@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets.dart';
 import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
@@ -77,18 +78,13 @@ class GroupsPage extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.groupsTitle),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => context.push('/settings'),
-          ),
+          IconButton(icon: const Icon(Icons.settings), onPressed: () => context.push('/settings')),
         ],
       ),
       body: groupsAsync.when(
         loading: () => const LoadingView(),
-        error: (error, _) => ErrorView(
-          error: error,
-          onRetry: () => ref.invalidate(myGroupsProvider),
-        ),
+        error: (error, _) =>
+            ErrorView(error: error, onRetry: () => ref.invalidate(myGroupsProvider)),
         data: (groups) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -98,7 +94,7 @@ class GroupsPage extends ConsumerWidget {
                 child: Text(l10n.noGroupsYet, textAlign: TextAlign.center),
               ),
             for (final group in groups)
-              Card(
+              AppCard(
                 child: ListTile(
                   leading: const Icon(Icons.home_outlined),
                   title: Text(group.name),

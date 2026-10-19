@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
@@ -36,9 +37,9 @@ class ShoppingListPage extends ConsumerWidget {
       final existing = entries.where((e) => !e.isBought && e.groupItemId == groupItemId);
       if (existing.isNotEmpty) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.alreadyOnList(existing.first.addedByName))),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.alreadyOnList(existing.first.addedByName))));
         }
         return;
       }
@@ -137,7 +138,7 @@ class ShoppingListPage extends ConsumerWidget {
           }
 
           return ListView(
-            padding: const EdgeInsets.only(bottom: 88),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
             children: [
               if (open.isEmpty)
                 Padding(
@@ -145,40 +146,44 @@ class ShoppingListPage extends ConsumerWidget {
                   child: Text(l10n.openItemsEmpty, textAlign: TextAlign.center),
                 ),
               for (final entry in open)
-                ListTile(
-                  leading: IconButton(
-                    icon: const Icon(Icons.radio_button_unchecked),
-                    tooltip: l10n.markBoughtTooltip,
-                    onPressed: () => _run(context, () => repository.markBought(entry.id)),
+                AppCard(
+                  child: ListTile(
+                    leading: IconButton(
+                      icon: const Icon(Icons.radio_button_unchecked),
+                      color: Theme.of(context).colorScheme.primary,
+                      tooltip: l10n.markBoughtTooltip,
+                      onPressed: () => _run(context, () => repository.markBought(entry.id)),
+                    ),
+                    title: Text(entry.name.localized(lang)),
+                    subtitle: Text(
+                      [
+                        if (entry.note != null) entry.note!,
+                        l10n.addedByLabel(entry.addedByName),
+                      ].join(' · '),
+                    ),
+                    trailing: deleteButton(entry),
                   ),
-                  title: Text(entry.name.localized(lang)),
-                  subtitle: Text([
-                    if (entry.note != null) entry.note!,
-                    l10n.addedByLabel(entry.addedByName),
-                  ].join(' · ')),
-                  trailing: deleteButton(entry),
                 ),
               if (bought.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 4),
-                  child: Text(
-                    l10n.recentlyBoughtTitle,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
+                SectionHeader(l10n.recentlyBoughtTitle),
                 for (final entry in bought)
-                  ListTile(
-                    leading: IconButton(
-                      icon: const Icon(Icons.undo),
-                      tooltip: l10n.undoBoughtTooltip,
-                      onPressed: () => _run(context, () => repository.undoBought(entry.id)),
+                  AppCard(
+                    child: ListTile(
+                      leading: IconButton(
+                        icon: const Icon(Icons.undo),
+                        tooltip: l10n.undoBoughtTooltip,
+                        onPressed: () => _run(context, () => repository.undoBought(entry.id)),
+                      ),
+                      title: Text(
+                        entry.name.localized(lang),
+                        style: TextStyle(
+                          decoration: TextDecoration.lineThrough,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      subtitle: Text(l10n.boughtByLabel(entry.boughtByName ?? '')),
+                      trailing: deleteButton(entry),
                     ),
-                    title: Text(
-                      entry.name.localized(lang),
-                      style: const TextStyle(decoration: TextDecoration.lineThrough),
-                    ),
-                    subtitle: Text(l10n.boughtByLabel(entry.boughtByName ?? '')),
-                    trailing: deleteButton(entry),
                   ),
               ],
             ],

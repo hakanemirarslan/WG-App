@@ -109,6 +109,7 @@
   "itemsTitle": "Was wurde gekauft? (optional)",
   "chooseItemsButton": "Artikel auswählen",
   "pickerDoneButton": "Fertig ({count})",
+  "yourBalanceLabel": "Dein Saldo",
   "balancesTitle": "Salden",
   "suggestedPaymentsTitle": "Vorgeschlagene Zahlungen",
   "allSettledUp": "Alles ausgeglichen.",

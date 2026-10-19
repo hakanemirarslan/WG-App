@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
@@ -63,10 +64,8 @@ class ExpenseDetailPage extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.expenseDetailTitle)),
       body: expensesAsync.when(
         loading: () => const LoadingView(),
-        error: (error, _) => ErrorView(
-          error: error,
-          onRetry: () => ref.invalidate(expensesProvider(groupId)),
-        ),
+        error: (error, _) =>
+            ErrorView(error: error, onRetry: () => ref.invalidate(expensesProvider(groupId))),
         data: (expenses) {
           final matches = expenses.where((e) => e.id == expenseId);
           // Deleted (e.g. by someone else) or not visible any more.
@@ -101,13 +100,13 @@ class ExpenseDetailPage extends ConsumerWidget {
                   ],
                 ),
               ],
-              const Divider(height: 32),
-              Text(l10n.splitBetweenTitle, style: Theme.of(context).textTheme.titleSmall),
+              SectionHeader(l10n.splitBetweenTitle),
               for (final share in expense.shares)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(share.name),
-                  trailing: Text(formatCents(share.shareCents, locale: lang)),
+                AppCard(
+                  child: ListTile(
+                    title: Text(share.name),
+                    trailing: Text(formatCents(share.shareCents, locale: lang)),
+                  ),
                 ),
               if (canModify) ...[
                 const SizedBox(height: 24),

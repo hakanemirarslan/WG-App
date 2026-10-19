@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../domain/balance.dart';
 import '../../../domain/monthly_summary.dart';
@@ -78,13 +79,12 @@ class _MonthlySummaryPageState extends ConsumerState<MonthlySummaryPage> {
         ...summary.paidByUser.keys,
         ...summary.shareByUser.keys,
         ...summary.endBalances.entries.where((e) => e.value != 0).map((e) => e.key),
-      }.toList()
-        ..sort((a, b) => (data.names[a] ?? '').compareTo(data.names[b] ?? ''));
+      }.toList()..sort((a, b) => (data.names[a] ?? '').compareTo(data.names[b] ?? ''));
 
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
+          AppCard(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -124,8 +124,9 @@ class _MonthlySummaryPageState extends ConsumerState<MonthlySummaryPage> {
     final firstExpense = (expenses == null || expenses.isEmpty)
         ? null
         : expenses.map((e) => e.date).reduce((a, b) => a.isBefore(b) ? a : b);
-    final earliestMonth =
-        firstExpense == null ? currentMonth : DateTime(firstExpense.year, firstExpense.month);
+    final earliestMonth = firstExpense == null
+        ? currentMonth
+        : DateTime(firstExpense.year, firstExpense.month);
 
     return Scaffold(
       appBar: AppBar(
@@ -172,14 +173,9 @@ class _PersonSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    final balanceColor = endBalance > 0
-        ? Colors.green.shade700
-        : endBalance < 0
-            ? scheme.error
-            : null;
+    final endColor = balanceColor(context, endBalance);
 
-    return Card(
+    return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -195,7 +191,7 @@ class _PersonSummary extends StatelessWidget {
             _Line(
               l10n.endBalanceLabel,
               '${endBalance > 0 ? '+' : ''}${formatCents(endBalance, locale: lang)}',
-              color: balanceColor,
+              color: endColor,
               bold: true,
             ),
           ],
