@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale_provider.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../data/profile_repository.dart';
@@ -18,8 +19,11 @@ class SettingsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: profileAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('$error')),
+        loading: () => const LoadingView(),
+        error: (error, _) => ErrorView(
+          error: error,
+          onRetry: () => ref.invalidate(myProfileProvider),
+        ),
         data: (profile) => _SettingsForm(profile: profile),
       ),
       bottomNavigationBar: SafeArea(

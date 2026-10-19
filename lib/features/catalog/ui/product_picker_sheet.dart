@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/text_search.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/catalog_repository.dart';
 import '../providers/catalog_providers.dart';
@@ -135,12 +136,10 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
           ),
           Expanded(
             child: catalogAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(
-                child: TextButton(
-                  onPressed: () => ref.invalidate(catalogProvider),
-                  child: Text(l10n.retryButton),
-                ),
+              loading: () => const LoadingView(),
+              error: (error, _) => ErrorView(
+                error: error,
+                onRetry: () => ref.invalidate(catalogProvider),
               ),
               data: (catalog) {
                 final frequent = frequentAsync.value ?? const <GroupItem>[];
@@ -233,7 +232,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
     }
 
     if (children.isEmpty) {
-      return Center(child: Text(l10n.noSearchResults));
+      return EmptyView(message: l10n.noSearchResults);
     }
     return ListView(children: children);
   }

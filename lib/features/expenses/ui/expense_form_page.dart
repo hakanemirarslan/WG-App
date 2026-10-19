@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../domain/split.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/providers/catalog_providers.dart';
@@ -43,18 +44,24 @@ class ExpenseFormPage extends ConsumerWidget {
 
     Widget body() {
       if (membersAsync.hasError || expensesAsync.hasError) {
-        return Center(child: Text(l10n.errorGeneric));
+        return ErrorView(
+          error: membersAsync.error ?? expensesAsync.error,
+          onRetry: () {
+            ref.invalidate(groupMembersProvider(groupId));
+            ref.invalidate(expensesProvider(groupId));
+          },
+        );
       }
       final members = membersAsync.value;
       final expenses = expensesAsync.value;
       if (members == null || expenses == null) {
-        return const Center(child: CircularProgressIndicator());
+        return const LoadingView();
       }
 
       Expense? initial;
       if (expenseId != null) {
         final matches = expenses.where((e) => e.id == expenseId);
-        if (matches.isEmpty) return Center(child: Text(l10n.errorGeneric));
+        if (matches.isEmpty) return EmptyView(message: l10n.expenseNotFound);
         initial = matches.first;
       }
 

@@ -63,6 +63,7 @@
   "errorNotAdmin": "Only admins can do this.",
   "errorNotAMember": "This person is not an active member of the group.",
   "errorGeneric": "Something went wrong. Please try again.",
+  "expenseNotFound": "This expense no longer exists.",
   "retryButton": "Retry",
   "backToGroupsButton": "Back to my groups",
   "tabList": "List",

@@ -52,6 +52,7 @@
   "errorNotAdmin": "Nur Admins können das tun.",
   "errorNotAMember": "Diese Person ist kein aktives Mitglied der Gruppe.",
   "errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+  "expenseNotFound": "Diese Ausgabe existiert nicht mehr.",
   "retryButton": "Erneut versuchen",
   "backToGroupsButton": "Zurück zu meinen Gruppen",
   "tabList": "Liste",

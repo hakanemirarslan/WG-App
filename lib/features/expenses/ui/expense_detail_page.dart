@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../../groups/ui/group_error_text.dart';
@@ -61,12 +62,15 @@ class ExpenseDetailPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.expenseDetailTitle)),
       body: expensesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text(l10n.errorGeneric)),
+        loading: () => const LoadingView(),
+        error: (error, _) => ErrorView(
+          error: error,
+          onRetry: () => ref.invalidate(expensesProvider(groupId)),
+        ),
         data: (expenses) {
           final matches = expenses.where((e) => e.id == expenseId);
           // Deleted (e.g. by someone else) or not visible any more.
-          if (matches.isEmpty) return Center(child: Text(l10n.errorGeneric));
+          if (matches.isEmpty) return EmptyView(message: l10n.expenseNotFound);
           final expense = matches.first;
           final canModify = expense.createdBy == myId || iAmAdmin;
 

@@ -5,8 +5,10 @@ import 'package:intl/intl.dart';
 import '../../../core/money.dart';
 import '../../../domain/balance.dart';
 import '../../../domain/monthly_summary.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../expenses/providers/expenses_providers.dart';
+import '../../groups/providers/groups_providers.dart';
 import '../providers/balances_providers.dart';
 
 /// Monthly summary (SPEC 9): expenses of one month, what each person paid and
@@ -45,9 +47,18 @@ class _MonthlySummaryPageState extends ConsumerState<MonthlySummaryPage> {
 
     Widget body() {
       final data = balanceAsync.value;
-      if (balanceAsync.hasError) return Center(child: Text(l10n.errorGeneric));
+      if (balanceAsync.hasError) {
+        return ErrorView(
+          error: balanceAsync.error,
+          onRetry: () {
+            ref.invalidate(expensesProvider(widget.groupId));
+            ref.invalidate(settlementsProvider(widget.groupId));
+            ref.invalidate(groupMembersProvider(widget.groupId));
+          },
+        );
+      }
       if (data == null || expenses == null || settlements == null) {
-        return const Center(child: CircularProgressIndicator());
+        return const LoadingView();
       }
 
       final summary = summarizeMonth(

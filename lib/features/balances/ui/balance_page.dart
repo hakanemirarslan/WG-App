@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../domain/debt_simplifier.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../groups/providers/groups_providers.dart';
+import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/ui/group_error_text.dart';
 import '../providers/balances_providers.dart';
 
@@ -78,15 +79,14 @@ class BalancePage extends ConsumerWidget {
         title: Text(groupName),
       ),
       body: balanceAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(l10n.errorGeneric),
-              if (kDebugMode) SelectableText('$error'),
-            ],
-          ),
+        loading: () => const LoadingView(),
+        error: (error, _) => ErrorView(
+          error: error,
+          onRetry: () {
+            ref.invalidate(expensesProvider(groupId));
+            ref.invalidate(settlementsProvider(groupId));
+            ref.invalidate(groupMembersProvider(groupId));
+          },
         ),
         data: (data) {
           final visible = data.visibleUserIds;

@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/money.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../providers/expenses_providers.dart';
@@ -34,28 +34,14 @@ class ExpensesPage extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
       body: expensesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(l10n.errorGeneric),
-              if (kDebugMode) SelectableText('$error'),
-              TextButton(
-                onPressed: () => ref.invalidate(expensesProvider(groupId)),
-                child: Text(l10n.retryButton),
-              ),
-            ],
-          ),
+        loading: () => const LoadingView(),
+        error: (error, _) => ErrorView(
+          error: error,
+          onRetry: () => ref.invalidate(expensesProvider(groupId)),
         ),
         data: (expenses) {
           if (expenses.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(l10n.expensesEmpty, textAlign: TextAlign.center),
-              ),
-            );
+            return EmptyView(message: l10n.expensesEmpty);
           }
           return RefreshIndicator(
             onRefresh: () async {

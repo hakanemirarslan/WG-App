@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../balances/providers/balances_providers.dart';
 import '../data/groups_repository.dart';
@@ -125,19 +126,10 @@ class _GroupPageState extends ConsumerState<GroupPage> {
         title: Text(groupAsync.value?.name ?? ''),
       ),
       body: membersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(l10n.errorGeneric),
-              if (kDebugMode) SelectableText('$error'),
-              TextButton(
-                onPressed: () => ref.invalidate(groupMembersProvider(widget.groupId)),
-                child: Text(l10n.retryButton),
-              ),
-            ],
-          ),
+        loading: () => const LoadingView(),
+        error: (error, _) => ErrorView(
+          error: error,
+          onRetry: () => ref.invalidate(groupMembersProvider(widget.groupId)),
         ),
         data: (members) {
           final iAmAdmin = members.any((m) => m.userId == myId && m.isAdmin);

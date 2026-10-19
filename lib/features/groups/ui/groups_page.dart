@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/locale_provider.dart';
+import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../settings/providers/profile_providers.dart';
 import '../providers/groups_providers.dart';
@@ -84,19 +84,10 @@ class GroupsPage extends ConsumerWidget {
         ],
       ),
       body: groupsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(l10n.errorGeneric),
-              if (kDebugMode) SelectableText('$error'),
-              TextButton(
-                onPressed: () => ref.invalidate(myGroupsProvider),
-                child: Text(l10n.retryButton),
-              ),
-            ],
-          ),
+        loading: () => const LoadingView(),
+        error: (error, _) => ErrorView(
+          error: error,
+          onRetry: () => ref.invalidate(myGroupsProvider),
         ),
         data: (groups) => ListView(
           padding: const EdgeInsets.all(16),
