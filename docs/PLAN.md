@@ -85,18 +85,24 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [x] Eski uye bakiyesi gosterimi
 - [x] Sema bosluklari: SPEC 13, madde 6
 
-### Hafta 6: Cila ve yayin **[SPEC 15, 16]**
+### Hafta 6: Cila (yayin sonraki adimlara tasindi) **[SPEC 15, 16]**
 - [ ] Gorsel tasarim (tum ozellikler bittikten sonra, bilincli olarak en sona birakildi): merkezi `lib/core/theme.dart` (renk, yazi tipi, bilesen stilleri, acik/koyu tema), ekranlarda tema disi renk/stil kalmadi
 - [x] Bos / hata / yukleniyor durumlari tum ekranlarda
-- [ ] Telefon genisliginde (iPhone Safari dahil) kullanilabilirlik; PWA manifest + ikon, "Ana Ekrana Ekle" denendi
+- [ ] Telefon genisliginde kullanilabilirlik (Chrome cihaz modu 390 px ile tum ekranlar elle kontrol); PWA manifest + ikon kodu hazir, "Ana Ekrana Ekle" denemesi "Yayin" blogunda
+- [ ] Gizlilik: Datenschutzerklaerung / Impressum konusunda kullanici arastirma yapti ve karar verdi (SPEC 16); hesap silme davranisi netlesti
+- [ ] README: neden bu proje, Splitwise'dan farki, mimari, ekran goruntuleri (canli link yayinda eklenir)
+- [x] Sema bosluklari listesi (SPEC 13) tamamen kapandi
+
+## Yayin (hazir olunca)
+
+Kullanici simdilik canliya almaya hazir degil; bu maddeler bilincli olarak ertelendi.
 - [ ] `flutter build web` + deploy (Firebase Hosting / Vercel / Netlify) ve **tum yollari `index.html`'e yonlendirme kurali**; `/join/<code>` canlida sayfa yenilemede calisiyor
 - [ ] Kalici alan adi secildi (davet linkleri `/join/<code>` ileride mobil uygulamada da calisacak, adres sonradan degismemeli; SPEC 15)
 - [ ] Supabase Auth: Site URL + Redirect URL canli adres; e-posta dogrulama karari
 - [ ] Supabase ucretsiz katman durdurma/yedek durumu kontrol edildi
-- [ ] Gizlilik: Datenschutzerklaerung / Impressum konusunda kullanici arastirma yapti ve karar verdi (SPEC 16); hesap silme davranisi netlesti
+- [ ] iPhone Safari'de "Ana Ekrana Ekle" (PWA) denendi
 - [ ] WG'de en az 2 kisiyle gercek kullanim, geri bildirim notlari
-- [ ] README: neden bu proje, Splitwise'dan farki, mimari, ekran goruntuleri, canli link
-- [ ] Sema bosluklari listesi (SPEC 13) tamamen kapandi
+- [ ] README'ye canli link
 
 ## Sonraki surumler (V2+)
 
@@ -126,3 +132,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-19: Hafta 3 bitti. Alt gezinme kabugu (Liste/Harcamalar/Saldo/Grup; sekmeler `/group/:id` altinda alt rota, cunku go_router StatefulShellBranch varsayilan rotasinda path parametresi istemiyor). `features/catalog` + `features/shopping_list`: urun secici sheet (umlaut duyarsiz arama `domain/text_search.dart`, sik kullanilanlar, serbest urun), `get_or_create_group_item` RPC, tekrar kontrolu, alindi/geri al/sil, Realtime (DELETE olaylari group_id ile filtrelenemedigi icin filtresiz ikinci abonelik). Sema: unique index'ler, `shopping_entries` silme yetkisi ekleyen/admin. Iki kullaniciyla elle denendi. Dersler: Supabase SQL Editor'e yapistirirken eski metin kalintisi sorun cikardi (once Ctrl+A/Delete); Riverpod 3 hata ekraninda `ProviderException` asil hatayi 'A provider threw...' altinda gosteriyor. Siradaki adim: Hafta 4 - `domain/split.dart` + testler, harcama formu, harcama RPC'si, SPEC 13 madde 1, 2, 5.
 - 2026-10-19: Hafta 4 bitti. `domain/split.dart` (esit/agirlik/tutar, 334/333/333 yuvarlama) + 22 test; `core/money.dart`'a `parseShareCents` ve `formatCentsPlain`; `save_expense` RPC (atomik kayit, toplam/uyelik/yetki kontrolu) ve expenses/expense_items/expense_shares icin dogrudan yazma policy'leri kaldirildi (SPEC 13 madde 1, 2, 5 kapandi); `features/expenses`: liste (Realtime), form (ekleme/duzenleme, 3 bolusum modu, odeyen, tarih, urunler), detay, silme. Urun secici cok secimli modu (`showProductMultiPicker`); acilama bos birakilirsa baslik gosterimde urun adlarindan uretiliyor. Bolusum modu saklanmiyor: duzenlemede paylar esit bolusumle ayniysa 'Gleich', degilse 'Betraege' acilir. Elle iki kullaniciyla denendi. Siradaki adim: Hafta 5 - `domain/debt_simplifier.dart` + 6 zorunlu test (once testler), bakiye hesabi, bakiye ekrani, 'Odendi' settlement, aylik ozet, SPEC 13 madde 6.
 - 2026-10-19: Hafta 5 bitti. `domain/debt_simplifier.dart` (6 zorunlu senaryo + davranis testleri), `domain/balance.dart` ve `domain/monthly_summary.dart` (testli, 67 test toplam); `record_settlement` RPC + settlements icin dogrudan yazma kapali (SPEC 13 madde 6 kapandi; tum sema bosluklari artik kapali); `features/balances`: canli bakiye ekrani (isaretli tutarlar), onerilen odemeler, 'Odendi' onay penceresiyle, aylik ozet (ay sonu bakiyesi o ayin sonuna kadar), gruptan ayrilirken 'hesabin kapanmadi' uyarisi, eski uye '(ehemaliges Mitglied)' etiketiyle. Ayarlar'dan geri donus `push` ile duzeltildi. Elle iki kullaniciyla denendi. Denenmedi: transferin tarafi olmayan ucuncu kullanicida 'Odendi' dugmesinin gizlenmesi (ucuncu hesap yoktu; yetki sunucuda `record_settlement` ile de zorlaniyor) ve gercekten gruptan ayrilip eski uye olarak bakiye gosterimi. Geri alma V1'de yok. Siradaki adim: Hafta 6 - bos/hata/yukleniyor durumlari, telefon genisligi, PWA, deploy, gizlilik karari, gorsel tasarim (en sona), README.
+- 2026-10-19: Hafta 6 baslandi: bos/hata/yukleniyor durumlari icin ortak `core/error_view.dart`, PWA ikon/manifest ve ozet satiri tasmasi bitti. Deploy ve canli adrese bagli maddeler "Yayin (hazir olunca)" blogune tasindi (kullanici henuz hazir degil). Siradaki adim: gizlilik arastirmasi karari ya da tema (`core/theme.dart`).
