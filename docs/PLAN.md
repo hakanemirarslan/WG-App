@@ -93,6 +93,7 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [ ] Gizlilik: Datenschutzerklaerung / Impressum konusunda kullanici arastirma yapti ve karar verdi (SPEC 16); hesap silme davranisi netlesti
   - Teknik envanter hazir: `docs/GIZLILIK-ENVANTERI.md`. Hesap silme davranisi kararlandi (anonimlestirme, tek admin ise en eski uyeye devir); uygulama V2'de. Kalan: Datenschutzerklaerung / Impressum arastirmasi (kullanici).
 - [ ] README: neden bu proje, Splitwise'dan farki, mimari, ekran goruntuleri (canli link yayinda eklenir)
+  - Metin hazir (2026-10-19); eksik: ekran goruntuleri ve canli link (yer tutucu yorum satirlari README'de). `env.example.json` eklendi.
 - [x] Sema bosluklari listesi (SPEC 13) tamamen kapandi
 
 ## Yayin (hazir olunca)
@@ -139,3 +140,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-19: Hafta 6 baslandi: bos/hata/yukleniyor durumlari icin ortak `core/error_view.dart`, PWA ikon/manifest ve ozet satiri tasmasi bitti. Deploy ve canli adrese bagli maddeler "Yayin (hazir olunca)" blogune tasindi (kullanici henuz hazir degil). Siradaki adim: gizlilik arastirmasi karari ya da tema (`core/theme.dart`).
 - 2026-10-19: Gorsel tasarim ilk surum: `core/theme.dart` (acik/koyu, gomulu Nunito), `core/widgets.dart` (`AppCard`, `SectionHeader`, `AuthHeader`, `balanceColor`), liste/harcama/bakiye/ozet/giris ekranlari kartlara tasindi, bakiyede 'Dein Saldo' ozet karti, PWA renkleri ve ikonlar guncellendi. Palet gecici, kullanici sonra degistirecek. Elle (Chrome, acik/koyu, 390 px) gorsel kontrol henuz yapilmadi. Siradaki adim: gorsel kontrol + palet kararı, sonra gizlilik arastirmasi ve README.
 - 2026-10-19: Gizlilik teknik tarafi: `docs/GIZLILIK-ENVANTERI.md` yazildi (toplanan veri, Google CDN bulgusu, hesap silme tasarimi). Karar: hesap silme uygulamasi V2'ye; tek admin silinirse en eski aktif uyeye devir; tek etiket 'Geloeschter Nutzer'. Datenschutz/Impressum arastirmasi kullanicida. Siradaki adim: README (canli link haric) ve tasarimin gozle kontrolu.
+- 2026-10-19: README yazildi (ozellikler, Splitwise farki, tasarim kararlari, mimari, calistirma); `env.example.json` eksikti, eklendi. Eksik: ekran goruntuleri + canli link, tasarimin gozle kontrolu (kullanici sonra bakacak). Siradaki adim: kullanicinin Datenschutz/Impressum arastirmasi; sonra yayin blogu.
