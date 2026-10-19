@@ -5,6 +5,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'core/locale_provider.dart';
 import 'core/router.dart';
 import 'core/supabase_client.dart';
+import 'core/theme.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
@@ -24,7 +25,9 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'WG App',
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
+      theme: buildLightTheme(),
+      darkTheme: buildDarkTheme(),
+      themeMode: ThemeMode.system,
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
