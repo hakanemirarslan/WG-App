@@ -1,12 +1,11 @@
 {
-    "name": "wg_app",
-    "short_name": "wg_app",
+    "name": "WG App",
+    "short_name": "WG App",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#FFFFFF",
+    "theme_color": "#673AB7",
+    "description": "Shopping list and automatic expense splitting for shared flats.",
     "prefer_related_applications": false,
     "icons": [
         {
