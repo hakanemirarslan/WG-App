@@ -1,86 +1,92 @@
 import 'package:flutter/material.dart';
 
-/// Central look of the app (warm, rounded, flat). Screens read colours from
-/// `Theme.of(context).colorScheme` and [AppColors]; no hard-coded colours elsewhere.
+/// Central look of the app (modern, vibrant, premium).
+/// Screens read colours from `Theme.of(context).colorScheme` and [AppColors];
+/// no hard-coded colours elsewhere.
 const _fontFamily = 'Nunito';
 
+// ── Light scheme ──────────────────────────────────────────────────────────────
+// Deep violet-indigo primary with warm amber accent and soft teal tertiary.
 const _lightScheme = ColorScheme(
   brightness: Brightness.light,
-  primary: Color(0xFFC2603B),
+  primary: Color(0xFF5B4CF5),        // vibrant indigo-violet
   onPrimary: Color(0xFFFFFFFF),
-  primaryContainer: Color(0xFFF7DCCF),
-  onPrimaryContainer: Color(0xFF4A1F0D),
-  secondary: Color(0xFFE3A93B),
-  onSecondary: Color(0xFF2B2118),
-  secondaryContainer: Color(0xFFFBEBC4),
-  onSecondaryContainer: Color(0xFF4A3500),
-  tertiary: Color(0xFF4F7F5B),
+  primaryContainer: Color(0xFFE8E4FF),
+  onPrimaryContainer: Color(0xFF1A0E6E),
+  secondary: Color(0xFFF0A500),      // warm amber-gold
+  onSecondary: Color(0xFF1A1000),
+  secondaryContainer: Color(0xFFFFF0C2),
+  onSecondaryContainer: Color(0xFF3A2800),
+  tertiary: Color(0xFF00A896),       // teal-mint
   onTertiary: Color(0xFFFFFFFF),
-  tertiaryContainer: Color(0xFFD8EAD9),
-  onTertiaryContainer: Color(0xFF17331E),
-  error: Color(0xFFB3402F),
+  tertiaryContainer: Color(0xFFBDF5EE),
+  onTertiaryContainer: Color(0xFF003330),
+  error: Color(0xFFE53935),
   onError: Color(0xFFFFFFFF),
-  errorContainer: Color(0xFFF9DDD7),
-  onErrorContainer: Color(0xFF410E08),
-  surface: Color(0xFFFBF6EE),
-  onSurface: Color(0xFF2B2118),
-  onSurfaceVariant: Color(0xFF6B5E52),
-  outline: Color(0xFF9C8E80),
-  outlineVariant: Color(0xFFE6DACB),
-  surfaceContainerLowest: Color(0xFFFFFDF9),
-  surfaceContainerLow: Color(0xFFF6EFE3),
-  surfaceContainer: Color(0xFFF3EADB),
-  surfaceContainerHigh: Color(0xFFEFE5D4),
-  surfaceContainerHighest: Color(0xFFEBDFCD),
-  inverseSurface: Color(0xFF3B3128),
-  onInverseSurface: Color(0xFFFBF6EE),
-  inversePrimary: Color(0xFFE8956F),
+  errorContainer: Color(0xFFFFDAD6),
+  onErrorContainer: Color(0xFF410002),
+  surface: Color(0xFFF8F7FF),
+  onSurface: Color(0xFF1C1B2E),
+  onSurfaceVariant: Color(0xFF5B5977),
+  outline: Color(0xFF9896B0),
+  outlineVariant: Color(0xFFDFDDF4),
+  surfaceContainerLowest: Color(0xFFFFFFFF),
+  surfaceContainerLow: Color(0xFFF3F1FF),
+  surfaceContainer: Color(0xFFEFEDFC),
+  surfaceContainerHigh: Color(0xFFE9E7F9),
+  surfaceContainerHighest: Color(0xFFE3E1F5),
+  inverseSurface: Color(0xFF302F45),
+  onInverseSurface: Color(0xFFF8F7FF),
+  inversePrimary: Color(0xFFBDB3FF),
   shadow: Color(0xFF000000),
   scrim: Color(0xFF000000),
 );
 
+// ── Dark scheme ───────────────────────────────────────────────────────────────
 const _darkScheme = ColorScheme(
   brightness: Brightness.dark,
-  primary: Color(0xFFE8956F),
-  onPrimary: Color(0xFF3B1604),
-  primaryContainer: Color(0xFF7A3519),
-  onPrimaryContainer: Color(0xFFF7DCCF),
-  secondary: Color(0xFFEBC166),
-  onSecondary: Color(0xFF3A2A00),
-  secondaryContainer: Color(0xFF5A4300),
-  onSecondaryContainer: Color(0xFFFBEBC4),
-  tertiary: Color(0xFF8DBF98),
-  onTertiary: Color(0xFF0F2A17),
-  tertiaryContainer: Color(0xFF2F5A3B),
-  onTertiaryContainer: Color(0xFFD8EAD9),
-  error: Color(0xFFF2A093),
-  onError: Color(0xFF5A1208),
-  errorContainer: Color(0xFF7D2A1D),
-  onErrorContainer: Color(0xFFF9DDD7),
-  surface: Color(0xFF1E1A16),
-  onSurface: Color(0xFFF1E8DC),
-  onSurfaceVariant: Color(0xFFCDBFAF),
-  outline: Color(0xFFA39583),
-  outlineVariant: Color(0xFF4A4137),
-  surfaceContainerLowest: Color(0xFF17130F),
-  surfaceContainerLow: Color(0xFF242019),
-  surfaceContainer: Color(0xFF2A251E),
-  surfaceContainerHigh: Color(0xFF322C24),
-  surfaceContainerHighest: Color(0xFF3B342B),
-  inverseSurface: Color(0xFFF1E8DC),
-  onInverseSurface: Color(0xFF2B2118),
-  inversePrimary: Color(0xFFC2603B),
+  primary: Color(0xFFBDB3FF),        // lighter violet for dark
+  onPrimary: Color(0xFF2A1F8E),
+  primaryContainer: Color(0xFF4035CC),
+  onPrimaryContainer: Color(0xFFE8E4FF),
+  secondary: Color(0xFFFFD54F),      // warm golden yellow
+  onSecondary: Color(0xFF3A2800),
+  secondaryContainer: Color(0xFF5A4000),
+  onSecondaryContainer: Color(0xFFFFF0C2),
+  tertiary: Color(0xFF4DDCC8),       // bright teal
+  onTertiary: Color(0xFF00201D),
+  tertiaryContainer: Color(0xFF00524A),
+  onTertiaryContainer: Color(0xFFBDF5EE),
+  error: Color(0xFFFF8A80),
+  onError: Color(0xFF690005),
+  errorContainer: Color(0xFF93000A),
+  onErrorContainer: Color(0xFFFFDAD6),
+  surface: Color(0xFF111028),        // deep indigo-black
+  onSurface: Color(0xFFE8E6FF),
+  onSurfaceVariant: Color(0xFFCBC8E8),
+  outline: Color(0xFF928FA8),
+  outlineVariant: Color(0xFF3A3858),
+  surfaceContainerLowest: Color(0xFF0B0A1E),
+  surfaceContainerLow: Color(0xFF171630),
+  surfaceContainer: Color(0xFF1C1B36),
+  surfaceContainerHigh: Color(0xFF23223F),
+  surfaceContainerHighest: Color(0xFF2B2A4A),
+  inverseSurface: Color(0xFFE8E6FF),
+  onInverseSurface: Color(0xFF1C1B2E),
+  inversePrimary: Color(0xFF5B4CF5),
   shadow: Color(0xFF000000),
   scrim: Color(0xFF000000),
 );
 
-/// App-specific semantic colours that [ColorScheme] has no role for.
+// ── App-specific semantic colours ─────────────────────────────────────────────
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
     required this.positive,
     required this.onPositiveContainer,
     required this.positiveContainer,
+    required this.cardGradientStart,
+    required this.cardGradientEnd,
   });
 
   /// Money someone is owed (positive balance).
@@ -88,26 +94,42 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color positiveContainer;
   final Color onPositiveContainer;
 
+  /// Subtle gradient used on premium cards.
+  final Color cardGradientStart;
+  final Color cardGradientEnd;
+
   static const light = AppColors(
-    positive: Color(0xFF3F7A4E),
-    positiveContainer: Color(0xFFD8EAD9),
-    onPositiveContainer: Color(0xFF17331E),
+    positive: Color(0xFF00897B),
+    positiveContainer: Color(0xFFBDF5EE),
+    onPositiveContainer: Color(0xFF003330),
+    cardGradientStart: Color(0xFFFFFFFF),
+    cardGradientEnd: Color(0xFFF3F1FF),
   );
 
   static const dark = AppColors(
-    positive: Color(0xFF8DBF98),
-    positiveContainer: Color(0xFF2F5A3B),
-    onPositiveContainer: Color(0xFFD8EAD9),
+    positive: Color(0xFF4DDCC8),
+    positiveContainer: Color(0xFF00524A),
+    onPositiveContainer: Color(0xFFBDF5EE),
+    cardGradientStart: Color(0xFF1C1B36),
+    cardGradientEnd: Color(0xFF23223F),
   );
 
   static AppColors of(BuildContext context) => Theme.of(context).extension<AppColors>()!;
 
   @override
-  AppColors copyWith({Color? positive, Color? positiveContainer, Color? onPositiveContainer}) {
+  AppColors copyWith({
+    Color? positive,
+    Color? positiveContainer,
+    Color? onPositiveContainer,
+    Color? cardGradientStart,
+    Color? cardGradientEnd,
+  }) {
     return AppColors(
       positive: positive ?? this.positive,
       positiveContainer: positiveContainer ?? this.positiveContainer,
       onPositiveContainer: onPositiveContainer ?? this.onPositiveContainer,
+      cardGradientStart: cardGradientStart ?? this.cardGradientStart,
+      cardGradientEnd: cardGradientEnd ?? this.cardGradientEnd,
     );
   }
 
@@ -118,6 +140,8 @@ class AppColors extends ThemeExtension<AppColors> {
       positive: Color.lerp(positive, other.positive, t)!,
       positiveContainer: Color.lerp(positiveContainer, other.positiveContainer, t)!,
       onPositiveContainer: Color.lerp(onPositiveContainer, other.onPositiveContainer, t)!,
+      cardGradientStart: Color.lerp(cardGradientStart, other.cardGradientStart, t)!,
+      cardGradientEnd: Color.lerp(cardGradientEnd, other.cardGradientEnd, t)!,
     );
   }
 }
@@ -137,28 +161,38 @@ ThemeData _build(ColorScheme scheme, AppColors colors) {
   final textTheme = base.textTheme
       .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface)
       .copyWith(
-        headlineSmall: base.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-        titleLarge: base.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        headlineSmall: base.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+        titleLarge: base.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.3,
+        ),
         titleMedium: base.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         titleSmall: base.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-        labelLarge: base.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+        labelLarge: base.textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.2,
+        ),
       );
 
   final cardShape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(20),
-    side: BorderSide(color: scheme.outlineVariant),
+    side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.7)),
   );
   const pill = StadiumBorder();
-  const buttonPadding = EdgeInsets.symmetric(horizontal: 24, vertical: 14);
+  const buttonPadding = EdgeInsets.symmetric(horizontal: 28, vertical: 14);
   final buttonText = textTheme.labelLarge;
 
   return base.copyWith(
     textTheme: textTheme,
-    scaffoldBackgroundColor: scheme.surface,
+    // Transparent so the shapes from `AppBackground` show through every screen.
+    scaffoldBackgroundColor: Colors.transparent,
     extensions: [colors],
     dividerTheme: DividerThemeData(color: scheme.outlineVariant, thickness: 1, space: 1),
     appBarTheme: AppBarTheme(
-      backgroundColor: scheme.surface,
+      backgroundColor: Colors.transparent,
       foregroundColor: scheme.onSurface,
       surfaceTintColor: Colors.transparent,
       scrolledUnderElevation: 0,
@@ -178,15 +212,18 @@ ThemeData _build(ColorScheme scheme, AppColors colors) {
       style: FilledButton.styleFrom(
         shape: pill,
         padding: buttonPadding,
-        minimumSize: const Size(64, 48),
+        minimumSize: const Size(64, 50),
         textStyle: buttonText,
+        elevation: 0,
+      ).copyWith(
+        overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.15)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         shape: pill,
         padding: buttonPadding,
-        minimumSize: const Size(64, 48),
+        minimumSize: const Size(64, 50),
         side: BorderSide(color: scheme.outline),
         textStyle: buttonText,
       ),
@@ -197,49 +234,57 @@ ThemeData _build(ColorScheme scheme, AppColors colors) {
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: scheme.primary,
       foregroundColor: scheme.onPrimary,
-      elevation: 2,
+      elevation: 4,
+      highlightElevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: scheme.surfaceContainerLowest,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      fillColor: scheme.surfaceContainerLow,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: scheme.outlineVariant),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: scheme.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: scheme.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: scheme.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: scheme.error, width: 2),
       ),
+      labelStyle: TextStyle(color: scheme.onSurfaceVariant),
+      floatingLabelStyle: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: scheme.surfaceContainerLowest,
+      backgroundColor: scheme.surfaceContainerLowest.withValues(alpha: 0.92),
       surfaceTintColor: Colors.transparent,
       indicatorColor: scheme.primaryContainer,
       elevation: 0,
       labelTextStyle: WidgetStatePropertyAll(
-        textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+        textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
       ),
     ),
     listTileTheme: ListTileThemeData(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      iconColor: scheme.onSurfaceVariant,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+      iconColor: scheme.primary,
+      minVerticalPadding: 12,
     ),
     checkboxTheme: CheckboxThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return scheme.primary;
+        return null;
+      }),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
@@ -251,8 +296,9 @@ ThemeData _build(ColorScheme scheme, AppColors colors) {
     dialogTheme: DialogThemeData(
       backgroundColor: scheme.surfaceContainerLowest,
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       titleTextStyle: textTheme.titleLarge,
+      elevation: 8,
     ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: scheme.surfaceContainerLowest,
@@ -264,7 +310,14 @@ ThemeData _build(ColorScheme scheme, AppColors colors) {
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
+      backgroundColor: scheme.inverseSurface,
+      contentTextStyle: TextStyle(color: scheme.onInverseSurface, fontFamily: _fontFamily),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+    chipTheme: ChipThemeData(
+      shape: StadiumBorder(side: BorderSide(color: scheme.outlineVariant)),
+      backgroundColor: scheme.surfaceContainerLow,
+      labelStyle: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
     ),
   );
 }

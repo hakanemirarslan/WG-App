@@ -10,6 +10,7 @@ import '../../settings/providers/profile_providers.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
 
+
 /// Group selection screen (SPEC 11, screen 2).
 /// Also syncs the app-wide locale to `profiles.locale` on login (SPEC 12).
 class GroupsPage extends ConsumerWidget {
@@ -89,30 +90,59 @@ class GroupsPage extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           children: [
             if (groups.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Text(l10n.noGroupsYet, textAlign: TextAlign.center),
+              FadeSlide(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 48),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.home_outlined,
+                        size: 56,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(l10n.noGroupsYet, textAlign: TextAlign.center),
+                    ],
+                  ),
+                ),
               ),
-            for (final group in groups)
-              AppCard(
-                child: ListTile(
-                  leading: const Icon(Icons.home_outlined),
-                  title: Text(group.name),
-                  trailing: const Icon(Icons.chevron_right),
+            for (final (index, group) in groups.indexed)
+              FadeSlide(
+                delay: Duration(milliseconds: 60 + index * 60),
+                child: AnimatedPressCard(
                   onTap: () => context.go('/group/${group.id}'),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      child: Icon(
+                        Icons.home_rounded,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    title: Text(group.name),
+                    trailing: const Icon(Icons.chevron_right),
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
-            FilledButton.icon(
-              icon: const Icon(Icons.add),
-              onPressed: () => _create(context, ref),
-              label: Text(l10n.createGroupButton),
+            FadeSlide(
+              delay: Duration(milliseconds: 60 + groups.length * 60 + 60),
+              child: FilledButton.icon(
+                icon: const Icon(Icons.add),
+                onPressed: () => _create(context, ref),
+                label: Text(l10n.createGroupButton),
+              ),
             ),
             const SizedBox(height: 8),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.vpn_key_outlined),
-              onPressed: () => _joinWithCode(context),
-              label: Text(l10n.joinWithCodeButton),
+            FadeSlide(
+              delay: Duration(milliseconds: 60 + groups.length * 60 + 120),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.vpn_key_outlined),
+                onPressed: () => _joinWithCode(context),
+                label: Text(l10n.joinWithCodeButton),
+              ),
             ),
           ],
         ),
