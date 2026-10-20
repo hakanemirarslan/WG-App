@@ -81,6 +81,11 @@ class _MonthlySummaryPageState extends ConsumerState<MonthlySummaryPage> {
         ...summary.endBalances.entries.where((e) => e.value != 0).map((e) => e.key),
       }.toList()..sort((a, b) => (data.names[a] ?? '').compareTo(data.names[b] ?? ''));
 
+      // All bars share one scale so people can be compared at a glance.
+      final maxCents = userIds
+          .expand((id) => [summary.paidByUser[id] ?? 0, summary.shareByUser[id] ?? 0])
+          .fold(0, (a, b) => a > b ? a : b);
+
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -113,6 +118,7 @@ class _MonthlySummaryPageState extends ConsumerState<MonthlySummaryPage> {
               isFormer: !data.activeMemberIds.contains(id),
               paid: summary.paidByUser[id] ?? 0,
               share: summary.shareByUser[id] ?? 0,
+              maxCents: maxCents,
               endBalance: summary.endBalances[id] ?? 0,
               lang: lang,
             ),
@@ -159,6 +165,7 @@ class _PersonSummary extends StatelessWidget {
     required this.isFormer,
     required this.paid,
     required this.share,
+    required this.maxCents,
     required this.endBalance,
     required this.lang,
   });
@@ -167,6 +174,7 @@ class _PersonSummary extends StatelessWidget {
   final bool isFormer;
   final int paid;
   final int share;
+  final int maxCents;
   final int endBalance;
   final String lang;
 
@@ -187,7 +195,11 @@ class _PersonSummary extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _Line(l10n.paidLabel, formatCents(paid, locale: lang)),
+            _Bar(cents: paid, maxCents: maxCents, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(height: 6),
             _Line(l10n.shareLabel, formatCents(share, locale: lang)),
+            _Bar(cents: share, maxCents: maxCents, color: Theme.of(context).colorScheme.tertiary),
+            const SizedBox(height: 6),
             _Line(
               l10n.endBalanceLabel,
               '${endBalance > 0 ? '+' : ''}${formatCents(endBalance, locale: lang)}',
@@ -196,6 +208,28 @@ class _PersonSummary extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Thin horizontal bar; the length is only a visual hint (display, not money maths).
+class _Bar extends StatelessWidget {
+  const _Bar({required this.cents, required this.maxCents, required this.color});
+
+  final int cents;
+  final int maxCents;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: LinearProgressIndicator(
+        value: maxCents == 0 ? 0 : cents / maxCents,
+        minHeight: 8,
+        color: color,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
     );
   }
