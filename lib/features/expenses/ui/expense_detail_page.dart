@@ -69,7 +69,9 @@ class ExpenseDetailPage extends ConsumerWidget {
         data: (expenses) {
           final matches = expenses.where((e) => e.id == expenseId);
           // Deleted (e.g. by someone else) or not visible any more.
-          if (matches.isEmpty) return EmptyView(message: l10n.expenseNotFound);
+          if (matches.isEmpty) {
+            return EmptyView(icon: Icons.receipt_long_outlined, message: l10n.expenseNotFound);
+          }
           final expense = matches.first;
           final canModify = expense.createdBy == myId || iAmAdmin;
 

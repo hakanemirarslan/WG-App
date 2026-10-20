@@ -61,7 +61,9 @@ class ExpenseFormPage extends ConsumerWidget {
       Expense? initial;
       if (expenseId != null) {
         final matches = expenses.where((e) => e.id == expenseId);
-        if (matches.isEmpty) return EmptyView(message: l10n.expenseNotFound);
+        if (matches.isEmpty) {
+          return EmptyView(icon: Icons.receipt_long_outlined, message: l10n.expenseNotFound);
+        }
         initial = matches.first;
       }
 
@@ -138,8 +140,9 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
       // The split mode is not stored: show "equal" if the saved shares are
       // exactly what an equal split would give, otherwise the saved amounts.
       final equal = splitEqual(initial.amountCents, _selected);
-      final isEqual = equal.every((e) => initial.shares
-          .any((s) => s.userId == e.userId && s.shareCents == e.shareCents));
+      final isEqual = equal.every(
+        (e) => initial.shares.any((s) => s.userId == e.userId && s.shareCents == e.shareCents),
+      );
       if (!isEqual) _mode = SplitMode.amounts;
     }
   }
@@ -154,8 +157,10 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
     if (initial == null) return;
     _amountController.text = formatCentsPlain(initial.amountCents, locale: _lang);
     for (final share in initial.shares) {
-      _shareAmountControllers[share.userId]!.text =
-          formatCentsPlain(share.shareCents, locale: _lang);
+      _shareAmountControllers[share.userId]!.text = formatCentsPlain(
+        share.shareCents,
+        locale: _lang,
+      );
     }
   }
 
@@ -215,8 +220,10 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
       final allEmpty = _shareAmountControllers.values.every((c) => c.text.trim().isEmpty);
       if (mode == SplitMode.amounts && amount != null && _selected.isNotEmpty && allEmpty) {
         for (final share in splitEqual(amount, _selected)) {
-          _shareAmountControllers[share.userId]!.text =
-              formatCentsPlain(share.shareCents, locale: _lang);
+          _shareAmountControllers[share.userId]!.text = formatCentsPlain(
+            share.shareCents,
+            locale: _lang,
+          );
         }
       }
       _mode = mode;
@@ -264,7 +271,9 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
             customName: product.customName,
           ),
       ];
-      await ref.read(expensesRepositoryProvider).saveExpense(
+      await ref
+          .read(expensesRepositoryProvider)
+          .saveExpense(
             groupId: widget.groupId,
             expenseId: widget.initial?.id,
             paidBy: _payerId,

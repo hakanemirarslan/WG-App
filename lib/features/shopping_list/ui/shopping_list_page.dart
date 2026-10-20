@@ -141,9 +141,11 @@ class ShoppingListPage extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
             children: [
               if (open.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Text(l10n.openItemsEmpty, textAlign: TextAlign.center),
+                EmptyView(
+                  icon: Icons.shopping_basket_outlined,
+                  message: l10n.openItemsEmpty,
+                  actionLabel: l10n.addItemButton,
+                  onAction: () => _add(context, ref),
                 ),
               for (final entry in open)
                 AppCard(

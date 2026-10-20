@@ -42,7 +42,12 @@ class ExpensesPage extends ConsumerWidget {
             ErrorView(error: error, onRetry: () => ref.invalidate(expensesProvider(groupId))),
         data: (expenses) {
           if (expenses.isEmpty) {
-            return EmptyView(message: l10n.expensesEmpty);
+            return EmptyView(
+              icon: Icons.receipt_long_outlined,
+              message: l10n.expensesEmpty,
+              actionLabel: l10n.addExpenseButton,
+              onAction: () => context.push('/group/$groupId/expenses/new'),
+            );
           }
           // One date header per day, followed by that day's expenses.
           final rows = <Object>[

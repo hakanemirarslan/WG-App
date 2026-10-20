@@ -43,11 +43,7 @@ String categoryLabel(AppLocalizations l10n, String category) {
 }
 
 class _ProductPickerSheet extends ConsumerStatefulWidget {
-  const _ProductPickerSheet({
-    required this.groupId,
-    this.multi = false,
-    this.initial = const [],
-  });
+  const _ProductPickerSheet({required this.groupId, this.multi = false, this.initial = const []});
 
   final String groupId;
   final bool multi;
@@ -103,10 +99,9 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
     });
   }
 
-  Widget? _checkmark(PickedProduct product) =>
-      widget.multi && _chosen.containsKey(product.key)
-          ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
-          : null;
+  Widget? _checkmark(PickedProduct product) => widget.multi && _chosen.containsKey(product.key)
+      ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
+      : null;
 
   @override
   Widget build(BuildContext context) {
@@ -137,10 +132,8 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
           Expanded(
             child: catalogAsync.when(
               loading: () => const LoadingView(),
-              error: (error, _) => ErrorView(
-                error: error,
-                onRetry: () => ref.invalidate(catalogProvider),
-              ),
+              error: (error, _) =>
+                  ErrorView(error: error, onRetry: () => ref.invalidate(catalogProvider)),
               data: (catalog) {
                 final frequent = frequentAsync.value ?? const <GroupItem>[];
                 return _buildList(context, l10n, lang, query, rawQuery, catalog, frequent);
@@ -198,11 +191,13 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
         final product = item.catalogItemId != null
             ? PickedProduct.catalog(item.catalogItemId!)
             : PickedProduct.custom(item.name.customName!);
-        children.add(ListTile(
-          title: Text(item.name.localized(lang)),
-          trailing: _checkmark(product),
-          onTap: () => _onTap(product),
-        ));
+        children.add(
+          ListTile(
+            title: Text(item.name.localized(lang)),
+            trailing: _checkmark(product),
+            onTap: () => _onTap(product),
+          ),
+        );
       }
     }
 
@@ -213,11 +208,13 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
         children.add(_SectionHeader(categoryLabel(l10n, item.category)));
       }
       final product = PickedProduct.catalog(item.id);
-      children.add(ListTile(
-        title: Text(item.localized(lang)),
-        trailing: _checkmark(product),
-        onTap: () => _onTap(product),
-      ));
+      children.add(
+        ListTile(
+          title: Text(item.localized(lang)),
+          trailing: _checkmark(product),
+          onTap: () => _onTap(product),
+        ),
+      );
     }
 
     if (searching && !exactMatchExists) {
@@ -232,7 +229,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
     }
 
     if (children.isEmpty) {
-      return EmptyView(message: l10n.noSearchResults);
+      return EmptyView(icon: Icons.search_off, message: l10n.noSearchResults);
     }
     return ListView(children: children);
   }

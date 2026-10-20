@@ -10,7 +10,6 @@ import '../../settings/providers/profile_providers.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
 
-
 /// Group selection screen (SPEC 11, screen 2).
 /// Also syncs the app-wide locale to `profiles.locale` on login (SPEC 12).
 class GroupsPage extends ConsumerWidget {
@@ -91,20 +90,7 @@ class GroupsPage extends ConsumerWidget {
           children: [
             if (groups.isEmpty)
               FadeSlide(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 48),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.home_outlined,
-                        size: 56,
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(l10n.noGroupsYet, textAlign: TextAlign.center),
-                    ],
-                  ),
-                ),
+                child: EmptyView(icon: Icons.home_outlined, message: l10n.noGroupsYet),
               ),
             for (final (index, group) in groups.indexed)
               FadeSlide(
