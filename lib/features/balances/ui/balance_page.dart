@@ -95,6 +95,10 @@ class BalancePage extends ConsumerWidget {
         ),
         data: (data) {
           final visible = data.visibleUserIds;
+          final myBalance = data.balances[myId] ?? 0;
+          final heroColor = balanceContainerColor(context, myBalance) ?? scheme.primaryContainer;
+          final onHeroColor =
+              onBalanceContainerColor(context, myBalance) ?? scheme.onPrimaryContainer;
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -110,21 +114,20 @@ class BalancePage extends ConsumerWidget {
                   ),
                 ),
               AppCard(
-                color: scheme.primaryContainer,
+                color: heroColor,
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
                       Text(
                         l10n.yourBalanceLabel,
-                        style: Theme.of(context).textTheme.labelLarge
-                            ?.copyWith(color: scheme.onPrimaryContainer),
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(color: onHeroColor),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _signed(data.balances[myId] ?? 0, lang),
+                        _signed(myBalance, lang),
                         style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(color: scheme.onPrimaryContainer),
+                            ?.copyWith(color: onHeroColor),
                       ),
                     ],
                   ),
@@ -193,17 +196,19 @@ class _BalanceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final color = balanceColor(context, cents);
+    final onColor = onBalanceContainerColor(context, cents);
 
     return AppCard(
+      color: balanceContainerColor(context, cents),
       child: ListTile(
         leading: const CircleAvatar(child: Icon(Icons.person)),
+        textColor: onColor,
         title: Text(isFormer ? '$name ${l10n.formerMemberSuffix}' : name),
         subtitle: cents == 0 ? null : Text(cents > 0 ? l10n.isOwedLabel : l10n.owesLabel),
         trailing: Text(
           // Signed, so owed (+) and owing (-) are distinguishable without colour.
           _signed(cents, lang),
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: onColor),
         ),
       ),
     );

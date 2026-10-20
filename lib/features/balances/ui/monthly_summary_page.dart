@@ -181,7 +181,7 @@ class _PersonSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final endColor = balanceColor(context, endBalance);
+    final endColor = onBalanceContainerColor(context, endBalance);
 
     return AppCard(
       child: Padding(
@@ -200,11 +200,19 @@ class _PersonSummary extends StatelessWidget {
             _Line(l10n.shareLabel, formatCents(share, locale: lang)),
             _Bar(cents: share, maxCents: maxCents, color: Theme.of(context).colorScheme.tertiary),
             const SizedBox(height: 6),
-            _Line(
-              l10n.endBalanceLabel,
-              '${endBalance > 0 ? '+' : ''}${formatCents(endBalance, locale: lang)}',
-              color: endColor,
-              bold: true,
+            // The end balance sits on a green/red pill so owed and owing stand out.
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: balanceContainerColor(context, endBalance),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: _Line(
+                l10n.endBalanceLabel,
+                '${endBalance > 0 ? '+' : ''}${formatCents(endBalance, locale: lang)}',
+                color: endColor,
+                bold: true,
+              ),
             ),
           ],
         ),

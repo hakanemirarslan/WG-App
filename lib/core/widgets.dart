@@ -39,8 +39,10 @@ class _FadeSlideState extends State<FadeSlide> with SingleTickerProviderStateMix
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: widget.duration);
     _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    _slide = Tween<Offset>(begin: widget.offset, end: Offset.zero)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    _slide = Tween<Offset>(
+      begin: widget.offset,
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
 
     if (widget.delay == Duration.zero) {
       _ctrl.forward();
@@ -82,8 +84,7 @@ class AnimatedPressCard extends StatefulWidget {
   State<AnimatedPressCard> createState() => _AnimatedPressCardState();
 }
 
-class _AnimatedPressCardState extends State<AnimatedPressCard>
-    with SingleTickerProviderStateMixin {
+class _AnimatedPressCardState extends State<AnimatedPressCard> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _scale;
 
@@ -97,9 +98,10 @@ class _AnimatedPressCardState extends State<AnimatedPressCard>
       lowerBound: 0,
       upperBound: 1,
     );
-    _scale = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -162,9 +164,7 @@ class AppCard extends StatelessWidget {
                   colors: [appColors.cardGradientStart, appColors.cardGradientEnd],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: scheme.outlineVariant.withValues(alpha: 0.6),
-                ),
+                border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
               ),
               child: child,
             ),
@@ -254,9 +254,8 @@ class AuthHeader extends StatelessWidget {
             AppLocalizations.of(context)!.appTitle,
             style: theme.textTheme.headlineSmall?.copyWith(
               foreground: Paint()
-                ..shader = LinearGradient(
-                  colors: [scheme.primary, scheme.tertiary],
-                ).createShader(const Rect.fromLTWH(0, 0, 200, 50)),
+                ..shader = LinearGradient(colors: [scheme.primary, scheme.tertiary])
+                    .createShader(const Rect.fromLTWH(0, 0, 200, 50)),
             ),
           ),
         ],
@@ -265,10 +264,17 @@ class AuthHeader extends StatelessWidget {
   }
 }
 
-/// Colour for a signed balance: owed = positive tone, owing = error, settled = default text.
-Color? balanceColor(BuildContext context, int cents) {
-  if (cents > 0) return AppColors.of(context).positive;
-  if (cents < 0) return Theme.of(context).colorScheme.error;
+/// Background for a signed balance: owed = green container, owing = red container,
+/// settled = null (callers keep their default surface).
+Color? balanceContainerColor(BuildContext context, int cents) {
+  if (cents > 0) return AppColors.of(context).positiveContainer;
+  if (cents < 0) return Theme.of(context).colorScheme.errorContainer;
   return null;
 }
 
+/// Text colour that stays readable on [balanceContainerColor].
+Color? onBalanceContainerColor(BuildContext context, int cents) {
+  if (cents > 0) return AppColors.of(context).onPositiveContainer;
+  if (cents < 0) return Theme.of(context).colorScheme.onErrorContainer;
+  return null;
+}
