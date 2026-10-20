@@ -87,7 +87,7 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 
 ### Hafta 6: Cila (yayin sonraki adimlara tasindi) **[SPEC 15, 16]**
 - [x] Gorsel tasarim (tum ozellikler bittikten sonra, bilincli olarak en sona birakildi): merkezi `lib/core/theme.dart` (renk, yazi tipi, bilesen stilleri, acik/koyu tema), ekranlarda tema disi renk/stil kalmadi
-  - Ilk surum hazir (sicak palet, Nunito, kart tabanli ekranlar); palet/font kullanici tarafindan sonra gozden gecirilecek, degisiklik `theme.dart` icinde. Grup/ayarlar/katilma ekranlari yeni temayi devralir, ozel duzen yapilmadi.
+  - Ilk surum hazir (indigo/turkuaz palet, Nunito, kart tabanli ekranlar, sayfa basina tematik arka plan); palet/font kullanici tarafindan sonra gozden gecirilecek, degisiklik `theme.dart` icinde. Grup/ayarlar/katilma ekranlari yeni temayi devralir, ozel duzen yapilmadi.
 - [x] Bos / hata / yukleniyor durumlari tum ekranlarda
 - [ ] Telefon genisliginde kullanilabilirlik (Chrome cihaz modu 390 px ile tum ekranlar elle kontrol); PWA manifest + ikon kodu hazir, "Ana Ekrana Ekle" denemesi "Yayin" blogunda
 - [ ] Gizlilik: Datenschutzerklaerung / Impressum konusunda kullanici arastirma yapti ve karar verdi (SPEC 16); hesap silme davranisi netlesti
@@ -143,3 +143,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-19: README yazildi (ozellikler, Splitwise farki, tasarim kararlari, mimari, calistirma); `env.example.json` eksikti, eklendi. Eksik: ekran goruntuleri + canli link, tasarimin gozle kontrolu (kullanici sonra bakacak). Siradaki adim: kullanicinin Datenschutz/Impressum arastirmasi; sonra yayin blogu.
 - 2026-10-20: Kullanici tasarimi gozle kontrol etti (sorun yok). Kalan: README icin ekran goruntuleri (kullanici alacak, `docs/screenshots/` altina), Datenschutz/Impressum arastirmasi, yayin blogu.
 - 2026-10-20: Gorsel iyilestirmeler: sayfa basina tematik arka plan (`core/background.dart`, router'da `_backdrop`), harcama listesinde gun basliklari (`domain/group_by_day.dart` + test), aylik ozette odenen/pay cubuklari, bakiyelerde yesil/kirmizi zemin (`balanceContainerColor`), ikonlu/dugmeli `EmptyView`. Chrome'da acik/koyu gozle kontrol kullanicida. Siradaki adim: gozle kontrol, ekran goruntuleri, Datenschutz/Impressum, yayin blogu.
+- 2026-10-20: Cila: animasyon gecikmesi siniri, PWA renk/ikonlari indigo palete tasindi, olu kod temizlendi (`useGradient`, `BackdropFilter`, kart gradyan renkleri, `AppColors.positive`, `balanceColor` yerine `balanceContainerColor`), `AnimatedPressCard` InkWell tabanli (odak, imlec, ekran okuyucu). Eski 2026-10-19 kaydindaki 'sicak palet' ve `balanceColor` artik gecerli degil. Siradaki adim: Chrome'da gozle kontrol, ekran goruntuleri, Datenschutz/Impressum, yayin blogu.
