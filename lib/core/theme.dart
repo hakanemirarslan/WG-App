@@ -9,15 +9,15 @@ const _fontFamily = 'Nunito';
 // Deep violet-indigo primary with warm amber accent and soft teal tertiary.
 const _lightScheme = ColorScheme(
   brightness: Brightness.light,
-  primary: Color(0xFF5B4CF5),        // vibrant indigo-violet
+  primary: Color(0xFF5B4CF5), // vibrant indigo-violet
   onPrimary: Color(0xFFFFFFFF),
   primaryContainer: Color(0xFFE8E4FF),
   onPrimaryContainer: Color(0xFF1A0E6E),
-  secondary: Color(0xFFF0A500),      // warm amber-gold
+  secondary: Color(0xFFF0A500), // warm amber-gold
   onSecondary: Color(0xFF1A1000),
   secondaryContainer: Color(0xFFFFF0C2),
   onSecondaryContainer: Color(0xFF3A2800),
-  tertiary: Color(0xFF00A896),       // teal-mint
+  tertiary: Color(0xFF00A896), // teal-mint
   onTertiary: Color(0xFFFFFFFF),
   tertiaryContainer: Color(0xFFBDF5EE),
   onTertiaryContainer: Color(0xFF003330),
@@ -45,15 +45,15 @@ const _lightScheme = ColorScheme(
 // ── Dark scheme ───────────────────────────────────────────────────────────────
 const _darkScheme = ColorScheme(
   brightness: Brightness.dark,
-  primary: Color(0xFFBDB3FF),        // lighter violet for dark
+  primary: Color(0xFFBDB3FF), // lighter violet for dark
   onPrimary: Color(0xFF2A1F8E),
   primaryContainer: Color(0xFF4035CC),
   onPrimaryContainer: Color(0xFFE8E4FF),
-  secondary: Color(0xFFFFD54F),      // warm golden yellow
+  secondary: Color(0xFFFFD54F), // warm golden yellow
   onSecondary: Color(0xFF3A2800),
   secondaryContainer: Color(0xFF5A4000),
   onSecondaryContainer: Color(0xFFFFF0C2),
-  tertiary: Color(0xFF4DDCC8),       // bright teal
+  tertiary: Color(0xFF4DDCC8), // bright teal
   onTertiary: Color(0xFF00201D),
   tertiaryContainer: Color(0xFF00524A),
   onTertiaryContainer: Color(0xFFBDF5EE),
@@ -61,7 +61,7 @@ const _darkScheme = ColorScheme(
   onError: Color(0xFF690005),
   errorContainer: Color(0xFF93000A),
   onErrorContainer: Color(0xFFFFDAD6),
-  surface: Color(0xFF111028),        // deep indigo-black
+  surface: Color(0xFF111028), // deep indigo-black
   onSurface: Color(0xFFE8E6FF),
   onSurfaceVariant: Color(0xFFCBC8E8),
   outline: Color(0xFF928FA8),
@@ -81,55 +81,29 @@ const _darkScheme = ColorScheme(
 // ── App-specific semantic colours ─────────────────────────────────────────────
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
-  const AppColors({
-    required this.positive,
-    required this.onPositiveContainer,
-    required this.positiveContainer,
-    required this.cardGradientStart,
-    required this.cardGradientEnd,
-  });
+  const AppColors({required this.onPositiveContainer, required this.positiveContainer});
 
-  /// Money someone is owed (positive balance).
-  final Color positive;
+  /// Background for money someone is owed (positive balance) and the text on it.
   final Color positiveContainer;
   final Color onPositiveContainer;
 
-  /// Subtle gradient used on premium cards.
-  final Color cardGradientStart;
-  final Color cardGradientEnd;
-
   static const light = AppColors(
-    positive: Color(0xFF00897B),
     positiveContainer: Color(0xFFBDF5EE),
     onPositiveContainer: Color(0xFF003330),
-    cardGradientStart: Color(0xFFFFFFFF),
-    cardGradientEnd: Color(0xFFF3F1FF),
   );
 
   static const dark = AppColors(
-    positive: Color(0xFF4DDCC8),
     positiveContainer: Color(0xFF00524A),
     onPositiveContainer: Color(0xFFBDF5EE),
-    cardGradientStart: Color(0xFF1C1B36),
-    cardGradientEnd: Color(0xFF23223F),
   );
 
   static AppColors of(BuildContext context) => Theme.of(context).extension<AppColors>()!;
 
   @override
-  AppColors copyWith({
-    Color? positive,
-    Color? positiveContainer,
-    Color? onPositiveContainer,
-    Color? cardGradientStart,
-    Color? cardGradientEnd,
-  }) {
+  AppColors copyWith({Color? positiveContainer, Color? onPositiveContainer}) {
     return AppColors(
-      positive: positive ?? this.positive,
       positiveContainer: positiveContainer ?? this.positiveContainer,
       onPositiveContainer: onPositiveContainer ?? this.onPositiveContainer,
-      cardGradientStart: cardGradientStart ?? this.cardGradientStart,
-      cardGradientEnd: cardGradientEnd ?? this.cardGradientEnd,
     );
   }
 
@@ -137,11 +111,8 @@ class AppColors extends ThemeExtension<AppColors> {
   AppColors lerp(AppColors? other, double t) {
     if (other == null) return this;
     return AppColors(
-      positive: Color.lerp(positive, other.positive, t)!,
       positiveContainer: Color.lerp(positiveContainer, other.positiveContainer, t)!,
       onPositiveContainer: Color.lerp(onPositiveContainer, other.onPositiveContainer, t)!,
-      cardGradientStart: Color.lerp(cardGradientStart, other.cardGradientStart, t)!,
-      cardGradientEnd: Color.lerp(cardGradientEnd, other.cardGradientEnd, t)!,
     );
   }
 }
@@ -215,9 +186,7 @@ ThemeData _build(ColorScheme scheme, AppColors colors) {
         minimumSize: const Size(64, 50),
         textStyle: buttonText,
         elevation: 0,
-      ).copyWith(
-        overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.15)),
-      ),
+      ).copyWith(overlayColor: WidgetStateProperty.all(scheme.onPrimary.withValues(alpha: 0.15))),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(

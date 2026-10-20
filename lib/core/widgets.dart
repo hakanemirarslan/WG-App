@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
@@ -112,17 +110,21 @@ class _AnimatedPressCardState extends State<AnimatedPressCard> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _ctrl.forward(),
-      onTapUp: (_) {
-        _ctrl.reverse();
-        widget.onTap?.call();
-      },
-      onTapCancel: () => _ctrl.reverse(),
-      child: AnimatedBuilder(
-        animation: _scale,
-        builder: (context, child) => Transform.scale(scale: _scale.value, child: child),
-        child: AppCard(color: widget.color, child: widget.child),
+    // InkWell (not a bare GestureDetector) gives the card a ripple, keyboard focus,
+    // a pointer cursor on web and tap semantics for screen readers.
+    return AnimatedBuilder(
+      animation: _scale,
+      builder: (context, child) => Transform.scale(scale: _scale.value, child: child),
+      child: AppCard(
+        color: widget.color,
+        child: Semantics(
+          button: widget.onTap != null,
+          child: InkWell(
+            onTap: widget.onTap,
+            onHighlightChanged: (pressed) => pressed ? _ctrl.forward() : _ctrl.reverse(),
+            child: widget.child,
+          ),
+        ),
       ),
     );
   }
@@ -132,47 +134,16 @@ class _AnimatedPressCardState extends State<AnimatedPressCard> with SingleTicker
 // Layout widgets
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Rounded card with gradient fill and subtle border — glassmorphism feel.
+/// Rounded card with a subtle border (shape comes from the card theme).
 /// Use [AppCard] for static cards; [AnimatedPressCard] for tappable ones.
 class AppCard extends StatelessWidget {
-  const AppCard({super.key, required this.child, this.color, this.useGradient = false});
+  const AppCard({super.key, required this.child, this.color});
 
   final Widget child;
   final Color? color;
 
-  /// If true, paints a subtle gradient using [AppColors.cardGradientStart/End]
-  /// instead of the flat surface colour. Good for hero / featured cards.
-  final bool useGradient;
-
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final appColors = AppColors.of(context);
-
-    if (useGradient) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [appColors.cardGradientStart, appColors.cardGradientEnd],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
-              ),
-              child: child,
-            ),
-          ),
-        ),
-      );
-    }
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Card(color: color, child: child),
