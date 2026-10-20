@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -66,7 +68,9 @@ class ExpensesPage extends ConsumerWidget {
                 if (row is DateTime) return SectionHeader(dateFormat.format(row));
                 final expense = row as Expense;
                 return FadeSlide(
-                  delay: Duration(milliseconds: index * 50),
+                  // Rows are built lazily while scrolling, so cap the stagger: a late
+                  // row must not wait seconds before it appears.
+                  delay: Duration(milliseconds: math.min(index, 8) * 50),
                   child: AnimatedPressCard(
                     onTap: () => context.push('/group/$groupId/expenses/${expense.id}'),
                     child: ListTile(

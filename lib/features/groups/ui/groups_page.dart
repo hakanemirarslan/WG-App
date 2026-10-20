@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -94,7 +96,7 @@ class GroupsPage extends ConsumerWidget {
               ),
             for (final (index, group) in groups.indexed)
               FadeSlide(
-                delay: Duration(milliseconds: 60 + index * 60),
+                delay: Duration(milliseconds: 60 + math.min(index, 8) * 60),
                 child: AnimatedPressCard(
                   onTap: () => context.go('/group/${group.id}'),
                   child: ListTile(
