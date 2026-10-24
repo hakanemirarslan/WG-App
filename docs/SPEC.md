@@ -6,7 +6,7 @@ Bu dosya **nasil calisacak** sorusunun cevabidir. Takvim icin `PLAN.md`, tablo y
 
 - **Grup:** Bir WG. Uyeleri vardir, bir para birimi vardir (V1: sadece EUR).
 - **Aktif uye:** `memberships.left_at IS NULL`. Eski uye: `left_at` dolu, gecmis harcamalarda gorunmeye devam eder.
-- **Eksik listesi (shopping list):** "Neye ihtiyacimiz var" notlari. **Fiyat, odeme ve bolusum yoktur.**
+- **Eksik listesi (shopping list):** "Neye ihtiyacimiz var" notlari. Listenin kendisinde fiyat, odeme ve bolusum yoktur; "Alindi" isaretlenirken opsiyonel fiyat girilirse ayri bir harcama kaydedilir (Bolum 6).
 - **Harcama (expense):** Birinin odedigi bir tutar. Listeden bagimsizdir. Odeyen ne aldigini (opsiyonel) ve ne kadar odedigini yazar.
 - **Settlement:** "A, B'ye X odedi" kaydi (gercek hayattaki geri odeme). Bakiyeyi dusurur.
 - **Urun (group item):** Gruba ait urun kaydi. Ya katalogdan (`catalog_item_id`) ya da serbest yazilmis (`custom_name`).
@@ -82,7 +82,7 @@ Garantiler: en fazla `n - 1` transfer, transferlerin toplami bakiyeleri tam sifi
 - Ayni urun zaten acikta varsa tekrar eklemek yerine mevcut kaydi gosterir ("Zaten listede, Ali ekledi").
 - **Durum:** `open` -> `bought`. "Alindi" isaretleyen `bought_by`/`bought_at` olarak kaydedilir. Alinan kalem acik listeden duser, "Son alinanlar" bolumunde 7 gun gorunur, geri alinabilir (`open`'a doner).
 - **Gercek zamanli:** Biri ekleyince/isaretleyince tum uyelerde aninda guncellenir (Supabase Realtime, `shopping_entries`).
-- Listeden fiyat/odeme girilmez. (Opsiyonel kolaylik: "Alindi" sonrasi bir snackbar "Harcama ekle" onerir, secili kalemler harcama formuna on-dolu gelir. Zorunlu degil, atlanabilir.)
+- Liste kaleminde fiyat saklanmaz. **"Alindi" opsiyonel fiyat (2026-10-24 karari):** "Alindi"ya basinca kucuk bir pencere "Preis (optional)" sorar. Bos birakilirsa yalnizca "alindi" isaretlenir. Doldurulursa ayrica bir harcama kaydedilir: odeyen = isaretleyen kisi, tutar = girilen fiyat, bolusum = tum aktif uyeler arasinda esit, kalem = o urun, tarih = bugun. Pencere iptal edilirse kalem acik kalir. Once "alindi" yazilir, sonra harcama; harcama hata verirse kalem yine alinmis kalir ve harcama elle eklenir.
 - Silme: kalemi ekleyen veya admin silebilir.
 
 ## 7. Urun secici (hizli giris)

@@ -3,15 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets.dart';
+import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
+import '../../../domain/split.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../catalog/providers/catalog_providers.dart';
 import '../../catalog/ui/product_picker_sheet.dart';
+import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../../groups/ui/group_error_text.dart';
 import '../data/shopping_repository.dart';
 import '../providers/shopping_providers.dart';
+import 'bought_price_dialog.dart';
 
 /// "List" tab (SPEC 11): open items on top, "Recently bought" below.
 class ShoppingListPage extends ConsumerWidget {
@@ -88,6 +92,41 @@ class ShoppingListPage extends ConsumerWidget {
         .showSnackBar(SnackBar(content: Text(groupErrorText(l10n, error))));
   }
 
+  /// "Bought": asks for an optional price. With a price the item is also saved as an
+  /// expense paid by me and split equally between all active members; without one
+  /// it is only ticked off. The entry is marked first, so a failed expense never
+  /// leaves the item open and the user can add the expense by hand.
+  Future<void> _markBought(
+    BuildContext context,
+    WidgetRef ref,
+    ShoppingEntry entry,
+    String lang,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final cents = await showBoughtPriceDialog(context, entry.name.localized(lang));
+    if (cents == null || !context.mounted) return;
+
+    await _run(context, () async {
+      await ref.read(shoppingRepositoryProvider).markBought(entry.id);
+      if (cents == 0) return;
+      final members = await ref.read(groupMembersProvider(groupId).future);
+      await ref
+          .read(expensesRepositoryProvider)
+          .saveExpense(
+            groupId: groupId,
+            paidBy: supabase.auth.currentUser!.id,
+            amountCents: cents,
+            date: DateTime.now(),
+            shares: splitEqual(cents, members.map((m) => m.userId)),
+            itemIds: [entry.groupItemId],
+          );
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.boughtExpenseRecorded(formatCents(cents, locale: lang)))),
+      );
+    });
+  }
+
   Future<void> _run(BuildContext context, Future<void> Function() action) async {
     try {
       await action();
@@ -154,7 +193,7 @@ class ShoppingListPage extends ConsumerWidget {
                       icon: const Icon(Icons.radio_button_unchecked),
                       color: Theme.of(context).colorScheme.primary,
                       tooltip: l10n.markBoughtTooltip,
-                      onPressed: () => _run(context, () => repository.markBought(entry.id)),
+                      onPressed: () => _markBought(context, ref, entry, lang),
                     ),
                     title: Text(entry.name.localized(lang)),
                     subtitle: Text(
