@@ -32,6 +32,10 @@ class ExpenseDetailPage extends ConsumerWidget {
             child: Text(l10n.cancelButton),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: Text(l10n.deleteButton),
           ),
@@ -75,59 +79,107 @@ class ExpenseDetailPage extends ConsumerWidget {
           final expense = matches.first;
           final canModify = expense.createdBy == myId || iAmAdmin;
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(
-                formatCents(expense.amountCents, locale: lang),
-                style: Theme.of(context).textTheme.displaySmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                expense.displayTitle(lang) ?? l10n.defaultExpenseTitle,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${DateFormat.yMMMd(lang).format(expense.date)} · '
-                '${l10n.paidByName(expense.paidByName)}',
-              ),
-              if (expense.items.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    for (final item in expense.items) Chip(label: Text(item.name.localized(lang))),
+          final theme = Theme.of(context);
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // Summary: amount first, then what / when / who paid.
+                  AppCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            formatCents(expense.amountCents, locale: lang),
+                            style: moneyStyle(theme.textTheme.displaySmall),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            expense.displayTitle(lang) ?? l10n.defaultExpenseTitle,
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              InitialAvatar(name: expense.paidByName, radius: 14),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  '${l10n.paidByName(expense.paidByName)} · '
+                                  '${DateFormat.yMMMd(lang).format(expense.date)}',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (expense.items.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                for (final item in expense.items)
+                                  Chip(label: Text(item.name.localized(lang))),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  SectionHeader(l10n.splitBetweenTitle),
+                  AppCard(
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < expense.shares.length; i++) ...[
+                          if (i > 0) const Divider(indent: 16, endIndent: 16),
+                          ListTile(
+                            leading: InitialAvatar(name: expense.shares[i].name),
+                            title: Text(expense.shares[i].name),
+                            trailing: Text(
+                              formatCents(expense.shares[i].shareCents, locale: lang),
+                              style: moneyStyle(theme.textTheme.bodyLarge),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (canModify) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            icon: const Icon(Icons.edit_outlined, size: 18),
+                            onPressed: () =>
+                                context.push('/group/$groupId/expenses/$expenseId/edit'),
+                            label: Text(l10n.editButton),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: theme.colorScheme.error,
+                            ),
+                            onPressed: () => _delete(context, ref),
+                            label: Text(l10n.deleteExpenseButton),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                ),
-              ],
-              SectionHeader(l10n.splitBetweenTitle),
-              for (final share in expense.shares)
-                AppCard(
-                  child: ListTile(
-                    title: Text(share.name),
-                    trailing: Text(formatCents(share.shareCents, locale: lang)),
-                  ),
-                ),
-              if (canModify) ...[
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => context.push('/group/$groupId/expenses/$expenseId/edit'),
-                  label: Text(l10n.editButton),
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.delete_outline),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                  onPressed: () => _delete(context, ref),
-                  label: Text(l10n.deleteExpenseButton),
-                ),
-              ],
-            ],
+                ],
+              ),
+            ),
           );
         },
       ),

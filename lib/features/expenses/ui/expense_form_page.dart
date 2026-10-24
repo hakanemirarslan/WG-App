@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
+import '../../../core/widgets.dart';
 import '../../../domain/split.dart';
 import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
@@ -338,21 +339,22 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
               ],
               onChanged: (value) => setState(() => _payerId = value!),
             ),
-            const SizedBox(height: 8),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.calendar_today),
-              title: Text(l10n.dateLabel),
-              subtitle: Text(DateFormat.yMMMd(_lang).format(_date)),
-              onTap: _pickDate,
+            const SizedBox(height: 12),
+            AppCard(
+              child: ListTile(
+                leading: const Icon(Icons.calendar_today_outlined),
+                title: Text(l10n.dateLabel),
+                subtitle: Text(DateFormat.yMMMd(_lang).format(_date)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _pickDate,
+              ),
             ),
+            const SizedBox(height: 4),
             TextField(
               controller: _descriptionController,
               decoration: InputDecoration(labelText: l10n.descriptionLabel),
             ),
-            const SizedBox(height: 16),
-            Text(l10n.itemsTitle, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
+            SectionHeader(l10n.itemsTitle),
             Wrap(
               spacing: 8,
               runSpacing: 4,
@@ -370,9 +372,8 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            Text(l10n.splitBetweenTitle, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
+            SectionHeader(l10n.splitBetweenTitle),
             SegmentedButton<SplitMode>(
               segments: [
                 ButtonSegment(value: SplitMode.equal, label: Text(l10n.splitEqualMode)),
@@ -382,22 +383,32 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
               selected: {_mode},
               onSelectionChanged: (selection) => _changeMode(selection.first),
             ),
-            const SizedBox(height: 8),
-            for (final person in widget.people)
-              _ParticipantRow(
-                label: personLabel(person),
-                selected: _selected.contains(person.id),
-                mode: _mode,
-                shareText: shareByUser.containsKey(person.id)
-                    ? formatCents(shareByUser[person.id]!, locale: _lang)
-                    : null,
-                amountController: _shareAmountControllers[person.id]!,
-                weightController: _weightControllers[person.id]!,
-                onSelected: (value) => setState(() {
-                  value ? _selected.add(person.id) : _selected.remove(person.id);
-                }),
-                onChanged: () => setState(() {}),
+            const SizedBox(height: 12),
+            AppCard(
+              child: Column(
+                children: [
+                  for (var i = 0; i < widget.people.length; i++) ...[
+                    if (i > 0) const Divider(indent: 16, endIndent: 16),
+                    _ParticipantRow(
+                      label: personLabel(widget.people[i]),
+                      selected: _selected.contains(widget.people[i].id),
+                      mode: _mode,
+                      shareText: shareByUser.containsKey(widget.people[i].id)
+                          ? formatCents(shareByUser[widget.people[i].id]!, locale: _lang)
+                          : null,
+                      amountController: _shareAmountControllers[widget.people[i].id]!,
+                      weightController: _weightControllers[widget.people[i].id]!,
+                      onSelected: (value) => setState(() {
+                        value
+                            ? _selected.add(widget.people[i].id)
+                            : _selected.remove(widget.people[i].id);
+                      }),
+                      onChanged: () => setState(() {}),
+                    ),
+                  ],
+                ],
               ),
+            ),
             if (_mode == SplitMode.amounts && amount != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -425,6 +436,7 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
                 ),
               ),
             const SizedBox(height: 24),
+            // Full width: this is the one primary action of the form.
             FilledButton(
               onPressed: _isSaving ? null : _save,
               child: _isSaving
@@ -469,7 +481,9 @@ class _ParticipantRow extends StatelessWidget {
     if (selected) {
       switch (mode) {
         case SplitMode.equal:
-          trailing = shareText == null ? null : Text(shareText!);
+          trailing = shareText == null
+              ? null
+              : Text(shareText!, style: moneyStyle(Theme.of(context).textTheme.bodyMedium));
         case SplitMode.shares:
           trailing = Row(
             mainAxisSize: MainAxisSize.min,
@@ -485,7 +499,14 @@ class _ParticipantRow extends StatelessWidget {
               ),
               if (shareText != null) ...[
                 const SizedBox(width: 12),
-                SizedBox(width: 80, child: Text(shareText!, textAlign: TextAlign.end)),
+                SizedBox(
+                  width: 80,
+                  child: Text(
+                    shareText!,
+                    textAlign: TextAlign.end,
+                    style: moneyStyle(Theme.of(context).textTheme.bodyMedium),
+                  ),
+                ),
               ],
             ],
           );

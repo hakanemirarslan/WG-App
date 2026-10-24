@@ -170,6 +170,28 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
+/// Round avatar with the first letter of a person's name.
+class InitialAvatar extends StatelessWidget {
+  const InitialAvatar({super.key, required this.name, this.radius = 18});
+
+  final String name;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final initial = name.trim().isEmpty ? '?' : name.trim().characters.first.toUpperCase();
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: theme.colorScheme.primaryContainer,
+      child: Text(
+        initial,
+        style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimaryContainer),
+      ),
+    );
+  }
+}
+
 /// Brand mark shown above the login and signup forms.
 class AuthHeader extends StatelessWidget {
   const AuthHeader({super.key});

@@ -74,23 +74,17 @@ class ExpensesPage extends ConsumerWidget {
                   child: AnimatedPressCard(
                     onTap: () => context.push('/group/$groupId/expenses/${expense.id}'),
                     child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                        child: Icon(
-                          Icons.receipt_long_rounded,
-                          size: 18,
-                          color: Theme.of(context).colorScheme.onSecondaryContainer,
-                        ),
+                      // The avatar shows who paid; the subtitle repeats it in words.
+                      leading: InitialAvatar(name: expense.paidByName),
+                      title: Text(
+                        expense.displayTitle(lang) ?? l10n.defaultExpenseTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      title: Text(expense.displayTitle(lang) ?? l10n.defaultExpenseTitle),
                       subtitle: Text(l10n.paidByName(expense.paidByName)),
                       trailing: Text(
                         formatCents(expense.amountCents, locale: lang),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: moneyStyle(Theme.of(context).textTheme.titleMedium),
                       ),
                     ),
                   ),

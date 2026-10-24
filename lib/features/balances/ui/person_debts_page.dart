@@ -133,7 +133,7 @@ class _PersonHeader extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            _Initial(name: name, radius: 24),
+            InitialAvatar(name: name, radius: 24),
             const SizedBox(width: 16),
             Expanded(child: Text(name, style: theme.textTheme.titleLarge)),
             DecoratedBox(
@@ -155,27 +155,6 @@ class _PersonHeader extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Initial extends StatelessWidget {
-  const _Initial({required this.name, this.radius = 18});
-
-  final String name;
-  final double radius;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final initial = name.trim().isEmpty ? '?' : name.trim().characters.first.toUpperCase();
-    return CircleAvatar(
-      radius: radius,
-      backgroundColor: theme.colorScheme.primaryContainer,
-      child: Text(
-        initial,
-        style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimaryContainer),
       ),
     );
   }
@@ -215,7 +194,7 @@ class _DebtCard extends StatelessWidget {
         shape: const Border(),
         collapsedShape: const Border(),
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        leading: _Initial(name: otherName),
+        leading: InitialAvatar(name: otherName),
         title: Text(otherName),
         trailing: DecoratedBox(
           decoration: BoxDecoration(color: pillColor, borderRadius: BorderRadius.circular(20)),
