@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
+import '../../../core/widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../balances/providers/balances_providers.dart';
 import '../data/groups_repository.dart';
@@ -27,8 +28,7 @@ class GroupPage extends ConsumerStatefulWidget {
 class _GroupPageState extends ConsumerState<GroupPage> {
   String? _inviteLink;
 
-  String _linkFor(String code) =>
-      kIsWeb ? '${Uri.base.origin}/join/$code' : '/join/$code';
+  String _linkFor(String code) => kIsWeb ? '${Uri.base.origin}/join/$code' : '/join/$code';
 
   void _showError(Object error) {
     final l10n = AppLocalizations.of(context)!;
@@ -49,8 +49,7 @@ class _GroupPageState extends ConsumerState<GroupPage> {
     final l10n = AppLocalizations.of(context)!;
     await Clipboard.setData(ClipboardData(text: _inviteLink!));
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.linkCopiedMessage)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.linkCopiedMessage)));
   }
 
   Future<void> _setAdmin(Member member, bool admin) async {
@@ -96,6 +95,10 @@ class _GroupPageState extends ConsumerState<GroupPage> {
             child: Text(l10n.cancelButton),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: Text(l10n.leaveGroupButton),
           ),
@@ -133,56 +136,88 @@ class _GroupPageState extends ConsumerState<GroupPage> {
         ),
         data: (members) {
           final iAmAdmin = members.any((m) => m.userId == myId && m.isAdmin);
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(l10n.membersTitle, style: Theme.of(context).textTheme.titleMedium),
-              for (final member in members)
-                ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.person)),
-                  title: Text(
-                    member.userId == myId
-                        ? '${member.displayName} ${l10n.youSuffix}'
-                        : member.displayName,
-                  ),
-                  subtitle: member.isAdmin ? Text(l10n.adminRole) : null,
-                  trailing: iAmAdmin && member.userId != myId
-                      ? TextButton(
-                          onPressed: () => _setAdmin(member, !member.isAdmin),
-                          child: Text(
-                            member.isAdmin ? l10n.removeAdminAction : l10n.makeAdminAction,
+          final theme = Theme.of(context);
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  SectionHeader(l10n.membersTitle),
+                  AppCard(
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < members.length; i++) ...[
+                          if (i > 0) const Divider(indent: 16, endIndent: 16),
+                          ListTile(
+                            leading: InitialAvatar(name: members[i].displayName),
+                            title: Text(
+                              members[i].userId == myId
+                                  ? '${members[i].displayName} ${l10n.youSuffix}'
+                                  : members[i].displayName,
+                            ),
+                            subtitle: members[i].isAdmin ? Text(l10n.adminRole) : null,
+                            trailing: iAmAdmin && members[i].userId != myId
+                                ? TextButton(
+                                    onPressed: () => _setAdmin(members[i], !members[i].isAdmin),
+                                    child: Text(
+                                      members[i].isAdmin
+                                          ? l10n.removeAdminAction
+                                          : l10n.makeAdminAction,
+                                    ),
+                                  )
+                                : null,
                           ),
-                        )
-                      : null,
-                ),
-              const Divider(height: 32),
-              if (_inviteLink == null)
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.link),
-                  onPressed: _createInvite,
-                  label: Text(l10n.createInviteButton),
-                )
-              else ...[
-                Text(l10n.inviteLinkReady, style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(height: 4),
-                SelectableText(_inviteLink!),
-                const SizedBox(height: 8),
-                FilledButton.icon(
-                  icon: const Icon(Icons.copy),
-                  onPressed: _copyInvite,
-                  label: Text(l10n.copyLinkButton),
-                ),
-              ],
-              const SizedBox(height: 32),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.logout),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                ),
-                onPressed: _leave,
-                label: Text(l10n.leaveGroupButton),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Invite: a button first, then the generated link in a tinted box.
+                  AppCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: _inviteLink == null
+                          ? OutlinedButton.icon(
+                              icon: const Icon(Icons.link),
+                              onPressed: _createInvite,
+                              label: Text(l10n.createInviteButton),
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(l10n.inviteLinkReady, style: theme.textTheme.labelLarge),
+                                const SizedBox(height: 8),
+                                DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.surfaceContainer,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: SelectableText(_inviteLink!),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                FilledButton.icon(
+                                  icon: const Icon(Icons.copy, size: 18),
+                                  onPressed: _copyInvite,
+                                  label: Text(l10n.copyLinkButton),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.logout, size: 18),
+                    style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                    onPressed: _leave,
+                    label: Text(l10n.leaveGroupButton),
+                  ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),
