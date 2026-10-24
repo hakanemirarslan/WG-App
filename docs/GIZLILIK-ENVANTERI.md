@@ -17,7 +17,7 @@ Bu dosya **hukuki tavsiye degildir.** Datenschutzerklaerung ve Impressum icin ne
 ## Ucuncu taraf istekleri
 
 - **Supabase** (veritabani, auth): tum veri burada. Proje bolgesi ve veri isleme sozlesmesi kullanici tarafindan kontrol edilecek.
-- **Google CDN (cozulecek):** `flutter build web` varsayilan olarak CanvasKit'i `www.gstatic.com/flutter-canvaskit` ve yedek fontlari `fonts.gstatic.com` adresinden ceker; ziyaretci IP'si Google'a gider. Yayin oncesi `--no-web-resources-cdn` ile derleyip her seyi kendi alan adindan sunmak ve build ciktisinda dogrulamak gerekir (bkz. PLAN "Yayin").
+- **Google CDN (2026-10-24'te denendi):** `flutter build web` varsayilan olarak CanvasKit'i `www.gstatic.com/flutter-canvaskit` ve yedek fontlari `fonts.gstatic.com` adresinden ceker; ziyaretci IP'si Google'a gider. `--no-web-resources-cdn` ile derlenince CanvasKit ve Roboto yedek fontu kendi alan adindan gelir (`useLocalCanvasKit: true`, `assets/fonts/fallback/Roboto-Regular.ttf`). **Kalan istisna:** Nunito/Roboto'nun karsilamadigi bir karakter (ornek: urun adina yazilan emoji) gorunurse Flutter eksik yedek fontu `fonts.gstatic.com/s/` adresinden indirir. Karar: Datenschutzerklaerung'da bir cumleyle belirtilir. Build ciktisinin statik incelemesi yapildi; canli adreste tarayici Network sekmesiyle dogrulanmali.
 - Uygulama fontu (Nunito) pakete gomulu, dis istek yok.
 
 ## Hesap silme (karar, uygulama sonra)
