@@ -10,8 +10,10 @@ final shoppingRepositoryProvider = Provider<ShoppingRepository>((ref) => Shoppin
 /// Live shopping list: loads once, then reloads whenever Realtime reports a
 /// change (including our own). Reloading instead of patching from the stream
 /// payload keeps the joined names (item, adder, buyer) correct.
-final shoppingEntriesProvider =
-    StreamProvider.autoDispose.family<List<ShoppingEntry>, String>((ref, groupId) {
+final shoppingEntriesProvider = StreamProvider.autoDispose.family<List<ShoppingEntry>, String>((
+  ref,
+  groupId,
+) {
   final repository = ref.watch(shoppingRepositoryProvider);
   final controller = StreamController<List<ShoppingEntry>>();
 

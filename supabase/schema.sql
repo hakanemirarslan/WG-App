@@ -91,6 +91,13 @@ create table public.expenses (
   created_at    timestamptz not null default now()
 );
 
+-- Listeden fiyatla "alindi" yapilinca olusan harcama. "Alindi" geri alinirken bu harcama da
+-- silinir; harcama baska yoldan silinirse baglanti kendiliginden bosalir. (expenses'tan sonra
+-- eklenir, cunku shopping_entries ondan once tanimli. Var olan veritabaninda ayni satir bir
+-- kez calistirilir.)
+alter table public.shopping_entries
+  add column if not exists expense_id uuid references public.expenses(id) on delete set null;
+
 -- Opsiyonel: harcamaya bagli kalemler (listeden veya katalogdan)
 create table public.expense_items (
   id             uuid primary key default gen_random_uuid(),

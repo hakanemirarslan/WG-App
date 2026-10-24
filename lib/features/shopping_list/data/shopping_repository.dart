@@ -15,6 +15,9 @@ class ShoppingEntry {
   final DateTime? boughtAt;
   final DateTime createdAt;
 
+  /// Expense created by ticking this item off with a price (null if none).
+  final String? expenseId;
+
   ShoppingEntry({
     required this.id,
     required this.groupItemId,
@@ -26,6 +29,7 @@ class ShoppingEntry {
     required this.boughtByName,
     required this.boughtAt,
     required this.createdAt,
+    required this.expenseId,
   });
 
   factory ShoppingEntry.fromMap(Map<String, dynamic> map) {
@@ -41,6 +45,7 @@ class ShoppingEntry {
       boughtByName: (map['buyer'] as Map<String, dynamic>?)?['display_name'] as String?,
       boughtAt: boughtAt == null ? null : DateTime.parse(boughtAt),
       createdAt: DateTime.parse(map['created_at'] as String),
+      expenseId: map['expense_id'] as String?,
     );
   }
 }
@@ -54,7 +59,7 @@ class ShoppingRepository {
     final rows = await supabase
         .from('shopping_entries')
         .select(
-          'id, group_item_id, note, added_by, status, bought_at, created_at, '
+          'id, group_item_id, note, added_by, status, bought_at, created_at, expense_id, '
           'group_items(custom_name, catalog_items(name_de, name_en)), '
           'adder:profiles!shopping_entries_added_by_fkey(display_name), '
           'buyer:profiles!shopping_entries_bought_by_fkey(display_name)',
@@ -75,19 +80,26 @@ class ShoppingRepository {
   }
 
   Future<void> markBought(String entryId) {
-    return supabase.from('shopping_entries').update({
-      'status': 'bought',
-      'bought_by': supabase.auth.currentUser!.id,
-      'bought_at': DateTime.now().toUtc().toIso8601String(),
-    }).eq('id', entryId);
+    return supabase
+        .from('shopping_entries')
+        .update({
+          'status': 'bought',
+          'bought_by': supabase.auth.currentUser!.id,
+          'bought_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', entryId);
+  }
+
+  /// Remembers which expense this entry's price created, so undoing can delete it.
+  Future<void> linkExpense(String entryId, String expenseId) {
+    return supabase.from('shopping_entries').update({'expense_id': expenseId}).eq('id', entryId);
   }
 
   Future<void> undoBought(String entryId) {
-    return supabase.from('shopping_entries').update({
-      'status': 'open',
-      'bought_by': null,
-      'bought_at': null,
-    }).eq('id', entryId);
+    return supabase
+        .from('shopping_entries')
+        .update({'status': 'open', 'bought_by': null, 'bought_at': null})
+        .eq('id', entryId);
   }
 
   Future<void> deleteEntry(String entryId) =>

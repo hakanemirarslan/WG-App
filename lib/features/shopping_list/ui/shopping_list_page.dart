@@ -119,22 +119,28 @@ class ShoppingListPage extends ConsumerWidget {
     }
     if (cents == 0) return;
 
+    final expenses = ref.read(expensesRepositoryProvider);
+    String? expenseId;
     String message;
     try {
       final members = await ref.read(groupMembersProvider(groupId).future);
-      await ref
-          .read(expensesRepositoryProvider)
-          .saveExpense(
-            groupId: groupId,
-            paidBy: supabase.auth.currentUser!.id,
-            amountCents: cents,
-            date: DateTime.now(),
-            shares: splitEqual(cents, members.map((m) => m.userId)),
-            itemIds: [entry.groupItemId],
-          );
+      expenseId = await expenses.saveExpense(
+        groupId: groupId,
+        paidBy: supabase.auth.currentUser!.id,
+        amountCents: cents,
+        date: DateTime.now(),
+        shares: splitEqual(cents, members.map((m) => m.userId)),
+        itemIds: [entry.groupItemId],
+      );
+      // Remember the expense so that undoing "bought" can delete it again.
+      await shopping.linkExpense(entry.id, expenseId);
       message = l10n.boughtExpenseRecorded(formatCents(cents, locale: lang));
     } catch (_) {
       try {
+        // Remove a half-finished expense too, then put the item back on the list.
+        if (expenseId != null && !await expenses.tryDeleteExpense(expenseId)) {
+          throw StateError('expense $expenseId could not be removed');
+        }
         await shopping.undoBought(entry.id);
         message = l10n.boughtExpenseFailedKeptOpen;
       } catch (_) {
@@ -144,6 +150,48 @@ class ShoppingListPage extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     }
+  }
+
+  /// Puts a bought item back on the list. If its price created an expense, that expense
+  /// is deleted as well (after a confirmation), so Expenses and Balance stay correct.
+  Future<void> _undoBought(BuildContext context, WidgetRef ref, ShoppingEntry entry) async {
+    final l10n = AppLocalizations.of(context)!;
+    final expenseId = entry.expenseId;
+
+    if (expenseId != null) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(l10n.undoBoughtConfirmTitle),
+          content: Text(l10n.undoBoughtDeletesExpense),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancelButton),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.undoBoughtConfirmButton),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !context.mounted) return;
+    }
+
+    await _run(context, () async {
+      if (expenseId != null) {
+        final deleted = await ref.read(expensesRepositoryProvider).tryDeleteExpense(expenseId);
+        if (!deleted) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(l10n.undoBoughtExpenseNotAllowed)));
+          }
+          return;
+        }
+      }
+      await ref.read(shoppingRepositoryProvider).undoBought(entry.id);
+    });
   }
 
   Future<void> _run(BuildContext context, Future<void> Function() action) async {
@@ -232,7 +280,7 @@ class ShoppingListPage extends ConsumerWidget {
                       leading: IconButton(
                         icon: const Icon(Icons.undo),
                         tooltip: l10n.undoBoughtTooltip,
-                        onPressed: () => _run(context, () => repository.undoBought(entry.id)),
+                        onPressed: () => _undoBought(context, ref, entry),
                       ),
                       title: Text(
                         entry.name.localized(lang),

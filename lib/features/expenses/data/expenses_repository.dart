@@ -117,23 +117,33 @@ class ExpensesRepository {
     required List<ExpenseShare> shares,
     List<String> itemIds = const [],
   }) async {
-    final id = await supabase.rpc('save_expense', params: {
-      'gid': groupId,
-      'eid': expenseId,
-      'payer': paidBy,
-      'amount': amountCents,
-      'descr': description,
-      'exp_date': _dateOnly(date),
-      'share_list': [
-        for (final share in shares) {'user_id': share.userId, 'share_cents': share.shareCents},
-      ],
-      'item_list': itemIds,
-    });
+    final id = await supabase.rpc(
+      'save_expense',
+      params: {
+        'gid': groupId,
+        'eid': expenseId,
+        'payer': paidBy,
+        'amount': amountCents,
+        'descr': description,
+        'exp_date': _dateOnly(date),
+        'share_list': [
+          for (final share in shares) {'user_id': share.userId, 'share_cents': share.shareCents},
+        ],
+        'item_list': itemIds,
+      },
+    );
     return id as String;
   }
 
   Future<void> deleteExpense(String expenseId) =>
       supabase.from('expenses').delete().eq('id', expenseId);
+
+  /// Like [deleteExpense], but says whether a row was really deleted. Row level security
+  /// silently skips rows the user may not delete (only the creator or an admin may).
+  Future<bool> tryDeleteExpense(String expenseId) async {
+    final deleted = await supabase.from('expenses').delete().eq('id', expenseId).select('id');
+    return deleted.isNotEmpty;
+  }
 
   /// Calls [onChange] whenever an expense of this group changes. Same two
   /// subscriptions as the shopping list: DELETE events cannot be filtered by
