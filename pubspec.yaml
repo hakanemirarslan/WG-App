@@ -69,9 +69,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Inter and Plus Jakarta Sans (SIL OFL 1.1, licenses in assets/fonts/OFL-*.txt), static
-  # instances bundled so no font is fetched from a third party at runtime. We keep both
-  # until the design decision is made (see APP_FONT in lib/core/theme.dart).
+  # Inter (SIL OFL 1.1, license in assets/fonts/OFL-Inter.txt): static instances bundled so
+  # no font is fetched from a third party at runtime (privacy, works offline).
   fonts:
     - family: Inter
       fonts:
@@ -81,15 +80,6 @@ flutter:
         - asset: assets/fonts/Inter-SemiBold.ttf
           weight: 600
         - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700
-    - family: PlusJakartaSans
-      fonts:
-        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
-        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
           weight: 700
 
   # To add assets to your application, add an assets section, like this:

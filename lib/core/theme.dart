@@ -4,12 +4,7 @@ import 'package:flutter/material.dart';
 /// Central look of the app: calm teal, soft neutral surfaces, rounded shapes.
 /// Screens read colours from `Theme.of(context).colorScheme` and [AppColors];
 /// no hard-coded colours elsewhere.
-///
-/// TEMPORARY font switch while we compare the two candidates:
-/// `flutter run -d chrome --dart-define=APP_FONT=jakarta ...` (default: Inter).
-/// Delete the loser (assets/fonts, pubspec.yaml) and this switch once decided.
-const _appFont = String.fromEnvironment('APP_FONT', defaultValue: 'inter');
-const _fontFamily = _appFont == 'jakarta' ? 'PlusJakartaSans' : 'Inter';
+const _fontFamily = 'Inter';
 
 const _seed = Color(0xFF0E9F8E);
 
