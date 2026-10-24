@@ -4,8 +4,9 @@ import '../data/catalog_repository.dart';
 
 final catalogRepositoryProvider = Provider<CatalogRepository>((ref) => CatalogRepository());
 
-/// The catalog is global and rarely changes, so it is fetched once per session.
-final catalogProvider = FutureProvider<List<CatalogItem>>((ref) {
+/// The catalog is global and small. It is dropped when no screen uses it any more, so the
+/// next picker always shows the current catalog instead of one cached for the whole session.
+final catalogProvider = FutureProvider.autoDispose<List<CatalogItem>>((ref) {
   return ref.watch(catalogRepositoryProvider).fetchCatalog();
 });
 
