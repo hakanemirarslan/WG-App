@@ -233,6 +233,16 @@ ThemeData _build(
         textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
       ),
     ),
+    // clipBehavior keeps list rows and fields inside the rounded top corners.
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: scheme.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+    ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       backgroundColor: scheme.inverseSurface,

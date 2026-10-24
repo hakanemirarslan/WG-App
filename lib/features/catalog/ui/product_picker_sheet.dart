@@ -15,9 +15,16 @@ Future<PickedProduct?> showProductPicker(BuildContext context, String groupId) {
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (context) => _ProductPickerSheet(groupId: groupId),
+    showDragHandle: true,
+    builder: (context) => FractionallySizedBox(
+      heightFactor: _sheetHeightFactor,
+      child: _ProductPickerSheet(groupId: groupId),
+    ),
   );
 }
+
+/// Leaves a strip of the page visible above the sheet, so it can be closed by tapping outside.
+const _sheetHeightFactor = 0.88;
 
 /// Multi choice (expense form, SPEC 7): taps toggle products, "Done" closes
 /// with all of them. Dismissing the sheet returns null and keeps [initial].
@@ -30,7 +37,11 @@ Future<List<PickedProduct>?> showProductMultiPicker(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (context) => _ProductPickerSheet(groupId: groupId, multi: true, initial: initial),
+    showDragHandle: true,
+    builder: (context) => FractionallySizedBox(
+      heightFactor: _sheetHeightFactor,
+      child: _ProductPickerSheet(groupId: groupId, multi: true, initial: initial),
+    ),
   );
 }
 
@@ -99,10 +110,6 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
     });
   }
 
-  Widget? _checkmark(PickedProduct product) => widget.multi && _chosen.containsKey(product.key)
-      ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
-      : null;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -112,19 +119,42 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
     final query = normalizeForSearch(_query);
     final rawQuery = _query.trim();
 
+    final title = widget.multi ? l10n.chooseItemsButton : l10n.addItemButton;
+
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 0, 8, 0),
+            child: Row(
+              children: [
+                Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: l10n.cancelButton,
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: TextField(
               controller: _searchController,
               autofocus: true,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
                 hintText: l10n.searchProductsHint,
-                border: const OutlineInputBorder(),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => setState(() {
+                          _query = '';
+                          _searchController.clear();
+                        }),
+                      ),
               ),
               onChanged: (value) => setState(() => _query = value),
             ),
@@ -144,7 +174,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
             SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton(
@@ -183,68 +213,118 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
       ...matchingFrequent.map((item) => item.name.customName),
     ].any((name) => name != null && normalizeForSearch(name) == query);
 
-    final children = <Widget>[];
-
-    if (matchingFrequent.isNotEmpty) {
-      children.add(_SectionHeader(l10n.frequentTitle));
-      for (final item in matchingFrequent) {
-        final product = item.catalogItemId != null
-            ? PickedProduct.catalog(item.catalogItemId!)
-            : PickedProduct.custom(item.name.customName!);
-        children.add(
-          ListTile(
-            title: Text(item.name.localized(lang)),
-            trailing: _checkmark(product),
-            onTap: () => _onTap(product),
-          ),
-        );
-      }
-    }
-
-    String? currentCategory;
-    for (final item in matchingCatalog) {
-      if (item.category != currentCategory) {
-        currentCategory = item.category;
-        children.add(_SectionHeader(categoryLabel(l10n, item.category)));
-      }
-      final product = PickedProduct.catalog(item.id);
-      children.add(
-        ListTile(
-          title: Text(item.localized(lang)),
-          trailing: _checkmark(product),
-          onTap: () => _onTap(product),
-        ),
-      );
-    }
+    final sections = <Widget>[];
 
     if (searching && !exactMatchExists) {
-      children.insert(
-        0,
-        ListTile(
-          leading: const Icon(Icons.add),
-          title: Text(l10n.addCustomProduct(rawQuery)),
-          onTap: () => _onAddCustom(rawQuery),
+      // The new-product action comes first so it is reachable without scrolling.
+      sections.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: ActionChip(
+              avatar: const Icon(Icons.add, size: 18),
+              label: Text(l10n.addCustomProduct(rawQuery)),
+              onPressed: () => _onAddCustom(rawQuery),
+            ),
+          ),
         ),
       );
     }
 
-    if (children.isEmpty) {
+    if (matchingFrequent.isNotEmpty) {
+      sections.add(
+        _ChipSection(
+          icon: Icons.history,
+          title: l10n.frequentTitle,
+          chips: [
+            for (final item in matchingFrequent)
+              _chip(
+                item.name.localized(lang),
+                item.catalogItemId != null
+                    ? PickedProduct.catalog(item.catalogItemId!)
+                    : PickedProduct.custom(item.name.customName!),
+              ),
+          ],
+        ),
+      );
+    }
+
+    // Catalog items arrive sorted by category, so group them in order.
+    final byCategory = <String, List<CatalogItem>>{};
+    for (final item in matchingCatalog) {
+      byCategory.putIfAbsent(item.category, () => []).add(item);
+    }
+    for (final entry in byCategory.entries) {
+      sections.add(
+        _ChipSection(
+          icon: _categoryIcon(entry.key),
+          title: categoryLabel(l10n, entry.key),
+          chips: [
+            for (final item in entry.value)
+              _chip(item.localized(lang), PickedProduct.catalog(item.id)),
+          ],
+        ),
+      );
+    }
+
+    if (sections.isEmpty) {
       return EmptyView(icon: Icons.search_off, message: l10n.noSearchResults);
     }
-    return ListView(children: children);
+    return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 16), children: sections);
+  }
+
+  /// One tappable product. Single mode: tap picks and closes. Multi mode: tap toggles.
+  Widget _chip(String label, PickedProduct product) {
+    if (!widget.multi) {
+      return ActionChip(label: Text(label), onPressed: () => _onTap(product));
+    }
+    return FilterChip(
+      label: Text(label),
+      selected: _chosen.containsKey(product.key),
+      onSelected: (_) => _onTap(product),
+    );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(this.title);
+IconData _categoryIcon(String category) => switch (category) {
+  'food' => Icons.restaurant_outlined,
+  'household' => Icons.cleaning_services_outlined,
+  _ => Icons.category_outlined,
+};
 
+/// A titled group of product chips that wrap onto as many lines as needed.
+class _ChipSection extends StatelessWidget {
+  const _ChipSection({required this.icon, required this.title, required this.chips});
+
+  final IconData icon;
   final String title;
+  final List<Widget> chips;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(spacing: 8, runSpacing: 8, children: chips),
+        ],
+      ),
     );
   }
 }
