@@ -8,6 +8,12 @@ import 'core/supabase_client.dart';
 import 'core/theme.dart';
 import 'l10n/app_localizations.dart';
 
+/// Riverpod 3 retries a failed provider up to 10 times (about 40 seconds) and shows
+/// "loading" meanwhile, which hides our error screens. One quick retry covers a
+/// network blip; after that the error screen with its retry button appears.
+Duration? _retry(int retryCount, Object error) =>
+    retryCount >= 1 ? null : const Duration(milliseconds: 600);
+
 /// Widest the app content gets on desktop browsers.
 const _maxContentWidth = 640.0;
 
@@ -15,7 +21,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
   await initSupabase();
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(const ProviderScope(retry: _retry, child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
