@@ -243,58 +243,78 @@ class ShoppingListPage extends ConsumerWidget {
             );
           }
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
-            children: [
-              if (open.isEmpty)
-                EmptyView(
-                  icon: Icons.shopping_basket_outlined,
-                  message: l10n.openItemsEmpty,
-                  actionLabel: l10n.addItemButton,
-                  onAction: () => _add(context, ref),
-                ),
-              for (final entry in open)
-                AppCard(
-                  child: ListTile(
-                    leading: IconButton(
-                      icon: const Icon(Icons.radio_button_unchecked),
-                      color: Theme.of(context).colorScheme.primary,
-                      tooltip: l10n.markBoughtTooltip,
-                      onPressed: () => _markBought(context, ref, entry, lang),
-                    ),
-                    title: Text(entry.name.localized(lang)),
-                    subtitle: Text(
-                      [
-                        if (entry.note != null) entry.note!,
-                        l10n.addedByLabel(entry.addedByName),
-                      ].join(' · '),
-                    ),
-                    trailing: deleteButton(entry),
-                  ),
-                ),
-              if (bought.isNotEmpty) ...[
-                SectionHeader(l10n.recentlyBoughtTitle),
-                for (final entry in bought)
-                  AppCard(
-                    child: ListTile(
-                      leading: IconButton(
-                        icon: const Icon(Icons.undo),
-                        tooltip: l10n.undoBoughtTooltip,
-                        onPressed: () => _undoBought(context, ref, entry),
+          final theme = Theme.of(context);
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+                children: [
+                  if (open.isEmpty)
+                    EmptyView(
+                      icon: Icons.shopping_basket_outlined,
+                      message: l10n.openItemsEmpty,
+                      actionLabel: l10n.addItemButton,
+                      onAction: () => _add(context, ref),
+                    )
+                  else
+                    // One card for all open items, thin dividers between the rows.
+                    AppCard(
+                      child: Column(
+                        children: [
+                          for (var i = 0; i < open.length; i++) ...[
+                            if (i > 0) const Divider(indent: 16, endIndent: 16),
+                            ListTile(
+                              leading: IconButton(
+                                icon: const Icon(Icons.radio_button_unchecked),
+                                color: theme.colorScheme.primary,
+                                tooltip: l10n.markBoughtTooltip,
+                                onPressed: () => _markBought(context, ref, open[i], lang),
+                              ),
+                              title: Text(open[i].name.localized(lang)),
+                              subtitle: Text(
+                                [
+                                  if (open[i].note != null) open[i].note!,
+                                  l10n.addedByLabel(open[i].addedByName),
+                                ].join(' · '),
+                              ),
+                              trailing: deleteButton(open[i]),
+                            ),
+                          ],
+                        ],
                       ),
-                      title: Text(
-                        entry.name.localized(lang),
-                        style: TextStyle(
-                          decoration: TextDecoration.lineThrough,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      subtitle: Text(l10n.boughtByLabel(entry.boughtByName ?? '')),
-                      trailing: deleteButton(entry),
                     ),
-                  ),
-              ],
-            ],
+                  if (bought.isNotEmpty) ...[
+                    SectionHeader(l10n.recentlyBoughtTitle),
+                    AppCard(
+                      child: Column(
+                        children: [
+                          for (var i = 0; i < bought.length; i++) ...[
+                            if (i > 0) const Divider(indent: 16, endIndent: 16),
+                            ListTile(
+                              leading: IconButton(
+                                icon: const Icon(Icons.undo),
+                                tooltip: l10n.undoBoughtTooltip,
+                                onPressed: () => _undoBought(context, ref, bought[i]),
+                              ),
+                              title: Text(
+                                bought[i].name.localized(lang),
+                                style: TextStyle(
+                                  decoration: TextDecoration.lineThrough,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              subtitle: Text(l10n.boughtByLabel(bought[i].boughtByName ?? '')),
+                              trailing: deleteButton(bought[i]),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           );
         },
       ),
