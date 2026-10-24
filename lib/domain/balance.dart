@@ -6,12 +6,15 @@ library;
 import 'split.dart';
 
 class BalanceExpense {
+  /// Only used to point from a pair debt back to its expense (see `pair_debts.dart`).
+  final String? id;
   final String paidBy;
   final int amountCents;
   final DateTime date;
   final List<ExpenseShare> shares;
 
   const BalanceExpense({
+    this.id,
     required this.paidBy,
     required this.amountCents,
     required this.date,
@@ -20,12 +23,14 @@ class BalanceExpense {
 }
 
 class BalanceSettlement {
+  final String? id;
   final String from;
   final String to;
   final int cents;
   final DateTime createdAt;
 
   const BalanceSettlement({
+    this.id,
     required this.from,
     required this.to,
     required this.cents,

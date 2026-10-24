@@ -11,12 +11,15 @@ import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../data/settlements_repository.dart';
 
-final settlementsRepositoryProvider =
-    Provider<SettlementsRepository>((ref) => SettlementsRepository());
+final settlementsRepositoryProvider = Provider<SettlementsRepository>(
+  (ref) => SettlementsRepository(),
+);
 
 /// Live settlement list, same pattern as the expense list.
-final settlementsProvider =
-    StreamProvider.autoDispose.family<List<Settlement>, String>((ref, groupId) {
+final settlementsProvider = StreamProvider.autoDispose.family<List<Settlement>, String>((
+  ref,
+  groupId,
+) {
   final repository = ref.watch(settlementsRepositoryProvider);
   final controller = StreamController<List<Settlement>>();
 
@@ -43,6 +46,7 @@ List<BalanceExpense> balanceExpensesOf(List<Expense> expenses) {
   return [
     for (final e in expenses)
       BalanceExpense(
+        id: e.id,
         paidBy: e.paidBy,
         amountCents: e.amountCents,
         date: e.date,
@@ -73,19 +77,20 @@ class BalanceData {
 
   /// Active members always, former members only while they still owe/are owed.
   List<String> get visibleUserIds {
-    final ids = balances.keys
-        .where((id) => activeMemberIds.contains(id) || balances[id] != 0)
-        .toList()
-      ..sort((a, b) {
-        final byBalance = balances[b]!.compareTo(balances[a]!);
-        return byBalance != 0 ? byBalance : a.compareTo(b);
-      });
+    final ids =
+        balances.keys.where((id) => activeMemberIds.contains(id) || balances[id] != 0).toList()
+          ..sort((a, b) {
+            final byBalance = balances[b]!.compareTo(balances[a]!);
+            return byBalance != 0 ? byBalance : a.compareTo(b);
+          });
     return ids;
   }
 }
 
-final balancesProvider =
-    Provider.autoDispose.family<AsyncValue<BalanceData>, String>((ref, groupId) {
+final balancesProvider = Provider.autoDispose.family<AsyncValue<BalanceData>, String>((
+  ref,
+  groupId,
+) {
   final expensesAsync = ref.watch(expensesProvider(groupId));
   final settlementsAsync = ref.watch(settlementsProvider(groupId));
   final membersAsync = ref.watch(groupMembersProvider(groupId));
@@ -124,11 +129,13 @@ final balancesProvider =
   );
   final consistent = balancesAddUp(balances);
 
-  return AsyncData(BalanceData(
-    balances: balances,
-    names: names,
-    activeMemberIds: activeIds,
-    transfers: consistent ? simplifyDebts(balances) : const [],
-    consistent: consistent,
-  ));
+  return AsyncData(
+    BalanceData(
+      balances: balances,
+      names: names,
+      activeMemberIds: activeIds,
+      transfers: consistent ? simplifyDebts(balances) : const [],
+      consistent: consistent,
+    ),
+  );
 });
