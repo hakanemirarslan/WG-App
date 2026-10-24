@@ -67,69 +67,79 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.signupTitle)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const AuthHeader(),
-                  TextField(
-                    controller: _displayNameController,
-                    decoration: InputDecoration(labelText: l10n.displayNameLabel),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(labelText: l10n.emailLabel),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(labelText: l10n.passwordLabel),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedLocale,
-                    decoration: InputDecoration(labelText: l10n.languageLabel),
-                    items: [
-                      DropdownMenuItem(value: 'de', child: Text(l10n.germanLanguage)),
-                      DropdownMenuItem(value: 'en', child: Text(l10n.englishLanguage)),
-                    ],
-                    onChanged: (value) => setState(() => _selectedLocale = value!),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        l10n.authErrorGeneric(_errorMessage!),
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+              child: AutofillGroup(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AuthHeader(),
+                    TextField(
+                      controller: _displayNameController,
+                      decoration: InputDecoration(labelText: l10n.displayNameLabel),
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.nickname],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(labelText: l10n.emailLabel),
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.email],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(labelText: l10n.passwordLabel),
+                      obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      autofillHints: const [AutofillHints.newPassword],
+                      onSubmitted: (_) {
+                        if (!_isSubmitting) _submit();
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedLocale,
+                      decoration: InputDecoration(labelText: l10n.languageLabel),
+                      items: [
+                        DropdownMenuItem(value: 'de', child: Text(l10n.germanLanguage)),
+                        DropdownMenuItem(value: 'en', child: Text(l10n.englishLanguage)),
+                      ],
+                      onChanged: (value) => setState(() => _selectedLocale = value!),
+                    ),
+                    const SizedBox(height: 24),
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          l10n.authErrorGeneric(_errorMessage!),
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        ),
                       ),
+                    FilledButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(l10n.signupButton),
                     ),
-                  FilledButton(
-                    onPressed: _isSubmitting ? null : _submit,
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(l10n.signupButton),
-                  ),
-                  TextButton(
-                    onPressed: () => context.go(
-                      authPath('/login', GoRouterState.of(context).uri.queryParameters['from']),
+                    TextButton(
+                      onPressed: () => context.go(
+                        authPath('/login', GoRouterState.of(context).uri.queryParameters['from']),
+                      ),
+                      child: Text(l10n.haveAccountSwitchToLogin),
                     ),
-                    child: Text(l10n.haveAccountSwitchToLogin),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

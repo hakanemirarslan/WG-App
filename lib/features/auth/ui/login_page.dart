@@ -47,54 +47,64 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.loginTitle)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const AuthHeader(),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(labelText: l10n.emailLabel),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(labelText: l10n.passwordLabel),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 24),
-                  if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        l10n.authErrorGeneric(_errorMessage!),
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+              // AutofillGroup lets the browser offer saved logins; Enter in the last
+              // field submits the form.
+              child: AutofillGroup(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AuthHeader(),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(labelText: l10n.emailLabel),
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.username],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(labelText: l10n.passwordLabel),
+                      obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      autofillHints: const [AutofillHints.password],
+                      onSubmitted: (_) {
+                        if (!_isSubmitting) _submit();
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          l10n.authErrorGeneric(_errorMessage!),
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        ),
                       ),
+                    FilledButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(l10n.loginButton),
                     ),
-                  FilledButton(
-                    onPressed: _isSubmitting ? null : _submit,
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(l10n.loginButton),
-                  ),
-                  TextButton(
-                    onPressed: () => context.go(
-                      authPath('/signup', GoRouterState.of(context).uri.queryParameters['from']),
+                    TextButton(
+                      onPressed: () => context.go(
+                        authPath('/signup', GoRouterState.of(context).uri.queryParameters['from']),
+                      ),
+                      child: Text(l10n.noAccountSwitchToSignup),
                     ),
-                    child: Text(l10n.noAccountSwitchToSignup),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

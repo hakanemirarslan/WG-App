@@ -114,25 +114,32 @@ class GroupsPage extends ConsumerWidget {
                   ),
                 ),
               ),
-            const SizedBox(height: 16),
-            FadeSlide(
-              delay: Duration(milliseconds: 60 + groups.length * 60 + 60),
-              child: FilledButton.icon(
-                icon: const Icon(Icons.add),
-                onPressed: () => _create(context, ref),
-                label: Text(l10n.createGroupButton),
-              ),
-            ),
-            const SizedBox(height: 8),
-            FadeSlide(
-              delay: Duration(milliseconds: 60 + groups.length * 60 + 120),
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.vpn_key_outlined),
-                onPressed: () => _joinWithCode(context),
-                label: Text(l10n.joinWithCodeButton),
-              ),
-            ),
           ],
+        ),
+      ),
+      // Both actions side by side at the bottom, always reachable.
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.add, size: 18),
+                  onPressed: () => _create(context, ref),
+                  label: Text(l10n.createGroupButton),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.vpn_key_outlined, size: 18),
+                  onPressed: () => _joinWithCode(context),
+                  label: Text(l10n.joinWithCodeButton),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

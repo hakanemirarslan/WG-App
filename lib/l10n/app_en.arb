@@ -6,8 +6,6 @@
     "description": "Shown in the browser tab / app bar."
   },
 
-  "loginTitle": "Log in",
-  "signupTitle": "Sign up",
 
   "emailLabel": "Email",
   "passwordLabel": "Password",
@@ -41,7 +39,7 @@
   "noGroupsYet": "You are not in a group yet. Create one or join with an invite code.",
   "createGroupButton": "Create group",
   "groupNameLabel": "Group name",
-  "joinWithCodeButton": "Join with invite code",
+  "joinWithCodeButton": "Join with code",
   "inviteCodeLabel": "Invite code",
   "joinButton": "Join",
   "cancelButton": "Cancel",
@@ -145,7 +143,7 @@
   "monthlySummaryButton": "Monthly summary",
   "monthlyTotalLabel": "Total spent",
   "paidLabel": "Paid",
-  "shareLabel": "Share",
+  "shareLabel": "Cost share",
   "endBalanceLabel": "Balance at month end",
   "noExpensesThisMonth": "No expenses this month.",
   "previousMonthTooltip": "Previous month",

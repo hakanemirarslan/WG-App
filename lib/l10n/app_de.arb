@@ -3,8 +3,6 @@
 
   "appTitle": "WG App",
 
-  "loginTitle": "Anmelden",
-  "signupTitle": "Registrieren",
 
   "emailLabel": "E-Mail",
   "passwordLabel": "Passwort",
@@ -30,7 +28,7 @@
   "noGroupsYet": "Du bist noch in keiner Gruppe. Erstelle eine oder tritt mit einem Einladungscode bei.",
   "createGroupButton": "Gruppe erstellen",
   "groupNameLabel": "Gruppenname",
-  "joinWithCodeButton": "Mit Einladungscode beitreten",
+  "joinWithCodeButton": "Mit Code beitreten",
   "inviteCodeLabel": "Einladungscode",
   "joinButton": "Beitreten",
   "cancelButton": "Abbrechen",
@@ -124,7 +122,7 @@
   "monthlySummaryButton": "Monatsübersicht",
   "monthlyTotalLabel": "Gesamtausgaben",
   "paidLabel": "Bezahlt",
-  "shareLabel": "Anteil",
+  "shareLabel": "Kostenanteil",
   "endBalanceLabel": "Saldo am Monatsende",
   "noExpensesThisMonth": "Keine Ausgaben in diesem Monat.",
   "previousMonthTooltip": "Vorheriger Monat",
