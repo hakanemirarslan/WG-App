@@ -536,27 +536,49 @@ alter publication supabase_realtime add table public.expenses;
 alter publication supabase_realtime add table public.settlements;
 
 -- ============================================================
--- 5) ORNEK KATALOG (baslangic icin; sonra genislet)
+-- 5) KATALOG: WG'de ortak alinan esyalar (yiyecek yok; kategoriler: household, cleaning, bathroom)
 -- ============================================================
 insert into public.catalog_items (name_de, name_en, name_tr, category) values
-  ('Milch', 'Milk', 'Süt', 'food'),
-  ('Brot', 'Bread', 'Ekmek', 'food'),
-  ('Eier', 'Eggs', 'Yumurta', 'food'),
-  ('Butter', 'Butter', 'Tereyağı', 'food'),
-  ('Nudeln', 'Pasta', 'Makarna', 'food'),
-  ('Reis', 'Rice', 'Pirinç', 'food'),
-  ('Kaffee', 'Coffee', 'Kahve', 'food'),
-  ('Tee', 'Tea', 'Çay', 'food'),
-  ('Toilettenpapier', 'Toilet paper', 'Tuvalet kağıdı', 'household'),
   ('Küchenrolle', 'Paper towels', 'Kağıt havlu', 'household'),
-  ('Spülmittel', 'Dish soap', 'Bulaşık deterjanı', 'household'),
-  ('Spülmaschinentabs', 'Dishwasher tabs', 'Bulaşık makinesi tableti', 'household'),
-  ('Waschmittel', 'Laundry detergent', 'Çamaşır deterjanı', 'household'),
   ('Müllbeutel', 'Trash bags', 'Çöp poşeti', 'household'),
-  ('Schwämme', 'Sponges', 'Sünger', 'household'),
-  ('Allzweckreiniger', 'All-purpose cleaner', 'Çok amaçlı temizleyici', 'household'),
+  ('Alufolie', 'Aluminium foil', 'Alüminyum folyo', 'household'),
+  ('Frischhaltefolie', 'Cling film', 'Streç film', 'household'),
+  ('Backpapier', 'Baking paper', 'Pişirme kağıdı', 'household'),
+  ('Gefrierbeutel', 'Freezer bags', 'Buzluk poşeti', 'household'),
+  ('Kaffeefilter', 'Coffee filters', 'Filtre kahve kağıdı', 'household'),
   ('Glühbirne', 'Light bulb', 'Ampul', 'household'),
   ('Batterien', 'Batteries', 'Pil', 'household'),
-  ('Salz', 'Salt', 'Tuz', 'food'),
-  ('Öl', 'Cooking oil', 'Yemeklik yağ', 'food')
-on conflict (name_de) do update set name_tr = excluded.name_tr;
+  ('Mehrfachsteckdose', 'Power strip', 'Çoklu priz', 'household'),
+  ('Kerzen', 'Candles', 'Mum', 'household'),
+  ('Streichhölzer', 'Matches', 'Kibrit', 'household'),
+  ('Feuerzeug', 'Lighter', 'Çakmak', 'household'),
+  ('Klebeband', 'Adhesive tape', 'Bant', 'household'),
+  ('Wäscheklammern', 'Clothes pegs', 'Çamaşır mandalı', 'household'),
+  ('Staubsaugerbeutel', 'Vacuum bags', 'Süpürge torbası', 'household'),
+  ('Taschentücher', 'Tissues', 'Kağıt mendil', 'household'),
+  ('Spülmittel', 'Dish soap', 'Bulaşık deterjanı', 'cleaning'),
+  ('Spülmaschinentabs', 'Dishwasher tabs', 'Bulaşık makinesi tableti', 'cleaning'),
+  ('Spülmaschinensalz', 'Dishwasher salt', 'Bulaşık makinesi tuzu', 'cleaning'),
+  ('Klarspüler', 'Rinse aid', 'Parlatıcı', 'cleaning'),
+  ('Waschmittel', 'Laundry detergent', 'Çamaşır deterjanı', 'cleaning'),
+  ('Weichspüler', 'Fabric softener', 'Çamaşır yumuşatıcı', 'cleaning'),
+  ('Schwämme', 'Sponges', 'Sünger', 'cleaning'),
+  ('Putztücher', 'Cleaning cloths', 'Temizlik bezi', 'cleaning'),
+  ('Spülbürste', 'Dish brush', 'Bulaşık fırçası', 'cleaning'),
+  ('Allzweckreiniger', 'All-purpose cleaner', 'Çok amaçlı temizleyici', 'cleaning'),
+  ('Glasreiniger', 'Glass cleaner', 'Cam temizleyici', 'cleaning'),
+  ('Badreiniger', 'Bathroom cleaner', 'Banyo temizleyici', 'cleaning'),
+  ('WC-Reiniger', 'Toilet cleaner', 'Tuvalet temizleyici', 'cleaning'),
+  ('Entkalker', 'Descaler', 'Kireç çözücü', 'cleaning'),
+  ('Rohrreiniger', 'Drain cleaner', 'Gider açıcı', 'cleaning'),
+  ('Gummihandschuhe', 'Rubber gloves', 'Temizlik eldiveni', 'cleaning'),
+  ('Wischmopp', 'Mop', 'Paspas', 'cleaning'),
+  ('Eimer', 'Bucket', 'Kova', 'cleaning'),
+  ('Besen', 'Broom', 'Süpürge', 'cleaning'),
+  ('Kehrschaufel', 'Dustpan', 'Faraş', 'cleaning'),
+  ('Toilettenpapier', 'Toilet paper', 'Tuvalet kağıdı', 'bathroom'),
+  ('Handseife', 'Hand soap', 'El sabunu', 'bathroom'),
+  ('Lufterfrischer', 'Air freshener', 'Oda kokusu', 'bathroom'),
+  ('WC-Duftstein', 'Toilet freshener', 'Tuvalet bloğu', 'bathroom')
+on conflict (name_de) do update set
+  name_en = excluded.name_en, name_tr = excluded.name_tr, category = excluded.category;

@@ -107,8 +107,9 @@ class CatalogRepository {
     final rows = await supabase
         .from('catalog_items')
         .select('id, name_de, name_en, name_tr, category')
-        .order('category')
-        .order('name_de');
+        // Food was dropped from the picker (WG shopping is about shared household goods);
+        // old group items that point at food rows still show their names elsewhere.
+        .neq('category', 'food');
     return rows.map(CatalogItem.fromMap).toList();
   }
 

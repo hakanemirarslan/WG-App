@@ -45,10 +45,14 @@ Future<List<PickedProduct>?> showProductMultiPicker(
   );
 }
 
+/// Order of the catalog sections in the picker.
+const catalogCategoryOrder = ['household', 'cleaning', 'bathroom'];
+
 String categoryLabel(AppLocalizations l10n, String category) {
   return switch (category) {
-    'food' => l10n.categoryFood,
     'household' => l10n.categoryHousehold,
+    'cleaning' => l10n.categoryCleaning,
+    'bathroom' => l10n.categoryBathroom,
     _ => category,
   };
 }
@@ -256,8 +260,15 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
     }
 
     // Catalog items arrive sorted by category, so group them in order.
+    final sortedCatalog = [...matchingCatalog]
+      ..sort((a, b) {
+        final byCategory = _categoryRank(a.category).compareTo(_categoryRank(b.category));
+        if (byCategory != 0) return byCategory;
+        return normalizeForSearch(a.localized(lang))
+            .compareTo(normalizeForSearch(b.localized(lang)));
+      });
     final byCategory = <String, List<CatalogItem>>{};
-    for (final item in matchingCatalog) {
+    for (final item in sortedCatalog) {
       byCategory.putIfAbsent(item.category, () => []).add(item);
     }
     for (final entry in byCategory.entries) {
@@ -292,9 +303,15 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
   }
 }
 
+int _categoryRank(String category) {
+  final index = catalogCategoryOrder.indexOf(category);
+  return index == -1 ? catalogCategoryOrder.length : index;
+}
+
 IconData _categoryIcon(String category) => switch (category) {
-  'food' => Icons.restaurant_outlined,
-  'household' => Icons.cleaning_services_outlined,
+  'household' => Icons.home_outlined,
+  'cleaning' => Icons.cleaning_services_outlined,
+  'bathroom' => Icons.bathtub_outlined,
   _ => Icons.category_outlined,
 };
 
