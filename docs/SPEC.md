@@ -114,6 +114,7 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
 ## 9. Hesaplasma (settle up)
 
 - **Bakiye ekrani:** Her uyenin bakiyesi + "Onerilen odemeler" (debt_simplifier ciktisi).
+- **Kisi detayi (2026-10-24):** Bakiye ekraninda bir uyeye dokununca acilir. O kisinin **ikili borclari**: "kime net ne kadar borclu" ve "kimden ne alacakli". Her satir acilinca o tutari olusturan harcamalar ve odemeler (settlement) listelenir; harcamaya dokunmak detayina gider. Hesap (`domain/pair_debts.dart`): bir harcamada payi olan herkes odeyene payi kadar borclanir (odeyenin kendi payi borc degildir), odemeler borcu azaltir, iki yondeki borclar cift basina netlesir, net 0 olan ciftler gosterilmez. Kural: bir kisinin tum ikili borclarinin toplami onun bakiyesinin eksilisine esittir (Bolum 4). "Onerilen odemeler" (Bolum 5) sadelestirilmis ve farkli bir seydir: en az sayida odemeyi onerir, gercek ikili borclari degil.
 - Bir transfer satirinda "Odendi olarak isaretle" -> `settlements` kaydi olusturulur. Hem odeyen hem alan isaretleyebilir.
 - **Aylik ozet:** Secilen ay icin harcamalar toplami, kisi basi odenen ve pay, ay sonu bakiyesi. (Bakiye hesabi tum zamanlari kapsar, ozet ekrani sadece goruntuleme filtresidir.)
 - Odeme entegrasyonu V1'de yok. Sadece kayit.

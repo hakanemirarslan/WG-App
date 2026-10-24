@@ -111,6 +111,7 @@ class BalancePage extends ConsumerWidget {
                         isFormer: !data.activeMemberIds.contains(id),
                         cents: data.balances[id]!,
                         lang: lang,
+                        onTap: () => context.push('/group/$groupId/balance/person/$id'),
                       ),
                     ],
                   ],
@@ -289,12 +290,14 @@ class _MemberRow extends StatelessWidget {
     required this.isFormer,
     required this.cents,
     required this.lang,
+    required this.onTap,
   });
 
   final String name;
   final bool isFormer;
   final int cents;
   final String lang;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -303,6 +306,7 @@ class _MemberRow extends StatelessWidget {
     final initial = name.trim().isEmpty ? '?' : name.trim().characters.first.toUpperCase();
 
     return ListTile(
+      onTap: onTap,
       leading: CircleAvatar(
         radius: 18,
         backgroundColor: theme.colorScheme.primaryContainer,
