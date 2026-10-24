@@ -94,8 +94,12 @@ class ShoppingListPage extends ConsumerWidget {
 
   /// "Bought": asks for an optional price. With a price the item is also saved as an
   /// expense paid by me and split equally between all active members; without one
-  /// it is only ticked off. The entry is marked first, so a failed expense never
-  /// leaves the item open and the user can add the expense by hand.
+  /// it is only ticked off.
+  ///
+  /// There is no transaction across the two tables, so the entry is marked first and
+  /// rolled back (put back on the list) if the expense cannot be saved. That way a
+  /// failure leaves the list as it was and the user can simply try again. Only if the
+  /// rollback fails too does the item stay ticked off, and the user is told so.
   Future<void> _markBought(
     BuildContext context,
     WidgetRef ref,
@@ -106,9 +110,17 @@ class ShoppingListPage extends ConsumerWidget {
     final cents = await showBoughtPriceDialog(context, entry.name.localized(lang));
     if (cents == null || !context.mounted) return;
 
-    await _run(context, () async {
-      await ref.read(shoppingRepositoryProvider).markBought(entry.id);
-      if (cents == 0) return;
+    final shopping = ref.read(shoppingRepositoryProvider);
+    try {
+      await shopping.markBought(entry.id);
+    } catch (error) {
+      if (context.mounted) _showError(context, error);
+      return;
+    }
+    if (cents == 0) return;
+
+    String message;
+    try {
       final members = await ref.read(groupMembersProvider(groupId).future);
       await ref
           .read(expensesRepositoryProvider)
@@ -120,11 +132,18 @@ class ShoppingListPage extends ConsumerWidget {
             shares: splitEqual(cents, members.map((m) => m.userId)),
             itemIds: [entry.groupItemId],
           );
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.boughtExpenseRecorded(formatCents(cents, locale: lang)))),
-      );
-    });
+      message = l10n.boughtExpenseRecorded(formatCents(cents, locale: lang));
+    } catch (_) {
+      try {
+        await shopping.undoBought(entry.id);
+        message = l10n.boughtExpenseFailedKeptOpen;
+      } catch (_) {
+        message = l10n.boughtExpenseFailedTickedOff;
+      }
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 
   Future<void> _run(BuildContext context, Future<void> Function() action) async {

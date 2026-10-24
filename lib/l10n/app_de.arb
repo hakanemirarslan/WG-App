@@ -65,6 +65,8 @@
   "priceOptionalLabel": "Preis (optional)",
   "priceSplitHint": "Mit Preis wird eine Ausgabe gespeichert, gleichmäßig auf alle Mitglieder aufgeteilt.",
   "markBoughtConfirm": "Abhaken",
+  "boughtExpenseFailedKeptOpen": "Die Ausgabe konnte nicht gespeichert werden. Der Artikel bleibt auf der Liste, bitte versuche es noch einmal.",
+  "boughtExpenseFailedTickedOff": "Der Artikel wurde abgehakt, aber die Ausgabe konnte nicht gespeichert werden. Bitte füge sie unter Ausgaben von Hand hinzu.",
   "boughtExpenseRecorded": "Ausgabe über {amount} gespeichert",
   "markBoughtTooltip": "Als gekauft markieren",
   "undoBoughtTooltip": "Zurück auf die Liste",

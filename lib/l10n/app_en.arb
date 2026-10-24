@@ -78,6 +78,8 @@
   "priceOptionalLabel": "Price (optional)",
   "priceSplitHint": "With a price, an expense is saved and split equally between all members.",
   "markBoughtConfirm": "Mark as bought",
+  "boughtExpenseFailedKeptOpen": "The expense could not be saved. The item stays on the list, please try again.",
+  "boughtExpenseFailedTickedOff": "The item was ticked off, but the expense could not be saved. Please add it by hand under Expenses.",
   "boughtExpenseRecorded": "Expense of {amount} saved",
   "@boughtExpenseRecorded": {"placeholders": {"amount": {"type": "String"}}},
   "markBoughtTooltip": "Mark as bought",

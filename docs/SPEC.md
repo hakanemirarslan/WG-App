@@ -82,7 +82,7 @@ Garantiler: en fazla `n - 1` transfer, transferlerin toplami bakiyeleri tam sifi
 - Ayni urun zaten acikta varsa tekrar eklemek yerine mevcut kaydi gosterir ("Zaten listede, Ali ekledi").
 - **Durum:** `open` -> `bought`. "Alindi" isaretleyen `bought_by`/`bought_at` olarak kaydedilir. Alinan kalem acik listeden duser, "Son alinanlar" bolumunde 7 gun gorunur, geri alinabilir (`open`'a doner).
 - **Gercek zamanli:** Biri ekleyince/isaretleyince tum uyelerde aninda guncellenir (Supabase Realtime, `shopping_entries`).
-- Liste kaleminde fiyat saklanmaz. **"Alindi" opsiyonel fiyat (2026-10-24 karari):** "Alindi"ya basinca kucuk bir pencere "Preis (optional)" sorar. Bos birakilirsa yalnizca "alindi" isaretlenir. Doldurulursa ayrica bir harcama kaydedilir: odeyen = isaretleyen kisi, tutar = girilen fiyat, bolusum = tum aktif uyeler arasinda esit, kalem = o urun, tarih = bugun. Pencere iptal edilirse kalem acik kalir. Once "alindi" yazilir, sonra harcama; harcama hata verirse kalem yine alinmis kalir ve harcama elle eklenir.
+- Liste kaleminde fiyat saklanmaz. **"Alindi" opsiyonel fiyat (2026-10-24 karari):** "Alindi"ya basinca kucuk bir pencere "Preis (optional)" sorar. Bos birakilirsa yalnizca "alindi" isaretlenir. Doldurulursa ayrica bir harcama kaydedilir: odeyen = isaretleyen kisi, tutar = girilen fiyat, bolusum = tum aktif uyeler arasinda esit, kalem = o urun, tarih = bugun. Pencere iptal edilirse kalem acik kalir. Once "alindi" yazilir, sonra harcama; harcama kaydedilemezse "alindi" geri alinir (kalem listede acik kalir) ve kullaniciya hata gosterilir, yeniden denenebilir. Geri alma da basarisiz olursa kalem alinmis kalir ve kullanici uyarilir, harcama elle eklenir.
 - Silme: kalemi ekleyen veya admin silebilir.
 
 ## 7. Urun secici (hizli giris)
