@@ -14,8 +14,8 @@ class FadeSlide extends StatefulWidget {
     super.key,
     required this.child,
     this.delay = Duration.zero,
-    this.duration = const Duration(milliseconds: 420),
-    this.offset = const Offset(0, 24),
+    this.duration = const Duration(milliseconds: 300),
+    this.offset = const Offset(0, 12),
   });
 
   final Widget child;
@@ -151,7 +151,7 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Small heading above a group of cards.
+/// Small heading above a group of cards (also used for the day headers).
 class SectionHeader extends StatelessWidget {
   const SectionHeader(this.text, {super.key});
 
@@ -161,27 +161,10 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 20, 4, 10),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 14,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text.toUpperCase(),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+      child: Text(
+        text,
+        style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       ),
     );
   }
@@ -196,39 +179,20 @@ class AuthHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         children: [
-          // Gradient avatar ring
           Container(
-            width: 88,
-            height: 88,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [scheme.primary, scheme.tertiary],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: scheme.primary.withValues(alpha: 0.35),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              color: scheme.primaryContainer,
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(Icons.home_rounded, size: 44, color: scheme.onPrimary),
+            child: Icon(Icons.home_rounded, size: 26, color: scheme.onPrimaryContainer),
           ),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context)!.appTitle,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              foreground: Paint()
-                ..shader = LinearGradient(colors: [scheme.primary, scheme.tertiary])
-                    .createShader(const Rect.fromLTWH(0, 0, 200, 50)),
-            ),
-          ),
+          const SizedBox(height: 12),
+          Text(AppLocalizations.of(context)!.appTitle, style: theme.textTheme.headlineSmall),
         ],
       ),
     );

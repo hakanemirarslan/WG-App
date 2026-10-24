@@ -8,6 +8,9 @@ import 'core/supabase_client.dart';
 import 'core/theme.dart';
 import 'l10n/app_localizations.dart';
 
+/// Widest the app content gets on desktop browsers.
+const _maxContentWidth = 640.0;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
@@ -32,6 +35,17 @@ class MyApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
+      // Phone-sized column on wide screens: content (and sheets/dialogs) stay centred.
+      builder: (context, child) => ColoredBox(
+        color: Theme.of(context).colorScheme.surface,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+            child: child,
+          ),
+        ),
+      ),
     );
   }
 }

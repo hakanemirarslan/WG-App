@@ -164,6 +164,8 @@ ThemeData _build(
     labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w600),
   );
 
+  final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(12));
+
   return flex.copyWith(
     textTheme: textTheme,
     dividerTheme: DividerThemeData(color: scheme.outlineVariant, thickness: 1, space: 1),
@@ -185,6 +187,32 @@ ThemeData _build(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: scheme.outlineVariant),
+      ),
+    ),
+    // Compact buttons: 40 high, snug padding, same 12 radius as inputs.
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        shape: buttonShape,
+        textStyle: textTheme.labelLarge,
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        shape: buttonShape,
+        side: BorderSide(color: scheme.outlineVariant),
+        textStyle: textTheme.labelLarge,
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        shape: buttonShape,
+        textStyle: textTheme.labelLarge,
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(

@@ -14,12 +14,15 @@ class ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Icon(Icons.error_outline, size: 32, color: scheme.error),
+            const SizedBox(height: 12),
             Text(l10n.errorGeneric, textAlign: TextAlign.center),
             if (kDebugMode && error != null) SelectableText('$error'),
             if (onRetry != null) TextButton(onPressed: onRetry, child: Text(l10n.retryButton)),
@@ -56,7 +59,8 @@ class EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final showAction = actionLabel != null && onAction != null;
     return Center(
       child: Padding(
@@ -65,16 +69,20 @@ class EmptyView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 88,
-              height: 88,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(color: scheme.primaryContainer, shape: BoxShape.circle),
-              child: Icon(icon, size: 40, color: scheme.onPrimaryContainer),
+              child: Icon(icon, size: 30, color: scheme.onPrimaryContainer),
             ),
-            const SizedBox(height: 20),
-            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+            ),
             if (showAction) ...[
-              const SizedBox(height: 20),
-              FilledButton.icon(
+              const SizedBox(height: 16),
+              FilledButton.tonalIcon(
                 icon: const Icon(Icons.add),
                 onPressed: onAction,
                 label: Text(actionLabel!),
