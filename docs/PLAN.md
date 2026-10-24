@@ -91,14 +91,16 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
 - [x] Bos / hata / yukleniyor durumlari tum ekranlarda
 - [ ] Telefon genisliginde kullanilabilirlik (Chrome cihaz modu 390 px ile tum ekranlar elle kontrol); PWA manifest + ikon kodu hazir, "Ana Ekrana Ekle" denemesi "Yayin" blogunda
 - [ ] Gizlilik: Datenschutzerklaerung / Impressum konusunda kullanici arastirma yapti ve karar verdi (SPEC 16); hesap silme davranisi netlesti
-  - Teknik envanter hazir: `docs/GIZLILIK-ENVANTERI.md`. Hesap silme davranisi kararlandi (anonimlestirme, tek admin ise en eski uyeye devir); uygulama V2'de. Kalan: Datenschutzerklaerung / Impressum arastirmasi (kullanici).
+  - Teknik envanter hazir: `docs/GIZLILIK-ENVANTERI.md`. Hesap silme davranisi kararlandi (anonimlestirme, tek admin ise en eski uyeye devir); uygulama V2'de. Datenschutzerklaerung / Impressum yayindan hemen once yapilacak (kullanici metni baska bir yapay zekaya yazdiracak; bu madde "Yayin" blogunun basina tasindi).
 - [ ] README: neden bu proje, Splitwise'dan farki, mimari, ekran goruntuleri (canli link yayinda eklenir)
   - Metin hazir (2026-10-19); eksik: ekran goruntuleri ve canli link (yer tutucu yorum satirlari README'de). `env.example.json` eklendi.
+  - Ekran goruntuleri en son alinacak (tasarim hala degisebilir); `docs/screenshots/` altina, acik + koyu temadan birer ornek, dosya adlari ekrani anlatsin (`list.png`, `expenses.png`, `balance.png`).
 - [x] Sema bosluklari listesi (SPEC 13) tamamen kapandi
 
 ## Yayin (hazir olunca)
 
 Kullanici simdilik canliya almaya hazir degil; bu maddeler bilincli olarak ertelendi.
+- [ ] **Datenschutzerklaerung + Impressum (yayindan hemen once, kullanici):** metin baska bir yapay zekaya yazdirilir (girdi: `docs/GIZLILIK-ENVANTERI.md`), hukuki tavsiye degildir, kullanici gozden gecirir. Metni etkileyen acik kararlar: hosting yeri, Supabase proje bolgesi ve veri isleme sozlesmesi, Google CDN durumu (asagidaki `--no-web-resources-cdn` maddesinin sonucu metin varyantini belirler), hesap silme V1'e alinsin mi (su an yok, silme e-postayla istenir)
 - [ ] `flutter build web` + deploy (Firebase Hosting / Vercel / Netlify) ve **tum yollari `index.html`'e yonlendirme kurali**; `/join/<code>` canlida sayfa yenilemede calisiyor
 - [ ] `flutter build web --no-web-resources-cdn` ile derle: CanvasKit ve yedek fontlar `gstatic.com` yerine kendi alan adindan gelsin (SPEC 16: ucuncu taraf istegi yok); build ciktisinda `gstatic` gecmedigi dogrulanir
 - [ ] Kalici alan adi secildi (davet linkleri `/join/<code>` ileride mobil uygulamada da calisacak, adres sonradan degismemeli; SPEC 15)
@@ -144,3 +146,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-20: Kullanici tasarimi gozle kontrol etti (sorun yok). Kalan: README icin ekran goruntuleri (kullanici alacak, `docs/screenshots/` altina), Datenschutz/Impressum arastirmasi, yayin blogu.
 - 2026-10-20: Gorsel iyilestirmeler: sayfa basina tematik arka plan (`core/background.dart`, router'da `_backdrop`), harcama listesinde gun basliklari (`domain/group_by_day.dart` + test), aylik ozette odenen/pay cubuklari, bakiyelerde yesil/kirmizi zemin (`balanceContainerColor`), ikonlu/dugmeli `EmptyView`. Chrome'da acik/koyu gozle kontrol kullanicida. Siradaki adim: gozle kontrol, ekran goruntuleri, Datenschutz/Impressum, yayin blogu.
 - 2026-10-20: Cila: animasyon gecikmesi siniri, PWA renk/ikonlari indigo palete tasindi, olu kod temizlendi (`useGradient`, `BackdropFilter`, kart gradyan renkleri, `AppColors.positive`, `balanceColor` yerine `balanceContainerColor`), `AnimatedPressCard` InkWell tabanli (odak, imlec, ekran okuyucu). Eski 2026-10-19 kaydindaki 'sicak palet' ve `balanceColor` artik gecerli degil. Siradaki adim: Chrome'da gozle kontrol, ekran goruntuleri, Datenschutz/Impressum, yayin blogu.
+- 2026-10-24: Kararlar: README ekran goruntuleri en sona (tasarim hala degisebilir); Datenschutz/Impressum yayindan hemen once yapilacak, "Yayin" blogunun basina eklendi (hosting, Supabase bolgesi/DPA, Google CDN sonucu ve hesap silmenin V1'e alinip alinmayacagi acik). Kod tarafinda bekleyen is yok, her sey push'landi. Siradaki adim: kullanici Chrome'da gozle kontrol eder; sonra yayin blogu (hosting secimi).
