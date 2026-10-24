@@ -96,7 +96,7 @@ class ExpensesRepository {
           'id, paid_by, amount_cents, description, expense_date, created_by, '
           'payer:profiles!expenses_paid_by_fkey(display_name), '
           'expense_shares(user_id, share_cents, profiles(display_name)), '
-          'expense_items(group_items(catalog_item_id, custom_name, catalog_items(name_de, name_en)))',
+          'expense_items(group_items(catalog_item_id, custom_name, catalog_items(name_de, name_en, name_tr)))',
         )
         .eq('group_id', groupId)
         .order('expense_date', ascending: false)

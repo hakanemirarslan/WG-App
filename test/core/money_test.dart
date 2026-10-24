@@ -51,5 +51,9 @@ void main() {
     test('formats with dot decimal separator for en', () {
       expect(formatCents(2350, locale: 'en'), '€23.50');
     });
+
+    test('formats with comma decimal separator and dot grouping for tr', () {
+      expect(formatCents(123450, locale: 'tr'), '€1.234,50');
+    });
   });
 }

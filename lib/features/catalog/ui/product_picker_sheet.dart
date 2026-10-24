@@ -200,16 +200,21 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
   ) {
     final searching = query.isNotEmpty;
     final matchingCatalog = searching
-        ? catalog.where((item) => _matches(query, [item.nameDe, item.nameEn])).toList()
+        ? catalog.where((item) => _matches(query, [item.nameDe, item.nameEn, item.nameTr])).toList()
         : catalog;
     // Free-text products of this group are only reachable via frequent items.
     final matchingFrequent = frequent.where((item) {
       if (!searching) return true;
-      return _matches(query, [item.name.customName, item.name.nameDe, item.name.nameEn]);
+      return _matches(query, [
+        item.name.customName,
+        item.name.nameDe,
+        item.name.nameEn,
+        item.name.nameTr,
+      ]);
     }).toList();
 
     final exactMatchExists = [
-      ...matchingCatalog.expand((item) => [item.nameDe, item.nameEn]),
+      ...matchingCatalog.expand((item) => [item.nameDe, item.nameEn, item.nameTr]),
       ...matchingFrequent.map((item) => item.name.customName),
     ].any((name) => name != null && normalizeForSearch(name) == query);
 

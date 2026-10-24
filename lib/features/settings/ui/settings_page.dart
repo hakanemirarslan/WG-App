@@ -20,10 +20,8 @@ class SettingsPage extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: profileAsync.when(
         loading: () => const LoadingView(),
-        error: (error, _) => ErrorView(
-          error: error,
-          onRetry: () => ref.invalidate(myProfileProvider),
-        ),
+        error: (error, _) =>
+            ErrorView(error: error, onRetry: () => ref.invalidate(myProfileProvider)),
         data: (profile) => _SettingsForm(profile: profile),
       ),
       bottomNavigationBar: SafeArea(
@@ -69,17 +67,15 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
   Future<void> _save() async {
     setState(() => _isSaving = true);
     try {
-      await ref.read(profileRepositoryProvider).updateProfile(
-            displayName: _displayNameController.text.trim(),
-            locale: _selectedLocale,
-          );
+      await ref
+          .read(profileRepositoryProvider)
+          .updateProfile(displayName: _displayNameController.text.trim(), locale: _selectedLocale);
       ref.read(appLocaleProvider.notifier).state = Locale(_selectedLocale);
       ref.invalidate(myProfileProvider);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.settingsSavedMessage)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.settingsSavedMessage)));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -108,6 +104,7 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
                 items: [
                   DropdownMenuItem(value: 'de', child: Text(l10n.germanLanguage)),
                   DropdownMenuItem(value: 'en', child: Text(l10n.englishLanguage)),
+                  DropdownMenuItem(value: 'tr', child: Text(l10n.turkishLanguage)),
                 ],
                 onChanged: (value) => setState(() => _selectedLocale = value!),
               ),

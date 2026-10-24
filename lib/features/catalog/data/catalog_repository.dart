@@ -1,27 +1,34 @@
 import '../../../core/supabase_client.dart';
 
-/// Display names of a product: either a catalog entry (DE + EN) or a
+/// Display names of a product: either a catalog entry (DE + EN + TR) or a
 /// free-text name typed by a group member (single language, SPEC 12).
 class ProductName {
   final String? customName;
   final String? nameDe;
   final String? nameEn;
+  final String? nameTr;
 
-  ProductName({this.customName, this.nameDe, this.nameEn});
+  ProductName({this.customName, this.nameDe, this.nameEn, this.nameTr});
 
-  /// [map] is a `group_items` row embedding `catalog_items(name_de, name_en)`.
+  /// [map] is a `group_items` row embedding `catalog_items(name_de, name_en, name_tr)`.
   factory ProductName.fromGroupItemMap(Map<String, dynamic> map) {
     final catalog = map['catalog_items'] as Map<String, dynamic>?;
     return ProductName(
       customName: map['custom_name'] as String?,
       nameDe: catalog?['name_de'] as String?,
       nameEn: catalog?['name_en'] as String?,
+      nameTr: catalog?['name_tr'] as String?,
     );
   }
 
   String localized(String languageCode) {
     if (customName != null) return customName!;
-    return (languageCode == 'de' ? nameDe : nameEn) ?? nameDe ?? nameEn ?? '';
+    final preferred = switch (languageCode) {
+      'de' => nameDe,
+      'tr' => nameTr,
+      _ => nameEn,
+    };
+    return preferred ?? nameEn ?? nameDe ?? '';
   }
 }
 
@@ -45,23 +52,32 @@ class CatalogItem {
   final String id;
   final String nameDe;
   final String nameEn;
+
+  /// Null until a Turkish name exists; the English one is shown then.
+  final String? nameTr;
   final String category;
 
   CatalogItem({
     required this.id,
     required this.nameDe,
     required this.nameEn,
+    required this.nameTr,
     required this.category,
   });
 
   factory CatalogItem.fromMap(Map<String, dynamic> map) => CatalogItem(
-        id: map['id'] as String,
-        nameDe: map['name_de'] as String,
-        nameEn: map['name_en'] as String,
-        category: map['category'] as String,
-      );
+    id: map['id'] as String,
+    nameDe: map['name_de'] as String,
+    nameEn: map['name_en'] as String,
+    nameTr: map['name_tr'] as String?,
+    category: map['category'] as String,
+  );
 
-  String localized(String languageCode) => languageCode == 'de' ? nameDe : nameEn;
+  String localized(String languageCode) => switch (languageCode) {
+    'de' => nameDe,
+    'tr' => nameTr ?? nameEn,
+    _ => nameEn,
+  };
 }
 
 /// A product the group has used before (catalog-based or free text).
@@ -79,18 +95,18 @@ class GroupItem {
   });
 
   factory GroupItem.fromMap(Map<String, dynamic> map) => GroupItem(
-        id: map['id'] as String,
-        catalogItemId: map['catalog_item_id'] as String?,
-        name: ProductName.fromGroupItemMap(map),
-        useCount: map['use_count'] as int,
-      );
+    id: map['id'] as String,
+    catalogItemId: map['catalog_item_id'] as String?,
+    name: ProductName.fromGroupItemMap(map),
+    useCount: map['use_count'] as int,
+  );
 }
 
 class CatalogRepository {
   Future<List<CatalogItem>> fetchCatalog() async {
     final rows = await supabase
         .from('catalog_items')
-        .select('id, name_de, name_en, category')
+        .select('id, name_de, name_en, name_tr, category')
         .order('category')
         .order('name_de');
     return rows.map(CatalogItem.fromMap).toList();
@@ -100,7 +116,9 @@ class CatalogRepository {
   Future<List<GroupItem>> fetchFrequentItems(String groupId) async {
     final rows = await supabase
         .from('group_items')
-        .select('id, catalog_item_id, custom_name, use_count, catalog_items(name_de, name_en)')
+        .select(
+          'id, catalog_item_id, custom_name, use_count, catalog_items(name_de, name_en, name_tr)',
+        )
         .eq('group_id', groupId)
         .gt('use_count', 0)
         .order('use_count', ascending: false)
@@ -117,11 +135,10 @@ class CatalogRepository {
     String? catalogItemId,
     String? customName,
   }) async {
-    final id = await supabase.rpc('get_or_create_group_item', params: {
-      'gid': groupId,
-      'cat_id': catalogItemId,
-      'custom': customName,
-    });
+    final id = await supabase.rpc(
+      'get_or_create_group_item',
+      params: {'gid': groupId, 'cat_id': catalogItemId, 'custom': customName},
+    );
     return id as String;
   }
 

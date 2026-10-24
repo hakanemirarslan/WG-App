@@ -35,7 +35,12 @@ void main() {
       for (final cents in [1, 99, 100, 123456, 10000000]) {
         expect(parseToCents(formatCentsPlain(cents, locale: 'de')), cents);
         expect(parseToCents(formatCentsPlain(cents, locale: 'en')), cents);
+        expect(parseToCents(formatCentsPlain(cents, locale: 'tr')), cents);
       }
+    });
+
+    test('Turkish uses the decimal comma like German', () {
+      expect(formatCentsPlain(334, locale: 'tr'), '3,34');
     });
   });
 }

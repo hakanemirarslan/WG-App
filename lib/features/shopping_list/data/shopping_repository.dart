@@ -60,7 +60,7 @@ class ShoppingRepository {
         .from('shopping_entries')
         .select(
           'id, group_item_id, note, added_by, status, bought_at, created_at, expense_id, '
-          'group_items(custom_name, catalog_items(name_de, name_en)), '
+          'group_items(custom_name, catalog_items(name_de, name_en, name_tr)), '
           'adder:profiles!shopping_entries_added_by_fkey(display_name), '
           'buyer:profiles!shopping_entries_bought_by_fkey(display_name)',
         )

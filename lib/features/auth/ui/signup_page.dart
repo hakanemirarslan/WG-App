@@ -110,6 +110,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       items: [
                         DropdownMenuItem(value: 'de', child: Text(l10n.germanLanguage)),
                         DropdownMenuItem(value: 'en', child: Text(l10n.englishLanguage)),
+                        DropdownMenuItem(value: 'tr', child: Text(l10n.turkishLanguage)),
                       ],
                       onChanged: (value) => setState(() => _selectedLocale = value!),
                     ),

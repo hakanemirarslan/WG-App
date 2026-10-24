@@ -17,6 +17,20 @@ void main() {
       expect(normalizeForSearch('Straße'), 'strasse');
     });
 
+    test('folds Turkish letters so sut matches süt and cay matches çay', () {
+      expect(normalizeForSearch('Süt'), normalizeForSearch('sut'));
+      expect(normalizeForSearch('Çay'), 'cay');
+      expect(normalizeForSearch('Şeker'), 'seker');
+      expect(normalizeForSearch('Pirinç'), 'pirinc');
+      expect(normalizeForSearch('Yağ'), 'yag');
+    });
+
+    test('folds the Turkish dotted and dotless i', () {
+      expect(normalizeForSearch('İstanbul'), 'istanbul');
+      expect(normalizeForSearch('ISIK'), 'isik');
+      expect(normalizeForSearch('ışık'), 'isik');
+    });
+
     test('trims whitespace and handles empty input', () {
       expect(normalizeForSearch('  Milk '), 'milk');
       expect(normalizeForSearch(''), '');

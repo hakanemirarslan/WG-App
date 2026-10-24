@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-const supportedLocaleCodes = ['de', 'en'];
+const supportedLocaleCodes = ['de', 'en', 'tr'];
 
 Locale deviceLocaleOrDefault() {
   final deviceCode = WidgetsBinding.instance.platformDispatcher.locale.languageCode;

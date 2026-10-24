@@ -9,7 +9,7 @@
 create table public.profiles (
   id           uuid primary key references auth.users(id) on delete cascade,
   display_name text not null,
-  locale       text not null default 'de' check (locale in ('de', 'en')),
+  locale       text not null default 'de' check (locale in ('de', 'en', 'tr')),
   created_at   timestamptz not null default now()
 );
 
@@ -44,6 +44,7 @@ create table public.catalog_items (
   id        uuid primary key default gen_random_uuid(),
   name_de   text not null,
   name_en   text not null,
+  name_tr   text,  -- Turkce ad; bos ise uygulama Ingilizce adi gosterir
   category  text not null,
   unique (name_de)
 );
@@ -537,25 +538,25 @@ alter publication supabase_realtime add table public.settlements;
 -- ============================================================
 -- 5) ORNEK KATALOG (baslangic icin; sonra genislet)
 -- ============================================================
-insert into public.catalog_items (name_de, name_en, category) values
-  ('Milch', 'Milk', 'food'),
-  ('Brot', 'Bread', 'food'),
-  ('Eier', 'Eggs', 'food'),
-  ('Butter', 'Butter', 'food'),
-  ('Nudeln', 'Pasta', 'food'),
-  ('Reis', 'Rice', 'food'),
-  ('Kaffee', 'Coffee', 'food'),
-  ('Tee', 'Tea', 'food'),
-  ('Toilettenpapier', 'Toilet paper', 'household'),
-  ('Küchenrolle', 'Paper towels', 'household'),
-  ('Spülmittel', 'Dish soap', 'household'),
-  ('Spülmaschinentabs', 'Dishwasher tabs', 'household'),
-  ('Waschmittel', 'Laundry detergent', 'household'),
-  ('Müllbeutel', 'Trash bags', 'household'),
-  ('Schwämme', 'Sponges', 'household'),
-  ('Allzweckreiniger', 'All-purpose cleaner', 'household'),
-  ('Glühbirne', 'Light bulb', 'household'),
-  ('Batterien', 'Batteries', 'household'),
-  ('Salz', 'Salt', 'food'),
-  ('Öl', 'Cooking oil', 'food')
-on conflict do nothing;
+insert into public.catalog_items (name_de, name_en, name_tr, category) values
+  ('Milch', 'Milk', 'Süt', 'food'),
+  ('Brot', 'Bread', 'Ekmek', 'food'),
+  ('Eier', 'Eggs', 'Yumurta', 'food'),
+  ('Butter', 'Butter', 'Tereyağı', 'food'),
+  ('Nudeln', 'Pasta', 'Makarna', 'food'),
+  ('Reis', 'Rice', 'Pirinç', 'food'),
+  ('Kaffee', 'Coffee', 'Kahve', 'food'),
+  ('Tee', 'Tea', 'Çay', 'food'),
+  ('Toilettenpapier', 'Toilet paper', 'Tuvalet kağıdı', 'household'),
+  ('Küchenrolle', 'Paper towels', 'Kağıt havlu', 'household'),
+  ('Spülmittel', 'Dish soap', 'Bulaşık deterjanı', 'household'),
+  ('Spülmaschinentabs', 'Dishwasher tabs', 'Bulaşık makinesi tableti', 'household'),
+  ('Waschmittel', 'Laundry detergent', 'Çamaşır deterjanı', 'household'),
+  ('Müllbeutel', 'Trash bags', 'Çöp poşeti', 'household'),
+  ('Schwämme', 'Sponges', 'Sünger', 'household'),
+  ('Allzweckreiniger', 'All-purpose cleaner', 'Çok amaçlı temizleyici', 'household'),
+  ('Glühbirne', 'Light bulb', 'Ampul', 'household'),
+  ('Batterien', 'Batteries', 'Pil', 'household'),
+  ('Salz', 'Salt', 'Tuz', 'food'),
+  ('Öl', 'Cooking oil', 'Yemeklik yağ', 'food')
+on conflict (name_de) do update set name_tr = excluded.name_tr;

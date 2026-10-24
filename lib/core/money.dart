@@ -6,15 +6,19 @@ const int maxAmountCents = 100000 * 100;
 final _amountPattern = RegExp(r'^\d+([.,]\d{1,2})?$');
 
 String formatCents(int cents, {required String locale}) {
-  final fullLocale = locale == 'de' ? 'de_DE' : 'en_US';
+  final fullLocale = switch (locale) {
+    'de' => 'de_DE',
+    'tr' => 'tr_TR',
+    _ => 'en_US',
+  };
   final format = NumberFormat.currency(locale: fullLocale, symbol: '€');
   return format.format(cents / 100);
 }
 
 /// Plain amount for text fields, without currency symbol or grouping
-/// ("3,34" in German, "3.34" in English), so [parseToCents] reads it back.
+/// ("3,34" in German and Turkish, "3.34" in English), so [parseToCents] reads it back.
 String formatCentsPlain(int cents, {required String locale}) {
-  final separator = locale == 'de' ? ',' : '.';
+  final separator = locale == 'en' ? '.' : ',';
   return '${cents ~/ 100}$separator${(cents % 100).toString().padLeft(2, '0')}';
 }
 
