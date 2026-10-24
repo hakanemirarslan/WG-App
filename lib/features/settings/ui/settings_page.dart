@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
+import '../../../core/widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../data/profile_repository.dart';
@@ -27,9 +28,10 @@ class SettingsPage extends ConsumerWidget {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: OutlinedButton(
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.logout, size: 18),
             onPressed: () => ref.read(authRepositoryProvider).signOut(),
-            child: Text(l10n.logoutButton),
+            label: Text(l10n.logoutButton),
           ),
         ),
       ),
@@ -85,39 +87,72 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: _displayNameController,
-                decoration: InputDecoration(labelText: l10n.displayNameLabel),
+              // Profile header: who is signed in, as on the person page of the balance tab.
+              AppCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      InitialAvatar(name: widget.profile.displayName, radius: 24),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          widget.profile.displayName,
+                          style: theme.textTheme.titleLarge,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedLocale,
-                decoration: InputDecoration(labelText: l10n.languageLabel),
-                items: [
-                  DropdownMenuItem(value: 'de', child: Text(l10n.germanLanguage)),
-                  DropdownMenuItem(value: 'en', child: Text(l10n.englishLanguage)),
-                  DropdownMenuItem(value: 'tr', child: Text(l10n.turkishLanguage)),
-                ],
-                onChanged: (value) => setState(() => _selectedLocale = value!),
+              const SizedBox(height: 8),
+              AppCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _displayNameController,
+                        decoration: InputDecoration(labelText: l10n.displayNameLabel),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedLocale,
+                        decoration: InputDecoration(labelText: l10n.languageLabel),
+                        items: [
+                          DropdownMenuItem(value: 'de', child: Text(l10n.germanLanguage)),
+                          DropdownMenuItem(value: 'en', child: Text(l10n.englishLanguage)),
+                          DropdownMenuItem(value: 'tr', child: Text(l10n.turkishLanguage)),
+                        ],
+                        onChanged: (value) => setState(() => _selectedLocale = value!),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _isSaving ? null : _save,
-                child: _isSaving
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.saveButton),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _isSaving ? null : _save,
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.saveButton),
+                ),
               ),
             ],
           ),
