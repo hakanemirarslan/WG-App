@@ -140,6 +140,8 @@
   "balancesTitle": "Balances",
   "suggestedPaymentsTitle": "Suggested payments",
   "allSettledUp": "All settled up.",
+  "youAreOwedStatus": "You get money back",
+  "youOweStatus": "You owe money",
   "isOwedLabel": "gets back",
   "owesLabel": "owes",
   "transferLine": "{from} pays {to}",

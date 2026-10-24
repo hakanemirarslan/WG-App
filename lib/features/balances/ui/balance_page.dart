@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
+import '../../../core/theme.dart';
 import '../../../domain/debt_simplifier.dart';
 import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
@@ -13,7 +14,7 @@ import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/ui/group_error_text.dart';
 import '../providers/balances_providers.dart';
 
-/// "Balance" tab (SPEC 9, 11): member balances and suggested payments.
+/// "Balance" tab (SPEC 9, 11): my balance, member balances and suggested payments.
 class BalancePage extends ConsumerWidget {
   const BalancePage({super.key, required this.groupId});
 
@@ -76,7 +77,6 @@ class BalancePage extends ConsumerWidget {
     final groupName = ref.watch(groupProvider(groupId)).value?.name ?? '';
     final balanceAsync = ref.watch(balancesProvider(groupId));
     final myId = supabase.auth.currentUser!.id;
-    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -95,82 +95,74 @@ class BalancePage extends ConsumerWidget {
         ),
         data: (data) {
           final visible = data.visibleUserIds;
-          final myBalance = data.balances[myId] ?? 0;
-          final heroColor = balanceContainerColor(context, myBalance) ?? scheme.primaryContainer;
-          final onHeroColor =
-              onBalanceContainerColor(context, myBalance) ?? scheme.onPrimaryContainer;
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              if (!data.consistent)
+              if (!data.consistent) _MismatchNotice(message: l10n.balancesMismatchMessage),
+              _MyBalanceCard(cents: data.balances[myId] ?? 0, lang: lang),
+              SectionHeader(l10n.balancesTitle),
+              AppCard(
+                child: Column(
+                  children: [
+                    for (final (index, id) in visible.indexed) ...[
+                      if (index > 0) const Divider(indent: 16, endIndent: 16),
+                      _MemberRow(
+                        name: data.names[id] ?? '',
+                        isFormer: !data.activeMemberIds.contains(id),
+                        cents: data.balances[id]!,
+                        lang: lang,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              SectionHeader(l10n.suggestedPaymentsTitle),
+              if (data.transfers.isEmpty)
                 AppCard(
-                  color: scheme.errorContainer,
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(
-                      l10n.balancesMismatchMessage,
-                      style: TextStyle(color: scheme.onErrorContainer),
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle_outline, color: AppColors.of(context).positive),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text(l10n.allSettledUp)),
+                      ],
                     ),
                   ),
-                ),
-              AppCard(
-                color: heroColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
+                )
+              else
+                AppCard(
                   child: Column(
                     children: [
-                      Text(
-                        l10n.yourBalanceLabel,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(color: onHeroColor),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _signed(myBalance, lang),
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(color: onHeroColor),
-                      ),
+                      for (final (index, transfer) in data.transfers.indexed) ...[
+                        if (index > 0) const Divider(indent: 16, endIndent: 16),
+                        _TransferRow(
+                          text: l10n.transferLine(
+                            data.names[transfer.from] ?? '',
+                            data.names[transfer.to] ?? '',
+                          ),
+                          cents: transfer.cents,
+                          lang: lang,
+                          // Only the payer or the receiver may record the payment (SPEC 9).
+                          onMarkPaid: transfer.from == myId || transfer.to == myId
+                              ? () => _markPaid(context, ref, data, transfer)
+                              : null,
+                        ),
+                      ],
                     ],
                   ),
                 ),
-              ),
-              SectionHeader(l10n.balancesTitle),
-              for (final id in visible)
-                _BalanceTile(
-                  name: data.names[id] ?? '',
-                  isFormer: !data.activeMemberIds.contains(id),
-                  cents: data.balances[id]!,
-                  lang: lang,
-                ),
-              SectionHeader(l10n.suggestedPaymentsTitle),
-              if (data.transfers.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Text(l10n.allSettledUp),
-                ),
-              for (final transfer in data.transfers)
-                AppCard(
-                  child: ListTile(
-                    title: Text(
-                      l10n.transferLine(
-                        data.names[transfer.from] ?? '',
-                        data.names[transfer.to] ?? '',
-                      ),
-                    ),
-                    subtitle: Text(formatCents(transfer.cents, locale: lang)),
-                    // Only the payer or the receiver may record the payment (SPEC 9).
-                    trailing: transfer.from == myId || transfer.to == myId
-                        ? OutlinedButton(
-                            onPressed: () => _markPaid(context, ref, data, transfer),
-                            child: Text(l10n.markPaidButton),
-                          )
-                        : null,
+              const SizedBox(height: 8),
+              AnimatedPressCard(
+                onTap: () => context.push('/group/$groupId/balance/summary'),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.calendar_month_outlined,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
+                  title: Text(l10n.monthlySummaryButton),
+                  trailing: const Icon(Icons.chevron_right),
                 ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.calendar_month),
-                onPressed: () => context.push('/group/$groupId/balance/summary'),
-                label: Text(l10n.monthlySummaryButton),
               ),
             ],
           );
@@ -180,8 +172,119 @@ class BalancePage extends ConsumerWidget {
   }
 }
 
-class _BalanceTile extends StatelessWidget {
-  const _BalanceTile({
+/// Warning when the balances do not add up to zero (should never happen).
+class _MismatchNotice extends StatelessWidget {
+  const _MismatchNotice({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return AppCard(
+      color: scheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: scheme.onErrorContainer),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(message, style: TextStyle(color: scheme.onErrorContainer)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The signed amount for the user's own balance, big and coloured by sign, with a
+/// short status line ("you get money back" / "you owe money" / "all settled").
+class _MyBalanceCard extends StatelessWidget {
+  const _MyBalanceCard({required this.cents, required this.lang});
+
+  final int cents;
+  final String lang;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = AppColors.of(context);
+    final amountColor = cents > 0
+        ? colors.positive
+        : cents < 0
+        ? colors.negative
+        : theme.colorScheme.onSurface;
+    final status = cents > 0
+        ? l10n.youAreOwedStatus
+        : cents < 0
+        ? l10n.youOweStatus
+        : l10n.allSettledUp;
+
+    return AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.yourBalanceLabel,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _signed(cents, lang),
+              style: moneyStyle(
+                theme.textTheme.displaySmall?.copyWith(
+                  color: amountColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            _StatusPill(
+              text: status,
+              background:
+                  balanceContainerColor(context, cents) ?? theme.colorScheme.surfaceContainer,
+              foreground: onBalanceContainerColor(context, cents) ?? theme.colorScheme.onSurface,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.text, required this.background, required this.foreground});
+
+  final String text;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: foreground),
+        ),
+      ),
+    );
+  }
+}
+
+/// One member: initial avatar, name, short "gets back / owes" line and the signed
+/// amount on a green or coral pill (the sign keeps it readable without colour).
+class _MemberRow extends StatelessWidget {
+  const _MemberRow({
     required this.name,
     required this.isFormer,
     required this.cents,
@@ -196,20 +299,89 @@ class _BalanceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final onColor = onBalanceContainerColor(context, cents);
+    final theme = Theme.of(context);
+    final initial = name.trim().isEmpty ? '?' : name.trim().characters.first.toUpperCase();
 
-    return AppCard(
-      color: balanceContainerColor(context, cents),
-      child: ListTile(
-        leading: const CircleAvatar(child: Icon(Icons.person)),
-        textColor: onColor,
-        title: Text(isFormer ? '$name ${l10n.formerMemberSuffix}' : name),
-        subtitle: cents == 0 ? null : Text(cents > 0 ? l10n.isOwedLabel : l10n.owesLabel),
-        trailing: Text(
-          // Signed, so owed (+) and owing (-) are distinguishable without colour.
-          _signed(cents, lang),
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: onColor),
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 18,
+        backgroundColor: theme.colorScheme.primaryContainer,
+        child: Text(
+          initial,
+          style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimaryContainer),
         ),
+      ),
+      title: Text(isFormer ? '$name ${l10n.formerMemberSuffix}' : name),
+      subtitle: cents == 0 ? null : Text(cents > 0 ? l10n.isOwedLabel : l10n.owesLabel),
+      trailing: DecoratedBox(
+        decoration: BoxDecoration(
+          color: balanceContainerColor(context, cents),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Text(
+            _signed(cents, lang),
+            style: moneyStyle(
+              theme.textTheme.titleSmall?.copyWith(color: onBalanceContainerColor(context, cents)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One suggested payment ("A pays B", amount) with a compact "mark as paid" button
+/// for the two people involved.
+class _TransferRow extends StatelessWidget {
+  const _TransferRow({
+    required this.text,
+    required this.cents,
+    required this.lang,
+    required this.onMarkPaid,
+  });
+
+  final String text;
+  final int cents;
+  final String lang;
+  final VoidCallback? onMarkPaid;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(text, style: theme.textTheme.bodyLarge),
+                const SizedBox(height: 2),
+                Text(
+                  formatCents(cents, locale: lang),
+                  style: moneyStyle(
+                    theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onMarkPaid != null) ...[
+            const SizedBox(width: 12),
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ),
+              onPressed: onMarkPaid,
+              child: Text(l10n.markPaidButton),
+            ),
+          ],
+        ],
       ),
     );
   }

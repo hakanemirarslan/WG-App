@@ -121,6 +121,8 @@
   "balancesTitle": "Salden",
   "suggestedPaymentsTitle": "Vorgeschlagene Zahlungen",
   "allSettledUp": "Alles ausgeglichen.",
+  "youAreOwedStatus": "Du bekommst Geld zurück",
+  "youOweStatus": "Du schuldest Geld",
   "isOwedLabel": "bekommt",
   "owesLabel": "schuldet",
   "transferLine": "{from} zahlt an {to}",

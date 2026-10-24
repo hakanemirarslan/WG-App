@@ -199,6 +199,10 @@ class AuthHeader extends StatelessWidget {
   }
 }
 
+/// [base] with digits of equal width, so amounts in a column line up (Inter supports it).
+TextStyle? moneyStyle(TextStyle? base) =>
+    base?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+
 /// Background for a signed balance: owed = green container, owing = coral container,
 /// settled = null (callers keep their default surface).
 Color? balanceContainerColor(BuildContext context, int cents) {
