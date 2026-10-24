@@ -235,17 +235,19 @@ class AuthHeader extends StatelessWidget {
   }
 }
 
-/// Background for a signed balance: owed = green container, owing = red container,
+/// Background for a signed balance: owed = green container, owing = coral container,
 /// settled = null (callers keep their default surface).
 Color? balanceContainerColor(BuildContext context, int cents) {
-  if (cents > 0) return AppColors.of(context).positiveContainer;
-  if (cents < 0) return Theme.of(context).colorScheme.errorContainer;
+  final colors = AppColors.of(context);
+  if (cents > 0) return colors.positiveContainer;
+  if (cents < 0) return colors.negativeContainer;
   return null;
 }
 
 /// Text colour that stays readable on [balanceContainerColor].
 Color? onBalanceContainerColor(BuildContext context, int cents) {
-  if (cents > 0) return AppColors.of(context).onPositiveContainer;
-  if (cents < 0) return Theme.of(context).colorScheme.onErrorContainer;
+  final colors = AppColors.of(context);
+  if (cents > 0) return colors.onPositiveContainer;
+  if (cents < 0) return colors.onNegativeContainer;
   return null;
 }

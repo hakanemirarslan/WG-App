@@ -18,7 +18,6 @@ import '../features/groups/ui/groups_page.dart';
 import '../features/groups/ui/join_page.dart';
 import '../features/settings/ui/settings_page.dart';
 import '../features/shopping_list/ui/shopping_list_page.dart';
-import 'background.dart';
 import 'supabase_client.dart';
 
 /// Turns a Stream into a [Listenable] so go_router can re-evaluate its
@@ -41,9 +40,6 @@ class GoRouterRefreshStream extends ChangeNotifier {
 /// (e.g. `/join/<code>`) in `?from=` so we can return there after auth.
 String authPath(String path, String? from) =>
     from == null ? path : Uri(path: path, queryParameters: {'from': from}).toString();
-
-/// Gives a route's page its own backdrop (see [AppBackground]).
-Widget _backdrop(BackgroundStyle style, Widget page) => AppBackground(style: style, child: page);
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -76,18 +72,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SizedBox.shrink()),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => _backdrop(BackgroundStyle.welcome, const LoginPage()),
-      ),
-      GoRoute(
-        path: '/signup',
-        builder: (context, state) => _backdrop(BackgroundStyle.welcome, const SignupPage()),
-      ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => _backdrop(BackgroundStyle.home, const GroupsPage()),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(path: '/signup', builder: (context, state) => const SignupPage()),
+      GoRoute(path: '/home', builder: (context, state) => const GroupsPage()),
       // Tabs are children of /group/:id because go_router requires each
       // StatefulShellBranch's default route to have no path parameters of its own.
       GoRoute(
@@ -103,10 +90,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'list',
-                    builder: (context, state) => _backdrop(
-                      BackgroundStyle.shopping,
-                      ShoppingListPage(groupId: state.pathParameters['id']!),
-                    ),
+                    builder: (context, state) =>
+                        ShoppingListPage(groupId: state.pathParameters['id']!),
                   ),
                 ],
               ),
@@ -114,40 +99,29 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'expenses',
-                    builder: (context, state) => _backdrop(
-                      BackgroundStyle.expenses,
-                      ExpensesPage(groupId: state.pathParameters['id']!),
-                    ),
+                    builder: (context, state) => ExpensesPage(groupId: state.pathParameters['id']!),
                     routes: [
                       // Full-screen pages on the root navigator (no bottom bar).
                       GoRoute(
                         path: 'new',
                         parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => _backdrop(
-                          BackgroundStyle.expenses,
-                          ExpenseFormPage(groupId: state.pathParameters['id']!),
-                        ),
+                        builder: (context, state) =>
+                            ExpenseFormPage(groupId: state.pathParameters['id']!),
                       ),
                       GoRoute(
                         path: ':expenseId',
                         parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => _backdrop(
-                          BackgroundStyle.expenses,
-                          ExpenseDetailPage(
-                            groupId: state.pathParameters['id']!,
-                            expenseId: state.pathParameters['expenseId']!,
-                          ),
+                        builder: (context, state) => ExpenseDetailPage(
+                          groupId: state.pathParameters['id']!,
+                          expenseId: state.pathParameters['expenseId']!,
                         ),
                         routes: [
                           GoRoute(
                             path: 'edit',
                             parentNavigatorKey: _rootNavigatorKey,
-                            builder: (context, state) => _backdrop(
-                              BackgroundStyle.expenses,
-                              ExpenseFormPage(
-                                groupId: state.pathParameters['id']!,
-                                expenseId: state.pathParameters['expenseId']!,
-                              ),
+                            builder: (context, state) => ExpenseFormPage(
+                              groupId: state.pathParameters['id']!,
+                              expenseId: state.pathParameters['expenseId']!,
                             ),
                           ),
                         ],
@@ -160,18 +134,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'balance',
-                    builder: (context, state) => _backdrop(
-                      BackgroundStyle.balance,
-                      BalancePage(groupId: state.pathParameters['id']!),
-                    ),
+                    builder: (context, state) => BalancePage(groupId: state.pathParameters['id']!),
                     routes: [
                       GoRoute(
                         path: 'summary',
                         parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => _backdrop(
-                          BackgroundStyle.summary,
-                          MonthlySummaryPage(groupId: state.pathParameters['id']!),
-                        ),
+                        builder: (context, state) =>
+                            MonthlySummaryPage(groupId: state.pathParameters['id']!),
                       ),
                     ],
                   ),
@@ -181,10 +150,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'members',
-                    builder: (context, state) => _backdrop(
-                      BackgroundStyle.group,
-                      GroupPage(groupId: state.pathParameters['id']!),
-                    ),
+                    builder: (context, state) => GroupPage(groupId: state.pathParameters['id']!),
                   ),
                 ],
               ),
@@ -194,13 +160,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/join/:code',
-        builder: (context, state) =>
-            _backdrop(BackgroundStyle.welcome, JoinPage(code: state.pathParameters['code']!)),
+        builder: (context, state) => JoinPage(code: state.pathParameters['code']!),
       ),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) => _backdrop(BackgroundStyle.settings, const SettingsPage()),
-      ),
+      GoRoute(path: '/settings', builder: (context, state) => const SettingsPage()),
     ],
   );
 });

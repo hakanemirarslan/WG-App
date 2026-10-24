@@ -42,6 +42,9 @@ dependencies:
   go_router: ^18.1.0
   flutter_riverpod: ^3.4.3
   intl: ^0.20.3
+  # Stay on 8.x: 9.x builds on the separate `material_ui` package, whose ThemeData is
+  # not the one from `package:flutter/material.dart` that this app uses.
+  flex_color_scheme: ^8.4.0
 
 dev_dependencies:
   flutter_test:
@@ -66,16 +69,27 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Nunito (SIL OFL 1.1, license in assets/fonts/OFL.txt), static instances of the variable font.
+  # Inter and Plus Jakarta Sans (SIL OFL 1.1, licenses in assets/fonts/OFL-*.txt), static
+  # instances bundled so no font is fetched from a third party at runtime. We keep both
+  # until the design decision is made (see APP_FONT in lib/core/theme.dart).
   fonts:
-    - family: Nunito
+    - family: Inter
       fonts:
-        - asset: assets/fonts/Nunito-Regular.ttf
-        - asset: assets/fonts/Nunito-Medium.ttf
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Nunito-SemiBold.ttf
+        - asset: assets/fonts/Inter-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Nunito-Bold.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
           weight: 700
 
   # To add assets to your application, add an assets section, like this:
