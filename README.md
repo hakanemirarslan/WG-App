@@ -2,7 +2,7 @@
 
 A shared-household app for flatmates (WG): **list what is missing, do the shopping, split the cost automatically.**
 
-Built with Flutter (web first, Android/iOS from the same code later) and Supabase. German and English UI.
+Built with Flutter (web first, Android/iOS from the same code later) and Supabase. German, English and Turkish UI.
 
 <!-- TODO: live link once deployed (see "Yayin" block in docs/PLAN.md) -->
 <!-- TODO: screenshots (shopping list, expenses, balances, light + dark) -->
@@ -11,7 +11,7 @@ Built with Flutter (web first, Android/iOS from the same code later) and Supabas
 
 - **Shared shopping list** for things that ran out at home. Updates in real time and is visible only to the group.
 - **Expenses** entered by whoever paid: amount, who is covered, optional items from the list. Split equally, by ratio (2:1:1) or by exact amounts.
-- **Quick item picker:** ready-made catalog (German/English, umlaut-insensitive search), the group's most-used items, free-text items.
+- **Quick item picker:** ready-made catalog (German/English/Turkish, umlaut- and accent-insensitive search), the group's most-used items, free-text items.
 - **Balances** and the fewest transfers needed to settle up, with a "mark as paid" flow and a monthly summary.
 - **Flatmates moving in and out:** someone who leaves stays in past expenses and keeps their open balance until it is settled.
 - Invite links (`/join/<code>`), admin handover, light and dark theme, installable as a PWA.
@@ -39,7 +39,7 @@ It is also a learning project, built to be small enough to finish and clean enou
 lib/
   main.dart
   core/       supabase client, money, router, theme, shared widgets
-  l10n/       app_de.arb, app_en.arb
+  l10n/       app_de.arb, app_en.arb, app_tr.arb
   features/   auth, groups, shopping_list, expenses, catalog, balances, settings
               each: data/ (Supabase access), providers/ (Riverpod), ui/
   domain/     debt_simplifier, split, balance, monthly_summary (pure Dart)

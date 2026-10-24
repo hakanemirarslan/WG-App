@@ -90,7 +90,7 @@ Garantiler: en fazla `n - 1` transfer, transferlerin toplami bakiyeleri tam sifi
 Hem listeye ekleme hem harcama girisinde ayni bilesen. Alttan acilan sheet.
 
 Siralama ve bolumler:
-1. **Arama kutusu** (ustte, otomatik odakli). Hem Almanca hem Ingilizce isimlerde arar, buyuk/kucuk harf ve umlaut duyarsiz ("Spulmittel" -> "Spülmittel").
+1. **Arama kutusu** (ustte, otomatik odakli). Almanca, Ingilizce ve Turkce isimlerde arar, buyuk/kucuk harf ve umlaut/aksan duyarsiz ("Spulmittel" -> "Spülmittel", "sut" -> "süt").
 2. **Sik kullanilanlar:** Grubun `group_items` kayitlari, `use_count` azalan, esitlikte `last_used_at` yeni olan. Ilk 12.
 3. **Katalog:** Kategoriye gore gruplu (food, household, ...). Isimler kullanicinin diline gore (`name_de` / `name_en`).
 4. Arama sonucu yoksa: **"'xyz' ekle"** secenegi -> grubun kendi urunu olur (`group_items.custom_name`). Bu urun ayni grubun sonraki aramalarinda ve "sik kullanilanlar"da cikar. (Genel kataloga eklenmez, o admin/seed isidir.)
@@ -140,15 +140,16 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
    - **Bakiye:** uye bakiyeleri, onerilen odemeler, aylik ozet.
    - **Grup:** uyeler, davet linki olustur/paylas, ayril.
 4. **Urun secici** (sheet), **Harcama formu**, **Harcama detayi** (duzenle/sil).
-5. **Ayarlar:** dil (DE/EN), gorunen ad, cikis.
+5. **Ayarlar:** dil (DE/EN/TR), gorunen ad, cikis.
 
 Bos durumlar (ornek: henuz kalem yok) ve hata/yukleniyor durumlari her ekranda tasarlanir.
 
 ## 12. Cok dillilik
 
-- Diller: `de`, `en`. Tercih `profiles.locale`'de saklanir, degisince hemen uygulanir.
+- Diller: `de`, `en`, `tr` (Turkce 2026-10-24'te eklendi). Tercih `profiles.locale`'de saklanir, degisince hemen uygulanir. Cihaz dili bunlardan biri degilse `de` kullanilir.
 - UI metinleri `lib/l10n/*.arb`. Tarih, sayi, para formati `intl` ile dile gore.
-- Katalog urunleri `name_de` / `name_en`. Kullanicinin serbest yazdigi urunler tek dilde kalir, cevrilmez.
+- Katalog urunleri `name_de` / `name_en` / `name_tr`. `name_tr` bossa Ingilizce ad gosterilir. Kullanicinin serbest yazdigi urunler tek dilde kalir, cevrilmez.
+- Para: Almanca ve Turkcede ondalik virgul (`1.234,50 €` / `€1.234,50`), Ingilizcede nokta. Girdi her iki ayiraci da kabul eder.
 
 ## 13. Guvenlik
 
@@ -176,7 +177,7 @@ Genel: `flutter analyze` temiz, `flutter test` gecer, ilgili ozellik web'de elle
 | Hafta | Bitti sayilir, eger |
 |---|---|
 | 0 | Bos uygulama `flutter run -d chrome` ile aciliyor, Supabase'e baglanip bir sorgu atabiliyor. |
-| 1 | Kayit, giris, cikis calisiyor; sayfa yenilenince oturum devam ediyor; dil DE/EN degisiyor ve profile kaydediliyor. |
+| 1 | Kayit, giris, cikis calisiyor; sayfa yenilenince oturum devam ediyor; dil DE/EN/TR degisiyor ve profile kaydediliyor. |
 | 2 | Iki ayri tarayici profiliyle: biri grup kuruyor, digeri linkle katiliyor, ikisi de uyeleri goruyor; ayrilma calisiyor; baska grubun verisi gorunmuyor. |
 | 3 | Biri kalem ekleyince digerinde yenilemeden gorunuyor; "alindi" geri alinabiliyor; urun secici arama + sik kullanilanlar + serbest ekleme calisiyor. |
 | 4 | Uc modda harcama kaydediliyor, paylar toplami tutara esit (10,00 €/3 -> 334/333/333); duzenleme/silme yetkisi calisiyor. |
