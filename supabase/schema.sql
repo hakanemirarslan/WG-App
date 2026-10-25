@@ -619,6 +619,44 @@ create policy "settlements_select" on public.settlements for select
   using (public.is_group_member(group_id));
 
 -- ============================================================
+-- 3b) FONKSIYON YETKILERI (Supabase Security Advisor, 2026-10-25)
+-- ============================================================
+-- Postgres her fonksiyonu varsayilan olarak herkese (PUBLIC) acar; Supabase ayrica anon ve
+-- authenticated'a verir. Girissiz kullanici (anon) hicbirini cagiramaz. Trigger fonksiyonlarini
+-- kimse dogrudan cagiramaz (trigger olarak calismalari icin yetki gerekmez).
+-- is_group_member RLS politikalarinin icinde calistigi icin authenticated'da kalmali.
+revoke execute on function
+  public.is_group_member(uuid),
+  public.handle_new_user(),
+  public.create_group(text),
+  public.join_group(text),
+  public.leave_group(uuid),
+  public.set_member_role(uuid, uuid, text),
+  public.get_or_create_group_item(uuid, uuid, text),
+  public.save_expense(uuid, uuid, uuid, integer, text, date, jsonb, jsonb),
+  public.record_settlement(uuid, uuid, uuid, integer),
+  public.guard_shopping_entry(),
+  public.touch_group_item(uuid)
+from public, anon;
+revoke execute on function public.handle_new_user(), public.guard_shopping_entry() from authenticated;
+-- Girisli kullanici: yetkiyi PUBLIC'ten miras almak yerine acikca alir (PUBLIC kapandi).
+grant execute on function
+  public.is_group_member(uuid),
+  public.create_group(text),
+  public.join_group(text),
+  public.leave_group(uuid),
+  public.set_member_role(uuid, uuid, text),
+  public.get_or_create_group_item(uuid, uuid, text),
+  public.save_expense(uuid, uuid, uuid, integer, text, date, jsonb, jsonb),
+  public.record_settlement(uuid, uuid, uuid, integer),
+  public.touch_group_item(uuid)
+to authenticated;
+-- Bundan sonra olusturulacak fonksiyonlar da varsayilan olarak anon/PUBLIC'e acik olmasin.
+-- (PUBLIC'in varsayilani semaya degil geneldir, bu yuzden iki ayri satir.)
+alter default privileges in schema public revoke execute on functions from anon;
+alter default privileges revoke execute on functions from public;
+
+-- ============================================================
 -- 4) GERCEK ZAMANLI SENKRON (liste anlik guncellensin)
 -- ============================================================
 alter publication supabase_realtime add table public.shopping_entries;
