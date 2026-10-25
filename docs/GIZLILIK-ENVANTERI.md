@@ -1,14 +1,15 @@
 # Gizlilik: teknik veri envanteri
 
-Bu dosya **hukuki tavsiye degildir.** Datenschutzerklaerung ve Impressum icin ne gerektigine kullanici karar verir (SPEC 16). Burada sadece uygulamanin teknik olarak ne topladigi yazar; politikayi yazacak kisi icin girdidir. Son guncelleme: 2026-10-19.
+Bu dosya **hukuki tavsiye degildir.** Datenschutzerklaerung ve Impressum icin ne gerektigine kullanici karar verir (SPEC 16). Burada sadece uygulamanin teknik olarak ne topladigi yazar; politikayi yazacak kisi icin girdidir. Son guncelleme: 2026-10-25.
 
 ## Toplanan veriler
 
 | Veri | Nerede | Not |
 |---|---|---|
 | E-posta, parola (hash'li) | Supabase `auth.users` | Giris icin. Parolayi Supabase Auth yonetir, kodda duz metin yok. |
-| Gorunen ad | `profiles.display_name` | Gruptaki herkes gorur. Bos birakilirsa e-postanin `@` oncesi kullanilir (`handle_new_user`). |
-| Dil tercihi | `profiles.locale` | `de` / `en`. |
+| Gorunen ad | `profiles.display_name` | Gruptaki herkes gorur. Kayitta zorunlu; bos gelirse e-postanin `@` oncesi kullanilir (`handle_new_user`). |
+| Ad, soyad, telefon numarasi | `profile_private` (ayrica kayit aninda `auth.users.raw_user_meta_data`) | **2026-10-25'ten itibaren kayitta zorunlu**, eski hesaplarda bos olabilir. **Sadece kisinin kendisi gorur** (RLS: `id = auth.uid()`); grup uyeleri dahil kimse goremez. Telefon ulke kodlu saklanir (`+491512345678`), dogrulanmaz (SMS yok). **Su an uygulamada hicbir islevde kullanilmiyor (kullanici karari: "sadece sakli kalsin").** Datenschutzerklaerung icin acik nokta: bu verilerin hangi amacla toplandigi ve zorunlu olmasinin gerekcesi yazilmali; amac yoksa veri azaltma acisindan istege bagli yapmak ya da hic toplamamak yeniden dusunulmeli. |
+| Dil tercihi | `profiles.locale` | `de` / `en` / `tr`. |
 | Grup uyeligi, rol, katilma/ayrilma zamani | `memberships` | Ayrilinca kayit silinmez, `left_at` dolar. |
 | Alisveris listesi, harcamalar, paylar, odemeler | `shopping_entries`, `expenses`, `expense_items`, `expense_shares`, `settlements` | Kim ekledi / kim odedi / ne zaman bilgisiyle. |
 | Davet kodlari | `invites` | 7 gun gecerli, olusturan kisi kayitli. |

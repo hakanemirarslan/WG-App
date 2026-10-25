@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets.dart';
 import '../../../core/router.dart';
+import '../../../domain/validation.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_providers.dart';
 import 'auth_error_text.dart';
@@ -16,6 +17,7 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSubmitting = false;
@@ -29,6 +31,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
@@ -57,51 +60,61 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               // AutofillGroup lets the browser offer saved logins; Enter in the last
               // field submits the form.
               child: AutofillGroup(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const AuthHeader(),
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(labelText: l10n.emailLabel),
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.username],
-                    ),
-                    const SizedBox(height: 12),
-                    PasswordField(
-                      controller: _passwordController,
-                      autofillHints: const [AutofillHints.password],
-                      onSubmitted: (_) {
-                        if (!_isSubmitting) _submit();
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    if (_errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const AuthHeader(),
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(labelText: l10n.emailLabel),
+                        validator: (value) =>
+                            isValidEmail(value ?? '') ? null : l10n.errorInvalidEmail,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.username],
+                      ),
+                      const SizedBox(height: 12),
+                      PasswordField(
+                        controller: _passwordController,
+                        autofillHints: const [AutofillHints.password],
+                        validator: (value) =>
+                            (value ?? '').isEmpty ? l10n.requiredFieldMessage : null,
+                        onSubmitted: (_) {
+                          if (!_isSubmitting) _submit();
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      if (_errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          ),
                         ),
+                      FilledButton(
+                        onPressed: _isSubmitting ? null : _submit,
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Text(l10n.loginButton),
                       ),
-                    FilledButton(
-                      onPressed: _isSubmitting ? null : _submit,
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(l10n.loginButton),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go(
-                        authPath('/signup', GoRouterState.of(context).uri.queryParameters['from']),
+                      TextButton(
+                        onPressed: () => context.go(
+                          authPath(
+                            '/signup',
+                            GoRouterState.of(context).uri.queryParameters['from'],
+                          ),
+                        ),
+                        child: Text(l10n.noAccountSwitchToSignup),
                       ),
-                      child: Text(l10n.noAccountSwitchToSignup),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

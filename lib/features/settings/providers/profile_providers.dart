@@ -7,3 +7,7 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) => ProfileRe
 final myProfileProvider = FutureProvider<Profile>((ref) {
   return ref.watch(profileRepositoryProvider).fetchMyProfile();
 });
+
+final myPrivateProfileProvider = FutureProvider.autoDispose<PrivateProfile>((ref) {
+  return ref.watch(profileRepositoryProvider).fetchMyPrivateProfile();
+});

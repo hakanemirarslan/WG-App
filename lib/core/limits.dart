@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 /// (the database enforces them; the fields stop typing at the limit so a user
 /// never runs into a server error).
 const maxDisplayNameLength = 50;
+const maxPersonNameLength = 50; // first and last name, each
 const maxGroupNameLength = 60;
 const maxProductNameLength = 60;
 const maxNoteLength = 200;

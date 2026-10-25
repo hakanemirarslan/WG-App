@@ -14,6 +14,19 @@ create table public.profiles (
   created_at   timestamptz not null default now()
 );
 
+-- Kisiye ozel bilgiler: SADECE sahibi okur/yazar (profiles'i grup uyeleri okur, bu yuzden ayri tablo).
+-- Kayitta zorunlu (uygulama dogrular); eski hesaplarda bos olabilir, Ayarlar'dan eklenir.
+-- Telefon ulke kodlu ve bosluksuz saklanir: +491512345678
+create table public.profile_private (
+  id          uuid primary key references public.profiles(id) on delete cascade,
+  first_name  text constraint profile_private_first_name_check
+                check (btrim(first_name) <> '' and char_length(first_name) <= 50),
+  last_name   text constraint profile_private_last_name_check
+                check (btrim(last_name) <> '' and char_length(last_name) <= 50),
+  phone       text constraint profile_private_phone_check check (phone ~ '^\+[0-9]{8,15}$'),
+  updated_at  timestamptz not null default now()
+);
+
 create table public.groups (
   id          uuid primary key default gen_random_uuid(),
   name        text not null constraint groups_name_length check (char_length(name) <= 60)
@@ -150,7 +163,7 @@ as $$
 $$;
 
 -- Yeni kullanici kaydolunca otomatik profil olustur. Ad bos ya da sadece bosluksa e-postanin
--- '@' oncesi kullanilir; uzunluk siniri (50) asilmasin diye kirpilir.
+-- '@' oncesi kullanilir; uzunluk siniri (50) asilmasin diye kirpilir. Ozel bilgiler profile_private'a.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql security definer set search_path = public
@@ -159,6 +172,12 @@ begin
   insert into public.profiles (id, display_name)
   values (new.id, left(coalesce(nullif(btrim(new.raw_user_meta_data->>'display_name'), ''),
                                 split_part(new.email, '@', 1)), 50));
+  -- Ad, soyad, telefon kayit formundan gelir (uygulama dogrular); bos olanlar null kalir.
+  insert into public.profile_private (id, first_name, last_name, phone)
+  values (new.id,
+          nullif(btrim(new.raw_user_meta_data->>'first_name'), ''),
+          nullif(btrim(new.raw_user_meta_data->>'last_name'), ''),
+          nullif(btrim(new.raw_user_meta_data->>'phone'), ''));
   return new;
 end;
 $$;
@@ -544,6 +563,7 @@ alter table public.expenses         enable row level security;
 alter table public.expense_items    enable row level security;
 alter table public.expense_shares   enable row level security;
 alter table public.settlements      enable row level security;
+alter table public.profile_private  enable row level security;
 
 -- profiles: kendi profilin + ayni gruptaki insanlarin profili
 create policy "profiles_read" on public.profiles for select using (
@@ -554,6 +574,12 @@ create policy "profiles_read" on public.profiles for select using (
   )
 );
 create policy "profiles_update_own" on public.profiles for update using (id = auth.uid());
+
+-- profile_private: sadece sahibi (grup uyeleri dahil kimse baskasininkini goremez). Silme yok.
+create policy "profile_private_select_own" on public.profile_private for select using (id = auth.uid());
+create policy "profile_private_insert_own" on public.profile_private for insert with check (id = auth.uid());
+create policy "profile_private_update_own" on public.profile_private for update
+  using (id = auth.uid()) with check (id = auth.uid());
 
 -- groups
 create policy "groups_read" on public.groups for select using (public.is_group_member(id));

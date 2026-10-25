@@ -179,12 +179,16 @@ class PasswordField extends StatefulWidget {
     required this.autofillHints,
     this.helperText,
     this.onSubmitted,
+    this.validator,
   });
 
   final TextEditingController controller;
   final List<String> autofillHints;
   final String? helperText;
   final ValueChanged<String>? onSubmitted;
+
+  /// Used when the field sits in a [Form].
+  final FormFieldValidator<String>? validator;
 
   @override
   State<PasswordField> createState() => _PasswordFieldState();
@@ -196,12 +200,13 @@ class _PasswordFieldState extends State<PasswordField> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return TextField(
+    return TextFormField(
       controller: widget.controller,
       obscureText: !_visible,
       textInputAction: TextInputAction.done,
       autofillHints: widget.autofillHints,
-      onSubmitted: widget.onSubmitted,
+      onFieldSubmitted: widget.onSubmitted,
+      validator: widget.validator,
       decoration: InputDecoration(
         labelText: l10n.passwordLabel,
         helperText: widget.helperText,
