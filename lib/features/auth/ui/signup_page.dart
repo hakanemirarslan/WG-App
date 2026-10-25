@@ -9,6 +9,7 @@ import '../../../core/router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../settings/providers/profile_providers.dart';
 import '../providers/auth_providers.dart';
+import 'auth_error_text.dart';
 
 class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
@@ -58,7 +59,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
           .updateProfile(displayName: _displayNameController.text.trim(), locale: _selectedLocale);
       ref.read(appLocaleProvider.notifier).state = Locale(_selectedLocale);
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      if (mounted) setState(() => _errorMessage = authErrorText(AppLocalizations.of(context)!, e));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -121,7 +122,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Text(
-                          l10n.authErrorGeneric(_errorMessage!),
+                          _errorMessage!,
                           style: TextStyle(color: Theme.of(context).colorScheme.error),
                         ),
                       ),

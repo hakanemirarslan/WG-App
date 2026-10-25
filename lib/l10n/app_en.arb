@@ -18,15 +18,13 @@
   "noAccountSwitchToSignup": "No account yet? Sign up",
   "haveAccountSwitchToLogin": "Already have an account? Log in",
 
-  "authErrorGeneric": "Something went wrong: {message}",
-  "@authErrorGeneric": {
-    "description": "Shown when login/signup fails.",
-    "placeholders": {
-      "message": {
-        "type": "String"
-      }
-    }
-  },
+  "errorWeakPassword": "The password must be at least 8 characters long and contain a lowercase letter, an uppercase letter and a digit.",
+  "errorEmailTaken": "An account with this email already exists. Log in instead.",
+  "errorInvalidCredentials": "Email or password is wrong.",
+  "errorEmailNotConfirmed": "Please confirm your email address first. Check your inbox.",
+  "errorInvalidEmail": "Please enter a valid email address.",
+  "errorTooManyAttempts": "Too many attempts. Please wait a moment and try again.",
+  "errorNetwork": "Could not reach the server. Check your internet connection.",
 
   "homeTitle": "Home",
   "settingsTitle": "Settings",

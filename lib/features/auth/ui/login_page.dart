@@ -6,6 +6,7 @@ import '../../../core/widgets.dart';
 import '../../../core/router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_providers.dart';
+import 'auth_error_text.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -37,7 +38,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           .read(authRepositoryProvider)
           .signIn(email: _emailController.text.trim(), password: _passwordController.text);
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      if (mounted) setState(() => _errorMessage = authErrorText(AppLocalizations.of(context)!, e));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -83,7 +84,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Text(
-                          l10n.authErrorGeneric(_errorMessage!),
+                          _errorMessage!,
                           style: TextStyle(color: Theme.of(context).colorScheme.error),
                         ),
                       ),
