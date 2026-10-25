@@ -3,8 +3,8 @@
     "short_name": "WG App",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#F8F7FF",
-    "theme_color": "#5B4CF5",
+    "background_color": "#F6F7F6",
+    "theme_color": "#0E9F8E",
     "description": "Shopping list and automatic expense splitting for shared flats.",
     "prefer_related_applications": false,
     "icons": [
