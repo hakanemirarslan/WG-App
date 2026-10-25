@@ -172,54 +172,70 @@ class _GroupPageState extends ConsumerState<GroupPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  // Invite: a button first, then the generated link in a tinted box.
-                  AppCard(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: _inviteLink == null
-                          ? OutlinedButton.icon(
-                              icon: const Icon(Icons.link),
-                              onPressed: _createInvite,
-                              label: Text(l10n.createInviteButton),
-                            )
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(l10n.inviteLinkReady, style: theme.textTheme.labelLarge),
-                                const SizedBox(height: 8),
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.surfaceContainer,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: SelectableText(_inviteLink!),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                FilledButton.icon(
-                                  icon: const Icon(Icons.copy, size: 18),
-                                  onPressed: _copyInvite,
-                                  label: Text(l10n.copyLinkButton),
-                                ),
-                              ],
-                            ),
+                  // The generated link; the buttons to create/copy it are in the bottom bar.
+                  if (_inviteLink != null) ...[
+                    SectionHeader(l10n.inviteLinkReady),
+                    AppCard(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: SelectableText(_inviteLink!),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.logout, size: 18),
-                    style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
-                    onPressed: _leave,
-                    label: Text(l10n.leaveGroupButton),
-                  ),
+                  ],
                 ],
               ),
             ),
           );
         },
+      ),
+      // Invite and leave side by side at the bottom, as on the groups page.
+      bottomNavigationBar: SafeArea(
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _inviteLink == null
+                        ? FilledButton.icon(
+                            icon: const Icon(Icons.link, size: 18),
+                            onPressed: _createInvite,
+                            label: Text(l10n.createInviteButton),
+                          )
+                        : FilledButton.icon(
+                            icon: const Icon(Icons.copy, size: 18),
+                            onPressed: _copyInvite,
+                            label: Text(l10n.copyLinkButton),
+                          ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.logout, size: 18),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                      onPressed: _leave,
+                      label: Text(l10n.leaveGroupButton),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

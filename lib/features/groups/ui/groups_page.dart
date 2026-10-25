@@ -7,7 +7,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/widgets.dart';
 import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
+import '../../../core/money.dart';
+import '../../../core/supabase_client.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../balances/providers/balances_providers.dart';
 import '../../settings/providers/profile_providers.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
@@ -110,7 +113,8 @@ class GroupsPage extends ConsumerWidget {
                       ),
                     ),
                     title: Text(group.name),
-                    trailing: const Icon(Icons.chevron_right),
+                    subtitle: _BalanceStatus(groupId: group.id),
+                    trailing: _BalancePill(groupId: group.id),
                   ),
                 ),
               ),
@@ -139,6 +143,65 @@ class GroupsPage extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// My balance in [groupId], or null while it is loading or failed. Same numbers as the
+/// Balance tab (`balancesProvider`); errors stay quiet here, the group itself shows them.
+int? _myBalance(WidgetRef ref, String groupId) {
+  final data = ref.watch(balancesProvider(groupId)).value;
+  if (data == null) return null;
+  return data.balances[supabase.auth.currentUser!.id] ?? 0;
+}
+
+/// "You are owed" / "You owe" / "All settled up" under the group name.
+class _BalanceStatus extends ConsumerWidget {
+  const _BalanceStatus({required this.groupId});
+
+  final String groupId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cents = _myBalance(ref, groupId);
+    if (cents == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    return Text(
+      cents > 0
+          ? l10n.youAreOwedStatus
+          : cents < 0
+          ? l10n.youOweStatus
+          : l10n.allSettledUp,
+    );
+  }
+}
+
+/// Signed amount on a green (owed) or coral (owing) pill; a chevron when settled.
+class _BalancePill extends ConsumerWidget {
+  const _BalancePill({required this.groupId});
+
+  final String groupId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cents = _myBalance(ref, groupId);
+    if (cents == null || cents == 0) return const Icon(Icons.chevron_right);
+    final theme = Theme.of(context);
+    final lang = Localizations.localeOf(context).languageCode;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: balanceContainerColor(context, cents),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Text(
+          '${cents > 0 ? '+' : '−'}${formatCents(cents.abs(), locale: lang)}',
+          style: moneyStyle(
+            theme.textTheme.titleSmall?.copyWith(color: onBalanceContainerColor(context, cents)),
           ),
         ),
       ),

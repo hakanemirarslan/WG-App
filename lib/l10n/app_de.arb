@@ -38,7 +38,7 @@
   "youSuffix": "(du)",
   "makeAdminAction": "Zum Admin machen",
   "removeAdminAction": "Admin-Rechte entziehen",
-  "createInviteButton": "Einladungslink erstellen",
+  "createInviteButton": "Einladen",
   "inviteLinkReady": "Einladungslink (7 Tage gültig)",
   "copyLinkButton": "Link kopieren",
   "linkCopiedMessage": "Link kopiert",

@@ -37,7 +37,7 @@
   "youSuffix": "(sen)",
   "makeAdminAction": "Yönetici yap",
   "removeAdminAction": "Yöneticilikten çıkar",
-  "createInviteButton": "Davet linki oluştur",
+  "createInviteButton": "Davet et",
   "inviteLinkReady": "Davet linki (7 gün geçerli)",
   "copyLinkButton": "Linki kopyala",
   "linkCopiedMessage": "Link kopyalandı",

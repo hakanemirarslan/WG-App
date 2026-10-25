@@ -49,7 +49,7 @@
   "youSuffix": "(you)",
   "makeAdminAction": "Make admin",
   "removeAdminAction": "Remove admin",
-  "createInviteButton": "Create invite link",
+  "createInviteButton": "Invite",
   "inviteLinkReady": "Invite link (valid for 7 days)",
   "copyLinkButton": "Copy link",
   "linkCopiedMessage": "Link copied",
