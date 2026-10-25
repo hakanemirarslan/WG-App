@@ -182,6 +182,8 @@ Kapsam: tum RLS politikalari ve RPC'ler, git gecmisinde anahtar, istemci hata me
   3. Metin alanlarinda uzunluk siniri yoktu. **Cozum:** check constraint'ler (ad 50, grup adi 60, urun adi 60, not ve aciklama 200); istemci alanlari ayni sinirda yazmayi durdurur (`core/limits.dart`).
   4. Davet kodu `random()` ile uretiliyordu. **Cozum:** `gen_random_uuid()`, 12 hex.
 - **Supabase Security Advisor (ayni gun):** tum `security definer` fonksiyonlar girissiz (`anon`) cagrilabiliyordu (Postgres varsayilani; icerideki `auth.uid()` kontrolleri yuzunden zararsizdi). **Cozum:** `anon` ve `PUBLIC`'ten `EXECUTE` alindi, uygulamanin RPC'leri `authenticated`'a acikca verildi, trigger fonksiyonlari (`handle_new_user`, `guard_shopping_entry`) kimseye acik degil; yeni fonksiyonlar da varsayilan olarak kapali. Kalan "Signed-In Users Can Execute" uyarilari (9 RPC) bilincli: bunlar uygulamanin API'si, yetki kontrolleri fonksiyonlarin icinde.
+- **Supabase Auth ayarlari:** minimum sifre 8 karakter, kucuk + buyuk harf + rakam zorunlu (sadece yeni kayit/sifre degisikliginde gecerli); anonim giris kapali (acilsa anonim oturum `authenticated` sayilir ve RPC'leri cagirabilir).
+- **Bilinen, kabul edilen:** sizdirilmis sifre korumasi (HaveIBeenPwned) sadece Pro planda; ucretsiz planda kapali, Advisor uyarisi bu yuzden kalir.
 - **Bilinen, kabul edilen:** Supabase Realtime DELETE olaylarina RLS uygulanamaz; abone olan biri baska gruplarin silinen kayitlarinin sadece ID'sini gorebilir (icerik yok). Platform siniri.
 
 ## 14. Test ve "bitti" olcutleri
