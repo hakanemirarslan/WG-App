@@ -8,14 +8,14 @@
 
 create table public.profiles (
   id           uuid primary key references auth.users(id) on delete cascade,
-  display_name text not null,
+  display_name text not null constraint profiles_display_name_length check (char_length(display_name) <= 50),
   locale       text not null default 'de' check (locale in ('de', 'en', 'tr')),
   created_at   timestamptz not null default now()
 );
 
 create table public.groups (
   id          uuid primary key default gen_random_uuid(),
-  name        text not null,
+  name        text not null constraint groups_name_length check (char_length(name) <= 60),
   currency    text not null default 'EUR',
   created_by  uuid not null references public.profiles(id),
   created_at  timestamptz not null default now()
@@ -31,8 +31,9 @@ create table public.memberships (
   primary key (group_id, user_id)
 );
 
+-- Kod: gen_random_uuid() guclu (kriptografik) rastgelelik kullanir; ilk 12 hex hanesi = 48 bit.
 create table public.invites (
-  code        text primary key default substr(md5(random()::text || clock_timestamp()::text), 1, 10),
+  code        text primary key default substr(replace(gen_random_uuid()::text, '-', ''), 1, 12),
   group_id    uuid not null references public.groups(id) on delete cascade,
   created_by  uuid not null references public.profiles(id),
   expires_at  timestamptz not null default now() + interval '7 days',
@@ -55,7 +56,7 @@ create table public.group_items (
   id               uuid primary key default gen_random_uuid(),
   group_id         uuid not null references public.groups(id) on delete cascade,
   catalog_item_id  uuid references public.catalog_items(id),
-  custom_name      text,
+  custom_name      text constraint group_items_custom_name_length check (char_length(custom_name) <= 60),
   use_count        integer not null default 0,
   last_used_at     timestamptz,
   check (catalog_item_id is not null or custom_name is not null)
@@ -72,7 +73,7 @@ create table public.shopping_entries (
   id             uuid primary key default gen_random_uuid(),
   group_id       uuid not null references public.groups(id) on delete cascade,
   group_item_id  uuid not null references public.group_items(id),
-  note           text,
+  note           text constraint shopping_entries_note_length check (char_length(note) <= 200),
   added_by       uuid not null references public.profiles(id),
   status         text not null default 'open' check (status in ('open', 'bought')),
   bought_by      uuid references public.profiles(id),
@@ -86,7 +87,7 @@ create table public.expenses (
   group_id      uuid not null references public.groups(id) on delete cascade,
   paid_by       uuid not null references public.profiles(id),
   amount_cents  integer not null check (amount_cents > 0),
-  description   text,
+  description   text constraint expenses_description_length check (char_length(description) <= 200),
   expense_date  date not null default current_date,
   created_by    uuid not null references public.profiles(id),
   created_at    timestamptz not null default now()
@@ -448,6 +449,72 @@ begin
 end;
 $$;
 
+-- Liste kaydi koruyucusu (guvenlik incelemesi 2026-10-25). RLS hangi satira dokunulabilecegini
+-- belirler ama hangi sutunun degisebilecegini belirlemez; bu trigger bunu tamamlar:
+--   - ekleyen, grup, urun ve olusturma zamani sonradan degismez (silme yetkisi ekleyene bagli)
+--   - urun ayni gruptan olmali; yeni kayit her zaman 'open' baslar
+--   - "alan kisi" ve zamani sunucu yazar; acik kayitta alan/zaman/harcama bosaltilir
+--   - kayit sadece kendi olusturdugun, ayni gruptaki bir harcamaya baglanabilir
+-- auth.uid() bos ise (SQL Editor, service role) kontrol yapilmaz.
+-- Hata kodlari: invalid_item, not_allowed, invalid_expense
+create or replace function public.guard_shopping_entry()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    return new;
+  end if;
+
+  if tg_op = 'INSERT' then
+    if not exists (
+      select 1 from public.group_items gi
+      where gi.id = new.group_item_id and gi.group_id = new.group_id
+    ) then
+      raise exception 'invalid_item';
+    end if;
+    new.status := 'open';
+    new.bought_by := null;
+    new.bought_at := null;
+    new.expense_id := null;
+    new.created_at := now();
+    return new;
+  end if;
+
+  if new.group_id <> old.group_id or new.group_item_id <> old.group_item_id
+     or new.added_by <> old.added_by or new.created_at <> old.created_at then
+    raise exception 'not_allowed';
+  end if;
+
+  if new.status = 'open' then
+    new.bought_by := null;
+    new.bought_at := null;
+    new.expense_id := null;
+  elsif old.status = 'open' then
+    new.bought_by := auth.uid();
+    new.bought_at := now();
+  else
+    new.bought_by := old.bought_by;
+    new.bought_at := old.bought_at;
+  end if;
+
+  if new.expense_id is not null and new.expense_id is distinct from old.expense_id then
+    if new.bought_by <> auth.uid() or not exists (
+      select 1 from public.expenses e
+      where e.id = new.expense_id and e.group_id = new.group_id and e.created_by = auth.uid()
+    ) then
+      raise exception 'invalid_expense';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists shopping_entries_guard on public.shopping_entries;
+create trigger shopping_entries_guard
+  before insert or update on public.shopping_entries
+  for each row execute function public.guard_shopping_entry();
+
 -- Urun kullanildikca siklik sayacini artir
 create or replace function public.touch_group_item(item_id uuid)
 returns void
@@ -503,9 +570,10 @@ create policy "invites_insert" on public.invites for insert with check (
 -- catalog: herkes (girisli) okur
 create policy "catalog_read" on public.catalog_items for select using (auth.role() = 'authenticated');
 
--- group_items
-create policy "group_items_all" on public.group_items for all
-  using (public.is_group_member(group_id)) with check (public.is_group_member(group_id));
+-- group_items: uyeler okur; yazma SADECE get_or_create_group_item ve touch_group_item RPC'leriyle
+-- (dogrudan yazma, bir uyenin urun adini ve boylece harcama gecmisini degistirmesine izin veriyordu).
+create policy "group_items_select" on public.group_items for select
+  using (public.is_group_member(group_id));
 
 -- shopping_entries
 -- Okuma, ekleme, durum guncelleme: tum aktif uyeler. Silme: ekleyen veya admin (SPEC 6).

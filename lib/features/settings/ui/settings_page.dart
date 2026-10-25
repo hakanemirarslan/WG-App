@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
+import '../../../core/limits.dart';
 import '../../../core/widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -124,6 +125,7 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
                       TextField(
                         controller: _displayNameController,
                         decoration: InputDecoration(labelText: l10n.displayNameLabel),
+                        inputFormatters: limitTo(maxDisplayNameLength),
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(

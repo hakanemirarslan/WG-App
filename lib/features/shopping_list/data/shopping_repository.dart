@@ -32,15 +32,18 @@ class ShoppingEntry {
     required this.expenseId,
   });
 
+  /// Joined rows can come back null when RLS hides them; such a row then shows an empty
+  /// name instead of failing the whole list (defence in depth, the database prevents it).
   factory ShoppingEntry.fromMap(Map<String, dynamic> map) {
     final boughtAt = map['bought_at'] as String?;
+    final groupItem = map['group_items'] as Map<String, dynamic>?;
     return ShoppingEntry(
       id: map['id'] as String,
       groupItemId: map['group_item_id'] as String,
-      name: ProductName.fromGroupItemMap(map['group_items'] as Map<String, dynamic>),
+      name: groupItem == null ? ProductName() : ProductName.fromGroupItemMap(groupItem),
       note: map['note'] as String?,
       addedBy: map['added_by'] as String,
-      addedByName: (map['adder'] as Map<String, dynamic>)['display_name'] as String,
+      addedByName: (map['adder'] as Map<String, dynamic>?)?['display_name'] as String? ?? '',
       isBought: map['status'] == 'bought',
       boughtByName: (map['buyer'] as Map<String, dynamic>?)?['display_name'] as String?,
       boughtAt: boughtAt == null ? null : DateTime.parse(boughtAt),

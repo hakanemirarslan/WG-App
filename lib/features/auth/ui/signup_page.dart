@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets.dart';
+import '../../../core/limits.dart';
 import '../../../core/locale_provider.dart';
 import '../../../core/router.dart';
 import '../../../l10n/app_localizations.dart';
@@ -81,6 +82,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     TextField(
                       controller: _displayNameController,
                       decoration: InputDecoration(labelText: l10n.displayNameLabel),
+                      inputFormatters: limitTo(maxDisplayNameLength),
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.nickname],
                     ),

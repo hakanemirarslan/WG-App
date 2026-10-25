@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/widgets.dart';
 import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
+import '../../../core/limits.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../l10n/app_localizations.dart';
@@ -20,7 +21,7 @@ import 'group_error_text.dart';
 class GroupsPage extends ConsumerWidget {
   const GroupsPage({super.key});
 
-  Future<String?> _askText(BuildContext context, String label, String action) {
+  Future<String?> _askText(BuildContext context, String label, String action, {int? maxLength}) {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController();
     return showDialog<String>(
@@ -30,6 +31,7 @@ class GroupsPage extends ConsumerWidget {
           controller: controller,
           autofocus: true,
           decoration: InputDecoration(labelText: label),
+          inputFormatters: maxLength == null ? null : limitTo(maxLength),
           onSubmitted: (value) => Navigator.pop(context, value.trim()),
         ),
         actions: [
@@ -45,7 +47,12 @@ class GroupsPage extends ConsumerWidget {
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
-    final name = await _askText(context, l10n.groupNameLabel, l10n.createGroupButton);
+    final name = await _askText(
+      context,
+      l10n.groupNameLabel,
+      l10n.createGroupButton,
+      maxLength: maxGroupNameLength,
+    );
     if (name == null || name.isEmpty || !context.mounted) return;
     try {
       final id = await ref.read(groupsRepositoryProvider).createGroup(name);

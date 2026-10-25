@@ -6,6 +6,7 @@ import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
+import '../../../core/limits.dart';
 import '../../../domain/split.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../catalog/providers/catalog_providers.dart';
@@ -73,6 +74,7 @@ class ShoppingListPage extends ConsumerWidget {
           controller: controller,
           autofocus: true,
           decoration: InputDecoration(labelText: l10n.noteLabel, hintText: l10n.noteHint),
+          inputFormatters: limitTo(maxNoteLength),
           onSubmitted: (value) => Navigator.pop(context, value.trim()),
         ),
         actions: [

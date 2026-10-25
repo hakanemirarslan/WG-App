@@ -157,7 +157,7 @@ Bos durumlar (ornek: henuz kalem yok) ve hata/yukleniyor durumlari her ekranda t
 - Uygulama sadece `anon` key kullanir. `service_role` asla istemcide olmaz.
 - Veri erisimi RLS ile: sadece **aktif** grup uyeleri o grubun verisini gorur/degistirir.
 - `join_group`, `create_group`, `leave_group` `security definer` fonksiyonlaridir, `search_path` sabit.
-- Davet kodlari tahmin edilemez uzunlukta (10 hex) ve sureli.
+- Davet kodlari tahmin edilemez (12 hex, `gen_random_uuid()` ile kriptografik rastgelelik) ve sureli. Eski 10 haneli kodlar suresi dolana kadar gecerli.
 
 ### Bilinen sema bosluklari (kodlamaya baslarken ele alinacak)
 
@@ -170,6 +170,18 @@ Bos durumlar (ornek: henuz kalem yok) ve hata/yukleniyor durumlari her ekranda t
 5. ~~**Katilimci/odeyen aktif uye mi**~~ **Kapandi (Hafta 4):** `save_expense` odeyen ve tum paylasanlarin aktif uye olmasini ister (`invalid_participant`). Duzenlemede o harcamada zaten bulunan, sonradan ayrilmis uyeler korunabilir.
 6. ~~**Settlement dogrulamasi**~~ **Kapandi (Hafta 5):** `settlements` icin dogrudan yazma policy'si yok; `record_settlement(gid, from_id, to_id, amount)` RPC'si: cagiran aktif uye ve taraflardan biri (`not_allowed`), `from <> to` (`invalid_settlement`), ikisi de grubun uyesi, ayrilmis olsa da (`invalid_participant`), tutar 1..10.000.000 cent (`invalid_amount`). Geri alma V1'de yok.
 7. ~~**`shopping_entries` realtime**~~ **Kapandi (Hafta 3):** INSERT/UPDATE olaylari `group_id` filtresiyle ve RLS ile gelir; DELETE olaylari `group_id` ile filtrelenemez (eski satir sadece PK tasir), bu yuzden ayri, filtresiz bir abonelik sadece "listeyi yeniden yukle" tetikler. Iki tarayicida denendi.
+
+### Guvenlik incelemesi (2026-10-25, yayin oncesi)
+
+Kapsam: tum RLS politikalari ve RPC'ler, git gecmisinde anahtar, istemci hata mesajlari ve yonlendirme. Her bulgu gecici bir PostgreSQL'de (Supabase `auth` taklidi) saldiri senaryosuyla dogrulandi, duzeltmeden sonra ayni senaryolar ve normal uygulama akisi yeniden denendi.
+
+- **Disaridan:** uye olmayan ve girissiz kullanici hicbir grup verisini goremedi/degistiremedi. Git gecmisinde `env.json` ya da anahtar yok. Ham hata metni sadece debug'da; `?from=` sadece uygulama ici yola gider.
+- **Grubun icinden (duzeltildi):**
+  1. `shopping_entries` guncelleme politikasi sutun sinirlamiyordu: uye baskasinin kaydinin "ekleyen"ini degistirip silebiliyor, kaydi ilgisiz bir harcamaya baglayabiliyor, baska grubun urunune baglayip tum grubun listesini bozabiliyordu. **Cozum:** `guard_shopping_entry` trigger'i (ekleyen/grup/urun degismez, urun ayni gruptan, alan kisi ve zamani sunucu yazar, sadece kendi harcamana baglanir; hatalar `invalid_item`, `not_allowed`, `invalid_expense`) + istemcide bos join'e dayanikli okuma.
+  2. `group_items` dogrudan yazilabiliyordu (urun adini ve boylece harcama gecmisini degistirme). **Cozum:** sadece okuma; yazma `get_or_create_group_item` / `touch_group_item` ile.
+  3. Metin alanlarinda uzunluk siniri yoktu. **Cozum:** check constraint'ler (ad 50, grup adi 60, urun adi 60, not ve aciklama 200); istemci alanlari ayni sinirda yazmayi durdurur (`core/limits.dart`).
+  4. Davet kodu `random()` ile uretiliyordu. **Cozum:** `gen_random_uuid()`, 12 hex.
+- **Bilinen, kabul edilen:** Supabase Realtime DELETE olaylarina RLS uygulanamaz; abone olan biri baska gruplarin silinen kayitlarinin sadece ID'sini gorebilir (icerik yok). Platform siniri.
 
 ## 14. Test ve "bitti" olcutleri
 

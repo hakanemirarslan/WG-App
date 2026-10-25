@@ -8,6 +8,7 @@ import '../../../core/supabase_client.dart';
 import '../../../core/widgets.dart';
 import '../../../domain/split.dart';
 import '../../../core/error_view.dart';
+import '../../../core/limits.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/providers/catalog_providers.dart';
@@ -353,6 +354,7 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
             TextField(
               controller: _descriptionController,
               decoration: InputDecoration(labelText: l10n.descriptionLabel),
+              inputFormatters: limitTo(maxDescriptionLength),
             ),
             SectionHeader(l10n.itemsTitle),
             Wrap(

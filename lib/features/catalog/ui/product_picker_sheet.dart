@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/text_search.dart';
 import '../../../core/error_view.dart';
+import '../../../core/limits.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/catalog_repository.dart';
 import '../providers/catalog_providers.dart';
@@ -147,6 +148,8 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
             child: TextField(
               controller: _searchController,
               autofocus: true,
+              // The search text doubles as the name of a new product.
+              inputFormatters: limitTo(maxProductNameLength),
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
                 hintText: l10n.searchProductsHint,
