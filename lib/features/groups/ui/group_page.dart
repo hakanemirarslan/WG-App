@@ -71,16 +71,20 @@ class _GroupPageState extends ConsumerState<GroupPage> {
         .read(balancesProvider(widget.groupId))
         .value
         ?.balances[supabase.auth.currentUser!.id];
+    // The last active member deletes the group with everything in it (SPEC 10), so the
+    // dialog says that plainly instead of the usual "you can rejoin later".
+    final members = ref.read(groupMembersProvider(widget.groupId)).value ?? const [];
+    final isLastMember = members.length == 1;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.leaveGroupConfirmTitle),
+        title: Text(isLastMember ? l10n.deleteGroupConfirmTitle : l10n.leaveGroupConfirmTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.leaveGroupConfirmBody),
-            if (myBalance != null && myBalance != 0) ...[
+            Text(isLastMember ? l10n.deleteGroupConfirmBody : l10n.leaveGroupConfirmBody),
+            if (!isLastMember && myBalance != null && myBalance != 0) ...[
               const SizedBox(height: 12),
               Text(
                 l10n.openBalanceWarning(formatCents(myBalance, locale: lang)),
@@ -100,7 +104,7 @@ class _GroupPageState extends ConsumerState<GroupPage> {
               foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.leaveGroupButton),
+            child: Text(isLastMember ? l10n.deleteGroupButton : l10n.leaveGroupButton),
           ),
         ],
       ),

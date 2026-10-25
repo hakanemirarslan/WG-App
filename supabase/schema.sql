@@ -194,27 +194,49 @@ begin
 end;
 $$;
 
--- Gruptan ayril (kayit silinmez, left_at doldurulur)
--- Hata kodlari: not_a_member, last_admin
+-- Ayrilma (SPEC 10). Son aktif uye ayrilirsa grup tum verisiyle silinir ('deleted');
+-- tek admin ayrilirsa rol en eski aktif uyeye (joined_at) devredilir. Donus: 'left' | 'deleted'.
+-- Kayit silinmez, left_at dolar; rol 'member'a duser (geri donen eski admin otomatik admin olmaz).
+-- Hata kodu: not_a_member
 create or replace function public.leave_group(gid uuid)
-returns void
+returns text
 language plpgsql security definer set search_path = public
 as $$
-declare my_role text;
+declare
+  my_role text;
+  successor uuid;
 begin
   select role into my_role from public.memberships
-  where group_id = gid and user_id = auth.uid() and left_at is null;
+  where group_id = gid and user_id = auth.uid() and left_at is null
+  for update;
   if my_role is null then
     raise exception 'not_a_member';
   end if;
+
+  if not exists (
+    select 1 from public.memberships
+    where group_id = gid and left_at is null and user_id <> auth.uid()
+  ) then
+    -- Nobody would be left: delete the group; every table cascades from groups.
+    delete from public.groups where id = gid;
+    return 'deleted';
+  end if;
+
   if my_role = 'admin' and not exists (
     select 1 from public.memberships
     where group_id = gid and role = 'admin' and left_at is null and user_id <> auth.uid()
   ) then
-    raise exception 'last_admin';
+    select user_id into successor from public.memberships
+    where group_id = gid and left_at is null and user_id <> auth.uid()
+    order by joined_at, user_id
+    limit 1;
+    update public.memberships set role = 'admin'
+    where group_id = gid and user_id = successor;
   end if;
-  update public.memberships set left_at = now()
+
+  update public.memberships set left_at = now(), role = 'member'
   where group_id = gid and user_id = auth.uid();
+  return 'left';
 end;
 $$;
 

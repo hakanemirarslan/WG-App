@@ -20,10 +20,10 @@ class Member {
   Member({required this.userId, required this.displayName, required this.isAdmin});
 
   factory Member.fromMap(Map<String, dynamic> map) => Member(
-        userId: map['user_id'] as String,
-        displayName: (map['profiles'] as Map<String, dynamic>)['display_name'] as String,
-        isAdmin: map['role'] == 'admin',
-      );
+    userId: map['user_id'] as String,
+    displayName: (map['profiles'] as Map<String, dynamic>)['display_name'] as String,
+    isAdmin: map['role'] == 'admin',
+  );
 }
 
 /// Error codes raised by the `security definer` functions in schema.sql
@@ -98,13 +98,15 @@ class GroupsRepository {
     return rows.map(Member.fromMap).toList();
   }
 
-  Future<void> leaveGroup(String groupId) =>
-      supabase.rpc('leave_group', params: {'gid': groupId});
+  /// Leaves the group. Returns true if I was the last active member and the group was
+  /// deleted with all its data (SPEC 10); a sole admin hands the role on automatically.
+  Future<bool> leaveGroup(String groupId) async {
+    final result = await supabase.rpc('leave_group', params: {'gid': groupId});
+    return result == 'deleted';
+  }
 
-  Future<void> setMemberRole(String groupId, String userId, {required bool admin}) =>
-      supabase.rpc('set_member_role', params: {
-        'gid': groupId,
-        'target': userId,
-        'new_role': admin ? 'admin' : 'member',
-      });
+  Future<void> setMemberRole(String groupId, String userId, {required bool admin}) => supabase.rpc(
+    'set_member_role',
+    params: {'gid': groupId, 'target': userId, 'new_role': admin ? 'admin' : 'member'},
+  );
 }

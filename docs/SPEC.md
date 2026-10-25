@@ -126,7 +126,8 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
 - **Katilma:** `join_group(code)` RPC. Gecersiz/suresi dolmus kod -> anlasilir hata mesaji.
 - **Ayrilma:** `leave_group(group_id)`. Kayit silinmez, `left_at` dolar. Ayrilan kisi grubu artik gormez, ama diger uyeler gecmis harcamalarda onun adini gormeye devam eder.
   - Bakiyesi 0 degilse UI uyarir: "Hesabin kapanmadi (X €)". Yine de ayrilabilir; bakiye, sifirlanana kadar bakiye ekraninda "Eski uye" olarak kalir.
-  - Grubun tek admin'i ayrilamaz, once baska birini admin yapmali.
+  - Grubun tek admin'i ayrilirsa admin rolu en eski aktif uyeye (`joined_at`) otomatik devredilir (2026-10-25 karari; once "ayrilamaz" idi). Ayrilanin rolu `member`a duser, yeniden katilirsa admin olarak donmez.
+  - **Son aktif uye ayrilirsa grup tum verisiyle (liste, harcamalar, odemeler, davetler) kalici olarak silinir.** Onay penceresi bunu acikca soyler ("Grubu sil"). Sahipsiz veri birakmamak icin (veri azaltma). `leave_group` donusu: `'left'` / `'deleted'`.
 - **Yeniden katilma:** Eski uye yeni davetle donerse `left_at` temizlenir, eski gecmisi geri gelir.
 - **Roller:** `admin` (uye yonetimi, grup adi, baskasinin harcamasini silme), `member`.
 
