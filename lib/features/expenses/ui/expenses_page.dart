@@ -34,6 +34,9 @@ class ExpensesPage extends ConsumerWidget {
         title: Text(groupName),
       ),
       floatingActionButton: FloatingActionButton(
+        // The tabs stay alive side by side, so two FABs share one route: without
+        // this, both use the default hero tag and pushing a page throws.
+        heroTag: null,
         tooltip: l10n.addExpenseButton,
         onPressed: () => context.push('/group/$groupId/expenses/new'),
         child: const Icon(Icons.add),

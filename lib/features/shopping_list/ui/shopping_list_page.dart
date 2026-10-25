@@ -219,6 +219,7 @@ class ShoppingListPage extends ConsumerWidget {
         title: Text(groupName),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: null, // see ExpensesPage: the tabs share one route
         tooltip: l10n.addItemButton,
         onPressed: () => _add(context, ref),
         child: const Icon(Icons.add),
