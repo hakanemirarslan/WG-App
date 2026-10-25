@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
+import '../../../core/limits.dart';
 import '../../../core/widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../balances/providers/balances_providers.dart';
@@ -58,6 +59,41 @@ class _GroupPageState extends ConsumerState<GroupPage> {
           .read(groupsRepositoryProvider)
           .setMemberRole(widget.groupId, member.userId, admin: admin);
       ref.invalidate(groupMembersProvider(widget.groupId));
+    } catch (error) {
+      if (mounted) _showError(error);
+    }
+  }
+
+  /// Admins rename the group (SPEC 10). An empty or unchanged name does nothing.
+  Future<void> _rename(String currentName) async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: currentName);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.renameGroupTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(labelText: l10n.groupNameLabel),
+          inputFormatters: limitTo(maxGroupNameLength),
+          onSubmitted: (value) => Navigator.pop(context, value.trim()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancelButton)),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: Text(l10n.saveButton),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name == null || name.isEmpty || name == currentName) return;
+    try {
+      await ref.read(groupsRepositoryProvider).renameGroup(widget.groupId, name);
+      ref.invalidate(groupProvider(widget.groupId));
+      ref.invalidate(myGroupsProvider);
     } catch (error) {
       if (mounted) _showError(error);
     }
@@ -126,11 +162,21 @@ class _GroupPageState extends ConsumerState<GroupPage> {
     final membersAsync = ref.watch(groupMembersProvider(widget.groupId));
     ref.watch(balancesProvider(widget.groupId)); // loaded for the leave warning
     final myId = supabase.auth.currentUser!.id;
+    final groupName = groupAsync.value?.name;
+    final iAmAdminNow = (membersAsync.value ?? const []).any((m) => m.userId == myId && m.isAdmin);
 
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go('/home')),
-        title: Text(groupAsync.value?.name ?? ''),
+        title: Text(groupName ?? ''),
+        actions: [
+          if (iAmAdminNow && groupName != null)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: l10n.renameGroupTitle,
+              onPressed: () => _rename(groupName),
+            ),
+        ],
       ),
       body: membersAsync.when(
         loading: () => const LoadingView(),

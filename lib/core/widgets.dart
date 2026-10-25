@@ -170,6 +170,52 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
+/// Password input with an eye button to show or hide what was typed
+/// (used on the login and signup forms).
+class PasswordField extends StatefulWidget {
+  const PasswordField({
+    super.key,
+    required this.controller,
+    required this.autofillHints,
+    this.helperText,
+    this.onSubmitted,
+  });
+
+  final TextEditingController controller;
+  final List<String> autofillHints;
+  final String? helperText;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  State<PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<PasswordField> {
+  bool _visible = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return TextField(
+      controller: widget.controller,
+      obscureText: !_visible,
+      textInputAction: TextInputAction.done,
+      autofillHints: widget.autofillHints,
+      onSubmitted: widget.onSubmitted,
+      decoration: InputDecoration(
+        labelText: l10n.passwordLabel,
+        helperText: widget.helperText,
+        helperMaxLines: 2,
+        suffixIcon: IconButton(
+          icon: Icon(_visible ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+          tooltip: _visible ? l10n.hidePasswordTooltip : l10n.showPasswordTooltip,
+          onPressed: () => setState(() => _visible = !_visible),
+        ),
+      ),
+    );
+  }
+}
+
 /// Round avatar with the first letter of a person's name.
 class InitialAvatar extends StatelessWidget {
   const InitialAvatar({super.key, required this.name, this.radius = 18});

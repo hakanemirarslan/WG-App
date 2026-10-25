@@ -25,6 +25,11 @@
   "errorInvalidEmail": "Please enter a valid email address.",
   "errorTooManyAttempts": "Too many attempts. Please wait a moment and try again.",
   "errorNetwork": "Could not reach the server. Check your internet connection.",
+  "displayNameRequired": "Please enter a display name.",
+  "passwordRulesHint": "At least 8 characters with an uppercase letter, a lowercase letter and a digit.",
+  "showPasswordTooltip": "Show password",
+  "hidePasswordTooltip": "Hide password",
+  "renameGroupTitle": "Rename group",
 
   "homeTitle": "Home",
   "settingsTitle": "Settings",

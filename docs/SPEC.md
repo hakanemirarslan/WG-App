@@ -129,7 +129,7 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
   - Grubun tek admin'i ayrilirsa admin rolu en eski aktif uyeye (`joined_at`) otomatik devredilir (2026-10-25 karari; once "ayrilamaz" idi). Ayrilanin rolu `member`a duser, yeniden katilirsa admin olarak donmez.
   - **Son aktif uye ayrilirsa grup tum verisiyle (liste, harcamalar, odemeler, davetler) kalici olarak silinir.** Onay penceresi bunu acikca soyler ("Grubu sil"). Sahipsiz veri birakmamak icin (veri azaltma). `leave_group` donusu: `'left'` / `'deleted'`.
 - **Yeniden katilma:** Eski uye yeni davetle donerse `left_at` temizlenir, eski gecmisi geri gelir.
-- **Roller:** `admin` (uye yonetimi, grup adi, baskasinin harcamasini silme), `member`.
+- **Roller:** `admin` (uye yonetimi, grup adi: Grup sekmesinde ust cubuktaki kalem ikonu, baskasinin harcamasini silme), `member`.
 
 ## 11. Ekranlar
 
@@ -181,6 +181,7 @@ Kapsam: tum RLS politikalari ve RPC'ler, git gecmisinde anahtar, istemci hata me
   2. `group_items` dogrudan yazilabiliyordu (urun adini ve boylece harcama gecmisini degistirme). **Cozum:** sadece okuma; yazma `get_or_create_group_item` / `touch_group_item` ile.
   3. Metin alanlarinda uzunluk siniri yoktu. **Cozum:** check constraint'ler (ad 50, grup adi 60, urun adi 60, not ve aciklama 200); istemci alanlari ayni sinirda yazmayi durdurur (`core/limits.dart`).
   4. Davet kodu `random()` ile uretiliyordu. **Cozum:** `gen_random_uuid()`, 12 hex.
+- **Bos ad (ayni gun):** gorunen ad ve grup adi bos ya da sadece bosluk olamaz (`*_not_blank` check'leri). Kayitta ad bos birakilirsa `handle_new_user` e-postanin '@' oncesini kullanir (50 karaktere kirpilir); uygulama kayit ve ayarlarda bos adi zaten kabul etmez.
 - **Supabase Security Advisor (ayni gun):** tum `security definer` fonksiyonlar girissiz (`anon`) cagrilabiliyordu (Postgres varsayilani; icerideki `auth.uid()` kontrolleri yuzunden zararsizdi). **Cozum:** `anon` ve `PUBLIC`'ten `EXECUTE` alindi, uygulamanin RPC'leri `authenticated`'a acikca verildi, trigger fonksiyonlari (`handle_new_user`, `guard_shopping_entry`) kimseye acik degil; yeni fonksiyonlar da varsayilan olarak kapali. Kalan "Signed-In Users Can Execute" uyarilari (9 RPC) bilincli: bunlar uygulamanin API'si, yetki kontrolleri fonksiyonlarin icinde.
 - **Supabase Auth ayarlari:** minimum sifre 8 karakter, kucuk + buyuk harf + rakam zorunlu (sadece yeni kayit/sifre degisikliginde gecerli); anonim giris kapali (acilsa anonim oturum `authenticated` sayilir ve RPC'leri cagirabilir).
 - **Bilinen, kabul edilen:** sizdirilmis sifre korumasi (HaveIBeenPwned) sadece Pro planda; ucretsiz planda kapali, Advisor uyarisi bu yuzden kalir.

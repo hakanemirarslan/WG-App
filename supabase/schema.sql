@@ -8,14 +8,16 @@
 
 create table public.profiles (
   id           uuid primary key references auth.users(id) on delete cascade,
-  display_name text not null constraint profiles_display_name_length check (char_length(display_name) <= 50),
+  display_name text not null constraint profiles_display_name_length check (char_length(display_name) <= 50)
+                            constraint profiles_display_name_not_blank check (btrim(display_name) <> ''),
   locale       text not null default 'de' check (locale in ('de', 'en', 'tr')),
   created_at   timestamptz not null default now()
 );
 
 create table public.groups (
   id          uuid primary key default gen_random_uuid(),
-  name        text not null constraint groups_name_length check (char_length(name) <= 60),
+  name        text not null constraint groups_name_length check (char_length(name) <= 60)
+                           constraint groups_name_not_blank check (btrim(name) <> ''),
   currency    text not null default 'EUR',
   created_by  uuid not null references public.profiles(id),
   created_at  timestamptz not null default now()
@@ -147,14 +149,16 @@ as $$
   );
 $$;
 
--- Yeni kullanici kaydolunca otomatik profil olustur
+-- Yeni kullanici kaydolunca otomatik profil olustur. Ad bos ya da sadece bosluksa e-postanin
+-- '@' oncesi kullanilir; uzunluk siniri (50) asilmasin diye kirpilir.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql security definer set search_path = public
 as $$
 begin
   insert into public.profiles (id, display_name)
-  values (new.id, coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)));
+  values (new.id, left(coalesce(nullif(btrim(new.raw_user_meta_data->>'display_name'), ''),
+                                split_part(new.email, '@', 1)), 50));
   return new;
 end;
 $$;

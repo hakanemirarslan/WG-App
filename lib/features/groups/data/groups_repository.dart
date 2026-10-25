@@ -98,6 +98,10 @@ class GroupsRepository {
     return rows.map(Member.fromMap).toList();
   }
 
+  /// Renames the group. Only admins may (RLS policy `groups_update_admin`).
+  Future<void> renameGroup(String groupId, String name) =>
+      supabase.from('groups').update({'name': name}).eq('id', groupId);
+
   /// Leaves the group. Returns true if I was the last active member and the group was
   /// deleted with all its data (SPEC 10); a sole admin hands the role on automatically.
   Future<bool> leaveGroup(String groupId) async {

@@ -41,6 +41,12 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   }
 
   Future<void> _submit() async {
+    // Checked here, not only in the database: the profile update after signUp would
+    // fail on a blank name while the account already exists.
+    if (_displayNameController.text.trim().isEmpty) {
+      setState(() => _errorMessage = AppLocalizations.of(context)!.displayNameRequired);
+      return;
+    }
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
@@ -96,12 +102,11 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       autofillHints: const [AutofillHints.email],
                     ),
                     const SizedBox(height: 12),
-                    TextField(
+                    PasswordField(
                       controller: _passwordController,
-                      decoration: InputDecoration(labelText: l10n.passwordLabel),
-                      obscureText: true,
-                      textInputAction: TextInputAction.done,
                       autofillHints: const [AutofillHints.newPassword],
+                      // Same rule as in the Supabase Auth settings (SPEC 13).
+                      helperText: l10n.passwordRulesHint,
                       onSubmitted: (_) {
                         if (!_isSubmitting) _submit();
                       },

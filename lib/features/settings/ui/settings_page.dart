@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -68,6 +69,12 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    if (_displayNameController.text.trim().isEmpty) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.displayNameRequired)));
+      return;
+    }
     setState(() => _isSaving = true);
     try {
       await ref
@@ -75,11 +82,12 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
           .updateProfile(displayName: _displayNameController.text.trim(), locale: _selectedLocale);
       ref.read(appLocaleProvider.notifier).state = Locale(_selectedLocale);
       ref.invalidate(myProfileProvider);
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.settingsSavedMessage)));
-      }
+      messenger.showSnackBar(SnackBar(content: Text(l10n.settingsSavedMessage)));
+    } catch (error) {
+      messenger.showSnackBar(
+        // Debug builds also show the raw error so unexpected failures are diagnosable.
+        SnackBar(content: Text(kDebugMode ? '${l10n.errorGeneric}\n$error' : l10n.errorGeneric)),
+      );
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

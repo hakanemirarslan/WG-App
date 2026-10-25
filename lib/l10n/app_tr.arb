@@ -21,6 +21,11 @@
   "errorInvalidEmail": "Geçerli bir e-posta adresi gir.",
   "errorTooManyAttempts": "Çok fazla deneme yapıldı. Biraz bekleyip tekrar dene.",
   "errorNetwork": "Sunucuya ulaşılamadı. İnternet bağlantını kontrol et.",
+  "displayNameRequired": "Bir görünen ad gir.",
+  "passwordRulesHint": "En az 8 karakter; büyük harf, küçük harf ve rakam.",
+  "showPasswordTooltip": "Şifreyi göster",
+  "hidePasswordTooltip": "Şifreyi gizle",
+  "renameGroupTitle": "Grup adını değiştir",
 
   "homeTitle": "Ana sayfa",
   "settingsTitle": "Ayarlar",

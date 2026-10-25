@@ -22,6 +22,11 @@
   "errorInvalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
   "errorTooManyAttempts": "Zu viele Versuche. Bitte warte kurz und versuche es erneut.",
   "errorNetwork": "Der Server ist nicht erreichbar. Prüfe deine Internetverbindung.",
+  "displayNameRequired": "Bitte gib einen Anzeigenamen ein.",
+  "passwordRulesHint": "Mindestens 8 Zeichen mit Groß- und Kleinbuchstaben und einer Ziffer.",
+  "showPasswordTooltip": "Passwort anzeigen",
+  "hidePasswordTooltip": "Passwort verbergen",
+  "renameGroupTitle": "Gruppe umbenennen",
 
   "homeTitle": "Start",
   "settingsTitle": "Einstellungen",

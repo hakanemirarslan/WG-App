@@ -69,11 +69,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       autofillHints: const [AutofillHints.username],
                     ),
                     const SizedBox(height: 12),
-                    TextField(
+                    PasswordField(
                       controller: _passwordController,
-                      decoration: InputDecoration(labelText: l10n.passwordLabel),
-                      obscureText: true,
-                      textInputAction: TextInputAction.done,
                       autofillHints: const [AutofillHints.password],
                       onSubmitted: (_) {
                         if (!_isSubmitting) _submit();
