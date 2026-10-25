@@ -97,6 +97,10 @@ Karar: iOS mağaza surumu icin simdi hicbir sey yapilmaz. Kod tabani degismeyece
   - Ekran goruntuleri en son alinacak (tasarim hala degisebilir); `docs/screenshots/` altina, acik + koyu temadan birer ornek, dosya adlari ekrani anlatsin (`list.png`, `expenses.png`, `balance.png`).
 - [x] Sema bosluklari listesi (SPEC 13) tamamen kapandi
 
+## Siradaki isler
+
+- [ ] **Gruplar sekmesi kaldirilacak** (kullanici istegi 2026-10-26; 2026-10-27'de hatirlatilacak). Baslamadan once netlestir: alttaki "Grup" sekmesi mi (uyeler, davet, ayril; bu islevler nereye tasinacak?) yoksa giris sonrasi "Gruplarim" listesi mi (tek gruplu kullanici dogrudan grubuna mi girsin?).
+
 ## Yayin (hazir olunca)
 
 Kullanici simdilik canliya almaya hazir degil; bu maddeler bilincli olarak ertelendi.
@@ -158,3 +162,4 @@ README'de sunlari anlat: neden Splitwise yerine bu (liste + harcama akisi, WG'ye
 - 2026-10-24: Kullanici telefon genisliginde (390 px) tum ekranlari kontrol etti, sorun yok. Kalan: Datenschutz/Impressum (yayindan once), README ekran goruntuleri (en son), yayin blogu (hosting ve alan adi karari, Supabase Auth URL ve e-posta dogrulama karari). Siradaki adim: hosting secimi.
 - 2026-10-24: Yeniden tasarim basladi: teal flex_color_scheme temasi, Inter gomulu (google_fonts yok, gizlilik), arka plan sekilleri kaldirildi, kompakt butonlar, 640 px ortalanmis icerik, urun secici cip tabanli sheet (kapatma dugmesi), giris Enter ile, grup ekraninda alt dugme satiri, 'Kostenanteil' etiketi. Liste: 'alindi'da opsiyonel fiyat -> harcama (SPEC 6 guncellendi), geri alinca bagli harcama silinir (`shopping_entries.expense_id`, schema.sql'e eklendi ve Supabase'de calistirildi). flex_color_scheme 8.x'te kalir (9.x material_ui'ya bagli). Riverpod retry 1'e indirildi (hata ekrani gec geliyordu). Siradaki adim: ekranlari tek tek yeniden tasarla (Bakiye, Harcamalar, Liste, Grup, geri kalan), PWA ikon/renklerini teal'e cek, Chrome'da gozle kontrol.
 - 2026-10-24: Bakiye ekrani + kisi detay sayfasi (`domain/pair_debts.dart`), Turkce dil (`app_tr.arb`, `catalog_items.name_tr`, locale 'tr'), yiyecek katalogu yerine 41 ortak WG esyasi (household/cleaning/bathroom), katalog oturum boyu onbelleklenmiyor (autoDispose). Harcamalar, Liste, Grup ve Ayarlar ekranlari kart duzenine tasindi, ortak `InitialAvatar`. Yerel calistirma: `.vscode/launch.json` (env.json + sabit port 5000, oturum hatirlanir). Siradaki adim: push, PWA ikon/renklerini teal'e cek, Turkce cevirilere ana dilde bakis, yayin blogu.
+- 2026-10-26: Kayit formu (ad, soyad, telefon zorunlu; `profile_private` sadece sahibi okur), e-posta/telefon dogrulama, bos ad engeli, grup yeniden adlandirma, sifre ipucu ve goster/gizle. Supabase'de `signup_fields_migration` SQL'i calistirilacak. Siradaki adim: Gruplar sekmesinin kaldirilmasi (once hangi sekme oldugunu netlestir), sonra yayin blogu.
