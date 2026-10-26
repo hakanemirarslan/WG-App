@@ -14,6 +14,7 @@ Bu dosya **hukuki tavsiye degildir.** Datenschutzerklaerung ve Impressum icin ne
 | Alisveris listesi, harcamalar, paylar, odemeler | `shopping_entries`, `expenses`, `expense_items`, `expense_shares`, `settlements` | Kim ekledi / kim odedi / ne zaman bilgisiyle. |
 | Davet kodlari | `invites` | 7 gun gecerli, olusturan kisi kayitli. |
 | Oturum | Tarayici deposu (Supabase oturumu) | Ucuncu taraf analitik/izleme yok. |
+| Tema tercihi (Sistem/Acik/Koyu) | Tarayici deposu (`localStorage`, `shared_preferences`), cihaz basina | Kisisel veri degil, sunucuya gitmez (2026-10-26). |
 
 ## Ucuncu taraf istekleri
 

@@ -142,7 +142,7 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
    - **Bakiye:** uye bakiyeleri, onerilen odemeler, aylik ozet. Bakiye +/- isaretli sayi olarak gosterilmez (kafa karistiriyordu, 2026-10-26): kendi kartim "Sana borclular 4,00 EUR" / "Borcun 2,00 EUR" + kisi basina satir ("Ana sana 2,00 EUR borclu", `pairDebtsOf`); uye listesinde "alacakli" / "borclu" + isaretsiz tutar. Ayni kart Ozet'te de var.
    - **Grup:** uyeler, davet linki olustur/paylas, ayril. "Davet et" linki olusturup sistemin Paylas menusunu acar (WhatsApp, Telegram, SMS; `share_plus`, webde Web Share API). Paylas menusu olmayan tarayicida link panoya kopyalanir (e-posta acilmaz).
 4. **Urun secici** (sheet), **Harcama formu**, **Harcama detayi** (duzenle/sil).
-5. **Ayarlar:** dil (DE/EN/TR), gorunen ad, cikis.
+5. **Ayarlar:** dil (DE/EN/TR), gorunen ad, gorunum (Sistem / Acik / Koyu; aninda uygulanir, cihaz basina tarayicida saklanir), kisisel bilgiler, cikis.
 
 Bos durumlar (ornek: henuz kalem yok) ve hata/yukleniyor durumlari her ekranda tasarlanir.
 

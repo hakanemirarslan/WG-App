@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/locale_provider.dart';
 import 'core/router.dart';
 import 'core/supabase_client.dart';
 import 'core/theme.dart';
+import 'core/theme_mode_provider.dart';
 import 'l10n/app_localizations.dart';
 
 /// Riverpod 3 retries a failed provider up to 10 times (about 40 seconds) and shows
@@ -18,7 +20,20 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
   await initSupabase();
-  runApp(const ProviderScope(retry: _retry, child: MyApp()));
+  // Read before the first frame so the stored theme is used right away (no flash).
+  SharedPreferences? preferences;
+  try {
+    preferences = await SharedPreferences.getInstance();
+  } catch (_) {
+    // Storage blocked: fall back to the defaults.
+  }
+  runApp(
+    ProviderScope(
+      retry: _retry,
+      overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {
@@ -33,7 +48,7 @@ class MyApp extends ConsumerWidget {
       title: 'WG App',
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),
-      themeMode: ThemeMode.system,
+      themeMode: ref.watch(themeModeProvider),
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

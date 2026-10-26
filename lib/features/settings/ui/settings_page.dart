@@ -6,6 +6,7 @@ import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
 import '../../../core/layout.dart';
 import '../../../core/limits.dart';
+import '../../../core/theme_mode_provider.dart';
 import '../../../core/widgets.dart';
 import '../../../domain/validation.dart';
 import '../../../l10n/app_localizations.dart';
@@ -196,6 +197,44 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
                             DropdownMenuItem(value: 'tr', child: Text(l10n.turkishLanguage)),
                           ],
                           onChanged: (value) => setState(() => _selectedLocale = value!),
+                        ),
+                        const SizedBox(height: 16),
+                        // Applies at once and is stored on this device (not with "Save").
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(
+                            l10n.themeLabel,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: SegmentedButton<ThemeMode>(
+                            segments: [
+                              ButtonSegment(
+                                value: ThemeMode.system,
+                                icon: const Icon(Icons.brightness_auto_outlined),
+                                label: Text(l10n.themeSystem),
+                              ),
+                              ButtonSegment(
+                                value: ThemeMode.light,
+                                icon: const Icon(Icons.light_mode_outlined),
+                                label: Text(l10n.themeLight),
+                              ),
+                              ButtonSegment(
+                                value: ThemeMode.dark,
+                                icon: const Icon(Icons.dark_mode_outlined),
+                                label: Text(l10n.themeDark),
+                              ),
+                            ],
+                            selected: {ref.watch(themeModeProvider)},
+                            showSelectedIcon: false,
+                            onSelectionChanged: (selection) =>
+                                ref.read(themeModeProvider.notifier).select(selection.first),
+                          ),
                         ),
                       ],
                     ),
