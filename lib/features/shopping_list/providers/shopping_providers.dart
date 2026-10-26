@@ -7,6 +7,22 @@ import '../data/shopping_repository.dart';
 
 final shoppingRepositoryProvider = Provider<ShoppingRepository>((ref) => ShoppingRepository());
 
+/// Entries the user just deleted: hidden at once, removed from the database only when
+/// the "Undo" bar closes without being used (see `deleteWithUndo`). Not auto-disposed,
+/// so a pending deletion survives switching tabs.
+class PendingDeletions extends Notifier<Set<String>> {
+  @override
+  Set<String> build() => const {};
+
+  void hide(String entryId) => state = {...state, entryId};
+
+  void restore(String entryId) => state = {...state}..remove(entryId);
+}
+
+final pendingDeletionsProvider = NotifierProvider<PendingDeletions, Set<String>>(
+  PendingDeletions.new,
+);
+
 /// Live shopping list: loads once, then reloads whenever Realtime reports a
 /// change (including our own). Reloading instead of patching from the stream
 /// payload keeps the joined names (item, adder, buyer) correct.

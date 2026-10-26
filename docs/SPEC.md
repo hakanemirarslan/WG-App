@@ -137,7 +137,7 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
 2. **Grup secimi:** Gruplarim (her grubun yaninda bakiyem), "Grup olustur", "Davet koduyla katil". Giristen sonra hep bu sayfa acilir (2026-10-26 karari). Grubu olmayan kisiye karsilama: "Hos geldin, {ad}" + iki aciklamali kart (Evini olustur / Davetle katil); bu durumda alttaki buton satiri gizlenir.
 3. **Ana ekran (grup icinde), alt gezinme:** (grup acilinca Ozet gelir)
    - **Ozet** (2026-10-26): "Merhaba {ad}", bakiye karti (dokununca Bakiye), alinacaklardan ilk 3 + sayi + "Tumu" + hizli ekleme, son 5 hareket (harcama girildi / urun alindi / odeme; `domain/activity_feed.dart`), harcamaya dokununca detay. Yeni veri yok, diger sekmelerin verisi.
-   - **Liste:** acik kalemler (ustte), "Son alinanlar", ekleme butonu (+).
+   - **Liste:** acik kalemler (ustte), "Son alinanlar", ekleme butonu (+). Silme onaysiz ama geri alinabilir: kalem hemen gizlenir, altta 10 sn "Geri al"; kullanilmazsa veritabanindan silinir (2026-10-26).
    - **Harcamalar:** kronolojik liste (tarih, odeyen, tutar, kalemler), ekleme butonu.
    - **Bakiye:** uye bakiyeleri, onerilen odemeler, aylik ozet. Bakiye +/- isaretli sayi olarak gosterilmez (kafa karistiriyordu, 2026-10-26): kendi kartim "Sana borclular 4,00 EUR" / "Borcun 2,00 EUR" + kisi basina satir ("Ana sana 2,00 EUR borclu", `pairDebtsOf`); uye listesinde "alacakli" / "borclu" + isaretsiz tutar. Ayni kart Ozet'te de var.
    - **Grup:** uyeler, davet linki olustur/paylas, ayril. "Davet et" linki olusturup sistemin Paylas menusunu acar (WhatsApp, Telegram, SMS; `share_plus`, webde Web Share API). Paylas menusu olmayan tarayicida link panoya kopyalanir (e-posta acilmaz).

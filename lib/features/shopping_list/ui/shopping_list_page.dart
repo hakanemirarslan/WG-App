@@ -147,7 +147,6 @@ class ShoppingListPage extends ConsumerWidget {
     final members = ref.watch(groupMembersProvider(groupId)).value ?? const [];
     final myId = supabase.auth.currentUser!.id;
     final iAmAdmin = members.any((m) => m.userId == myId && m.isAdmin);
-    final repository = ref.read(shoppingRepositoryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -166,7 +165,9 @@ class ShoppingListPage extends ConsumerWidget {
           error: error,
           onRetry: () => ref.invalidate(shoppingEntriesProvider(groupId)),
         ),
-        data: (entries) {
+        data: (allEntries) {
+          final hidden = ref.watch(pendingDeletionsProvider);
+          final entries = allEntries.where((e) => !hidden.contains(e.id));
           final open = entries.where((e) => !e.isBought).toList();
           final bought = entries.where((e) => e.isBought).toList()
             ..sort((a, b) => b.boughtAt!.compareTo(a.boughtAt!));
@@ -176,7 +177,7 @@ class ShoppingListPage extends ConsumerWidget {
             return IconButton(
               icon: const Icon(Icons.delete_outline),
               tooltip: l10n.deleteEntryAction,
-              onPressed: () => _run(context, () => repository.deleteEntry(entry.id)),
+              onPressed: () => deleteWithUndo(context, ref, entry, lang),
             );
           }
 

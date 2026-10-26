@@ -119,6 +119,8 @@
   "markBoughtTooltip": "Als gekauft markieren",
   "undoBoughtTooltip": "Zurück auf die Liste",
   "deleteEntryAction": "Entfernen",
+  "entryDeletedMessage": "{item} entfernt",
+  "undoAction": "Rückgängig",
   "alreadyOnList": "Steht schon auf der Liste, {name} hat es hinzugefügt.",
   "noteLabel": "Notiz (optional)",
   "noteHint": "z. B. 2 Packungen, laktosefrei",

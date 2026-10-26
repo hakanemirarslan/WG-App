@@ -61,7 +61,8 @@ class OverviewPage extends ConsumerWidget {
         return const LoadingView();
       }
 
-      final open = entries.where((e) => !e.isBought).toList();
+      final hidden = ref.watch(pendingDeletionsProvider);
+      final open = entries.where((e) => !e.isBought && !hidden.contains(e.id)).toList();
       final bought = entries.where((e) => e.isBought && e.boughtAt != null).toList();
       // Ticking an item off with a price also creates an expense: one action, so it is
       // shown once, as "bought" with the expense's amount.

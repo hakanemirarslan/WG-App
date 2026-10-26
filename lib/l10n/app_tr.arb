@@ -118,6 +118,8 @@
   "markBoughtTooltip": "Alındı olarak işaretle",
   "undoBoughtTooltip": "Listeye geri koy",
   "deleteEntryAction": "Kaldır",
+  "entryDeletedMessage": "{item} kaldırıldı",
+  "undoAction": "Geri al",
   "alreadyOnList": "Zaten listede, {name} ekledi.",
   "noteLabel": "Not (isteğe bağlı)",
   "noteHint": "örn. 2 paket, laktozsuz",
