@@ -97,60 +97,166 @@ class GroupsPage extends ConsumerWidget {
         loading: () => const LoadingView(),
         error: (error, _) =>
             ErrorView(error: error, onRetry: () => ref.invalidate(myGroupsProvider)),
-        data: (groups) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (groups.isEmpty)
-              FadeSlide(
-                child: EmptyView(icon: Icons.home_outlined, message: l10n.noGroupsYet),
-              ),
-            for (final (index, group) in groups.indexed)
-              FadeSlide(
-                delay: Duration(milliseconds: 60 + math.min(index, 8) * 60),
-                child: AnimatedPressCard(
-                  onTap: () => context.go('/group/${group.id}'),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                      child: Icon(
-                        Icons.home_rounded,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+        data: (groups) => groups.isEmpty
+            ? _Welcome(
+                name: ref.watch(myProfileProvider).value?.displayName,
+                onCreate: () => _create(context, ref),
+                onJoin: () => _joinWithCode(context),
+              )
+            : ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  for (final (index, group) in groups.indexed)
+                    FadeSlide(
+                      delay: Duration(milliseconds: 60 + math.min(index, 8) * 60),
+                      child: AnimatedPressCard(
+                        onTap: () => context.go('/group/${group.id}'),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                            child: Icon(
+                              Icons.home_rounded,
+                              size: 20,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                          title: Text(group.name),
+                          subtitle: _BalanceStatus(groupId: group.id),
+                          trailing: _BalancePill(groupId: group.id),
+                        ),
                       ),
                     ),
-                    title: Text(group.name),
-                    subtitle: _BalanceStatus(groupId: group.id),
-                    trailing: _BalancePill(groupId: group.id),
-                  ),
+                ],
+              ),
+      ),
+      // Both actions side by side at the bottom, always reachable. Without a group the
+      // welcome cards offer the same two actions, so the bar is hidden there.
+      bottomNavigationBar: (groupsAsync.value?.isEmpty ?? true)
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.add, size: 18),
+                        onPressed: () => _create(context, ref),
+                        label: Text(l10n.createGroupButton),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.vpn_key_outlined, size: 18),
+                        onPressed: () => _joinWithCode(context),
+                        label: Text(l10n.joinWithCodeButton),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+    );
+  }
+}
+
+/// First screen for someone without a group: the two ways in, explained (SPEC 11).
+class _Welcome extends StatelessWidget {
+  const _Welcome({required this.name, required this.onCreate, required this.onJoin});
+
+  final String? name;
+  final VoidCallback onCreate;
+  final VoidCallback onJoin;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(24),
+          children: [
+            if (name != null) Text(l10n.welcomeTitle(name!), style: theme.textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            Text(
+              l10n.welcomeBody,
+              style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 24),
+            FadeSlide(
+              child: _WelcomeChoice(
+                icon: Icons.add_home_outlined,
+                title: l10n.createHomeTitle,
+                body: l10n.createHomeBody,
+                onTap: onCreate,
+              ),
+            ),
+            FadeSlide(
+              delay: const Duration(milliseconds: 80),
+              child: _WelcomeChoice(
+                icon: Icons.group_add_outlined,
+                title: l10n.joinWithInviteTitle,
+                body: l10n.joinWithInviteBody,
+                onTap: onJoin,
+              ),
+            ),
           ],
         ),
       ),
-      // Both actions side by side at the bottom, always reachable.
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.add, size: 18),
-                  onPressed: () => _create(context, ref),
-                  label: Text(l10n.createGroupButton),
-                ),
+    );
+  }
+}
+
+class _WelcomeChoice extends StatelessWidget {
+  const _WelcomeChoice({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AnimatedPressCard(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: theme.colorScheme.primaryContainer,
+              child: Icon(icon, color: theme.colorScheme.onPrimaryContainer),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 4),
+                  Text(
+                    body,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.vpn_key_outlined, size: 18),
-                  onPressed: () => _joinWithCode(context),
-                  label: Text(l10n.joinWithCodeButton),
-                ),
-              ),
-            ],
-          ),
+            ),
+            Icon(Icons.chevron_right, color: theme.colorScheme.onSurfaceVariant),
+          ],
         ),
       ),
     );

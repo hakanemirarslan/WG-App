@@ -134,7 +134,7 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
 ## 11. Ekranlar
 
 1. **Giris / Kayit:** giris: e-posta + sifre. Kayit (2026-10-25'ten itibaren hepsi zorunlu): ad, soyad, gorunen ad, e-posta, telefon (ulke kodlu, `+49 151 2345678`), sifre (en az 8, buyuk/kucuk harf + rakam; alanin altinda ipucu), dil secimi (ilk acilista cihaz diline gore onerilir). E-posta bicimi ve telefon istemcide dogrulanir (`domain/validation.dart`). Ad, soyad ve telefon `profile_private` tablosunda, **sadece kisinin kendisi** gorur; grup sadece gorunen adi gorur. Eski hesaplar bu bilgileri Ayarlar > Kisisel bilgiler'den ekleyebilir (zorunlu degil; bir kez girilen deger silinemez).
-2. **Grup secimi:** Gruplarim, "Grup olustur", "Davet koduyla katil".
+2. **Grup secimi:** Gruplarim (her grubun yaninda bakiyem), "Grup olustur", "Davet koduyla katil". Giristen sonra hep bu sayfa acilir (2026-10-26 karari). Grubu olmayan kisiye karsilama: "Hos geldin, {ad}" + iki aciklamali kart (Evini olustur / Davetle katil); bu durumda alttaki buton satiri gizlenir.
 3. **Ana ekran (grup icinde), alt gezinme:** (grup acilinca Ozet gelir)
    - **Ozet** (2026-10-26): "Merhaba {ad}", bakiye karti (dokununca Bakiye), alinacaklardan ilk 3 + sayi + "Tumu" + hizli ekleme, son 5 hareket (harcama girildi / urun alindi / odeme; `domain/activity_feed.dart`), harcamaya dokununca detay. Yeni veri yok, diger sekmelerin verisi.
    - **Liste:** acik kalemler (ustte), "Son alinanlar", ekleme butonu (+).
