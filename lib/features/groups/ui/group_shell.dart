@@ -12,6 +12,8 @@ class GroupShell extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
+  static const _sidebarWidth = 180.0;
+
   void _select(int index) =>
       navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
 
@@ -38,10 +40,25 @@ class GroupShell extends StatelessWidget {
                 // Extended: icon and label side by side, like a desktop sidebar. Labels
                 // under the icons had to squeeze "Harcamalar" into a narrow column.
                 extended: true,
-                minExtendedWidth: 220,
+                minExtendedWidth: _sidebarWidth,
                 labelType: NavigationRailLabelType.none,
                 groupAlignment: -1,
                 leading: const SizedBox(height: 8),
+                // Settings (and logout) live on the groups page on phones; on the
+                // desktop they also sit at the bottom of the sidebar.
+                trailingAtBottom: true,
+                trailing: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: SizedBox(
+                    width: _sidebarWidth - 24,
+                    child: ListTile(
+                      leading: const Icon(Icons.settings_outlined),
+                      title: Text(l10n.settingsTitle),
+                      shape: const StadiumBorder(),
+                      onTap: () => context.push('/settings'),
+                    ),
+                  ),
+                ),
                 destinations: [
                   for (final tab in tabs)
                     NavigationRailDestination(
