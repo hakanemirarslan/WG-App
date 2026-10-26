@@ -260,11 +260,23 @@ ThemeData _build(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
     ),
+    // Light theme: the usual dark bar. Dark theme: a raised dark surface with a border
+    // instead of the inverse (near-white) bar, which glared against the dark page.
+    // The width on wide windows is set in main.dart (it depends on the window size).
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: scheme.inverseSurface,
-      contentTextStyle: TextStyle(color: scheme.onInverseSurface, fontFamily: _fontFamily),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      backgroundColor: brightness == Brightness.dark ? surfaces.highest : scheme.inverseSurface,
+      contentTextStyle: textTheme.bodyMedium?.copyWith(
+        color: brightness == Brightness.dark ? scheme.onSurface : scheme.onInverseSurface,
+      ),
+      actionTextColor: brightness == Brightness.dark ? scheme.primary : scheme.inversePrimary,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: brightness == Brightness.dark
+            ? BorderSide(color: scheme.outlineVariant)
+            : BorderSide.none,
+      ),
     ),
   );
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/layout.dart';
 import 'core/locale_provider.dart';
 import 'core/router.dart';
 import 'core/supabase_client.dart';
@@ -15,6 +16,8 @@ import 'l10n/app_localizations.dart';
 /// network blip; after that the error screen with its retry button appears.
 Duration? _retry(int retryCount, Object error) =>
     retryCount >= 1 ? null : const Duration(milliseconds: 600);
+
+const _wideSnackBarWidth = 420.0;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +58,18 @@ class MyApp extends ConsumerWidget {
       // Full window width: each page limits its own content (core/layout.dart), and the
       // group tabs switch to a side rail on wide screens.
       routerConfig: router,
+      // Snack bars: compact and centred on wide windows instead of spanning the whole
+      // screen; full width (with margins) on phones.
+      builder: (context, child) {
+        if (!isWideLayout(context)) return child!;
+        final theme = Theme.of(context);
+        return Theme(
+          data: theme.copyWith(
+            snackBarTheme: theme.snackBarTheme.copyWith(width: _wideSnackBarWidth),
+          ),
+          child: child!,
+        );
+      },
     );
   }
 }
