@@ -5,7 +5,7 @@ import '../../../core/layout.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Navigation around the five group tabs (SPEC 11, screen 3): a bottom tab bar on
-/// phones, a rail on the left on wide windows (`wideLayoutBreakpoint`).
+/// phones, a sidebar on the left on wide windows (`wideLayoutBreakpoint`).
 /// [navigationShell] keeps each tab's state alive while switching tabs.
 class GroupShell extends StatelessWidget {
   const GroupShell({super.key, required this.navigationShell});
@@ -35,8 +35,12 @@ class GroupShell extends StatelessWidget {
               child: NavigationRail(
                 selectedIndex: navigationShell.currentIndex,
                 onDestinationSelected: _select,
-                groupAlignment: -0.85,
-                minWidth: 104,
+                // Extended: icon and label side by side, like a desktop sidebar. Labels
+                // under the icons had to squeeze "Harcamalar" into a narrow column.
+                extended: true,
+                minExtendedWidth: 220,
+                labelType: NavigationRailLabelType.none,
+                groupAlignment: -1,
                 leading: const SizedBox(height: 8),
                 destinations: [
                   for (final tab in tabs)
@@ -44,7 +48,7 @@ class GroupShell extends StatelessWidget {
                       icon: Icon(tab.icon),
                       label: Text(tab.label),
                       // Air between the items; the default packs them tightly.
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
                     ),
                 ],
               ),

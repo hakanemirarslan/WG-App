@@ -235,17 +235,15 @@ ThemeData _build(
         textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
       ),
     ),
-    // Desktop counterpart of the tab bar (GroupShell); same colours.
+    // Desktop counterpart of the tab bar (GroupShell, extended sidebar); same colours.
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: scheme.surface,
       indicatorColor: scheme.primaryContainer,
-      labelType: NavigationRailLabelType.all,
-      // Same small label size as the bottom tab bar, so "Harcamalar" fits.
-      selectedLabelTextStyle: textTheme.labelSmall?.copyWith(
+      selectedLabelTextStyle: textTheme.labelLarge?.copyWith(
         fontWeight: FontWeight.w600,
         color: scheme.onSurface,
       ),
-      unselectedLabelTextStyle: textTheme.labelSmall?.copyWith(
+      unselectedLabelTextStyle: textTheme.labelLarge?.copyWith(
         fontWeight: FontWeight.w600,
         color: scheme.onSurfaceVariant,
       ),
