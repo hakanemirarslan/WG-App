@@ -71,6 +71,7 @@
 
   "homeTitle": "Home",
   "settingsTitle": "Settings",
+  "generalSettingsTitle": "General",
   "languageLabel": "Language",
   "germanLanguage": "German",
   "englishLanguage": "English",

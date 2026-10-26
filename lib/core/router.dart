@@ -172,6 +172,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                 ],
               ),
+              // Settings inside the group, so the desktop sidebar stays visible (opened
+              // from the sidebar's bottom item; phones use /settings from Gruplarim).
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(path: 'settings', builder: (context, state) => const SettingsPage()),
+                ],
+              ),
             ],
           ),
         ],

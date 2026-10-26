@@ -14,6 +14,9 @@ class GroupShell extends StatelessWidget {
 
   static const _sidebarWidth = 180.0;
 
+  /// Branch index of the settings page (router.dart); it has no tab of its own.
+  static const _settingsBranch = 5;
+
   void _select(int index) =>
       navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
 
@@ -29,13 +32,17 @@ class GroupShell extends StatelessWidget {
       (icon: Icons.group, label: l10n.tabGroup),
     ];
 
+    final onSettings = navigationShell.currentIndex == _settingsBranch;
+    final scheme = Theme.of(context).colorScheme;
+
     if (isWideLayout(context)) {
       return Scaffold(
         body: Row(
           children: [
             SafeArea(
               child: NavigationRail(
-                selectedIndex: navigationShell.currentIndex,
+                // On the settings page no tab is selected; the bottom item is.
+                selectedIndex: onSettings ? null : navigationShell.currentIndex,
                 onDestinationSelected: _select,
                 // Extended: icon and label side by side, like a desktop sidebar. Labels
                 // under the icons had to squeeze "Harcamalar" into a narrow column.
@@ -55,7 +62,10 @@ class GroupShell extends StatelessWidget {
                       leading: const Icon(Icons.settings_outlined),
                       title: Text(l10n.settingsTitle),
                       shape: const StadiumBorder(),
-                      onTap: () => context.push('/settings'),
+                      selected: onSettings,
+                      selectedTileColor: scheme.primaryContainer,
+                      selectedColor: scheme.onPrimaryContainer,
+                      onTap: () => _select(_settingsBranch),
                     ),
                   ),
                 ),
@@ -84,7 +94,9 @@ class GroupShell extends StatelessWidget {
           border: Border(top: BorderSide(color: divider)),
         ),
         child: NavigationBar(
-          selectedIndex: navigationShell.currentIndex,
+          // The settings branch has no tab; if the window shrinks while it is open,
+          // highlight the overview instead of an index the bar does not have.
+          selectedIndex: onSettings ? 0 : navigationShell.currentIndex,
           onDestinationSelected: _select,
           destinations: [
             for (final tab in tabs) NavigationDestination(icon: Icon(tab.icon), label: tab.label),

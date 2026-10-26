@@ -43,20 +43,22 @@ class SettingsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: body(),
-      bottomNavigationBar: SafeArea(
-        child: ContentWidth(
-          maxWidth: 400,
-          fitHeight: true,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.logout, size: 18),
-              onPressed: () => ref.read(authRepositoryProvider).signOut(),
-              label: Text(l10n.logoutButton),
+      bottomNavigationBar: isWideLayout(context)
+          ? null
+          : SafeArea(
+              child: ContentWidth(
+                maxWidth: 400,
+                fitHeight: true,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.logout, size: 18),
+                    onPressed: () => ref.read(authRepositoryProvider).signOut(),
+                    label: Text(l10n.logoutButton),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -145,6 +147,197 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
         (value) =>
             (value ?? '').trim().isEmpty && stored != null ? l10n.requiredFieldMessage : null;
 
+    final header = AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            InitialAvatar(name: widget.profile.displayName, radius: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                widget.profile.displayName,
+                style: theme.textTheme.titleLarge,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    final general = AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _displayNameController,
+              decoration: InputDecoration(labelText: l10n.displayNameLabel),
+              inputFormatters: limitTo(maxDisplayNameLength),
+              validator: (value) => (value ?? '').trim().isEmpty ? l10n.displayNameRequired : null,
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedLocale,
+              decoration: InputDecoration(labelText: l10n.languageLabel),
+              items: [
+                DropdownMenuItem(value: 'de', child: Text(l10n.germanLanguage)),
+                DropdownMenuItem(value: 'en', child: Text(l10n.englishLanguage)),
+                DropdownMenuItem(value: 'tr', child: Text(l10n.turkishLanguage)),
+              ],
+              onChanged: (value) => setState(() => _selectedLocale = value!),
+            ),
+            const SizedBox(height: 16),
+            // Applies at once and is stored on this device (not with "Save").
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                l10n.themeLabel,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<ThemeMode>(
+                segments: [
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    icon: const Icon(Icons.brightness_auto_outlined),
+                    label: Text(l10n.themeSystem),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    icon: const Icon(Icons.light_mode_outlined),
+                    label: Text(l10n.themeLight),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    icon: const Icon(Icons.dark_mode_outlined),
+                    label: Text(l10n.themeDark),
+                  ),
+                ],
+                selected: {ref.watch(themeModeProvider)},
+                showSelectedIcon: false,
+                onSelectionChanged: (selection) =>
+                    ref.read(themeModeProvider.notifier).select(selection.first),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    final private = AppCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.lock_outline, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.privateInfoHint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _firstNameController,
+              decoration: InputDecoration(labelText: l10n.firstNameLabel),
+              inputFormatters: limitTo(maxPersonNameLength),
+              textCapitalization: TextCapitalization.words,
+              validator: keepIfSet(widget.private.firstName),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _lastNameController,
+              decoration: InputDecoration(labelText: l10n.lastNameLabel),
+              inputFormatters: limitTo(maxPersonNameLength),
+              textCapitalization: TextCapitalization.words,
+              validator: keepIfSet(widget.private.lastName),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _phoneController,
+              decoration: InputDecoration(labelText: l10n.phoneLabel, hintText: l10n.phoneHint),
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                final empty = (value ?? '').trim().isEmpty;
+                if (empty) return keepIfSet(widget.private.phone)(value);
+                return normalizePhone(value!) == null ? l10n.invalidPhoneMessage : null;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    final save = FilledButton(
+      onPressed: _isSaving ? null : _save,
+      child: _isSaving
+          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+          : Text(l10n.saveButton),
+    );
+
+    // Wide windows (inside the group, next to the sidebar): profile across the top,
+    // general settings and personal details side by side, actions bottom right.
+    if (isWideLayout(context)) {
+      return Form(
+        key: _formKey,
+        child: ContentWidth(
+          maxWidth: 960,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                header,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [SectionHeader(l10n.generalSettingsTitle), general],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [SectionHeader(l10n.privateInfoTitle), private],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.logout, size: 18),
+                      onPressed: () => ref.read(authRepositoryProvider).signOut(),
+                      label: Text(l10n.logoutButton),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(width: 160, child: save),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
@@ -155,164 +348,13 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Profile header: who is signed in, as on the person page of the balance tab.
-                AppCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        InitialAvatar(name: widget.profile.displayName, radius: 24),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            widget.profile.displayName,
-                            style: theme.textTheme.titleLarge,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                header,
                 const SizedBox(height: 8),
-                AppCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _displayNameController,
-                          decoration: InputDecoration(labelText: l10n.displayNameLabel),
-                          inputFormatters: limitTo(maxDisplayNameLength),
-                          validator: (value) =>
-                              (value ?? '').trim().isEmpty ? l10n.displayNameRequired : null,
-                        ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedLocale,
-                          decoration: InputDecoration(labelText: l10n.languageLabel),
-                          items: [
-                            DropdownMenuItem(value: 'de', child: Text(l10n.germanLanguage)),
-                            DropdownMenuItem(value: 'en', child: Text(l10n.englishLanguage)),
-                            DropdownMenuItem(value: 'tr', child: Text(l10n.turkishLanguage)),
-                          ],
-                          onChanged: (value) => setState(() => _selectedLocale = value!),
-                        ),
-                        const SizedBox(height: 16),
-                        // Applies at once and is stored on this device (not with "Save").
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: Text(
-                            l10n.themeLabel,
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: SegmentedButton<ThemeMode>(
-                            segments: [
-                              ButtonSegment(
-                                value: ThemeMode.system,
-                                icon: const Icon(Icons.brightness_auto_outlined),
-                                label: Text(l10n.themeSystem),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.light,
-                                icon: const Icon(Icons.light_mode_outlined),
-                                label: Text(l10n.themeLight),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.dark,
-                                icon: const Icon(Icons.dark_mode_outlined),
-                                label: Text(l10n.themeDark),
-                              ),
-                            ],
-                            selected: {ref.watch(themeModeProvider)},
-                            showSelectedIcon: false,
-                            onSelectionChanged: (selection) =>
-                                ref.read(themeModeProvider.notifier).select(selection.first),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                general,
                 SectionHeader(l10n.privateInfoTitle),
-                AppCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.lock_outline,
-                              size: 16,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                l10n.privateInfoHint,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _firstNameController,
-                          decoration: InputDecoration(labelText: l10n.firstNameLabel),
-                          inputFormatters: limitTo(maxPersonNameLength),
-                          textCapitalization: TextCapitalization.words,
-                          validator: keepIfSet(widget.private.firstName),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _lastNameController,
-                          decoration: InputDecoration(labelText: l10n.lastNameLabel),
-                          inputFormatters: limitTo(maxPersonNameLength),
-                          textCapitalization: TextCapitalization.words,
-                          validator: keepIfSet(widget.private.lastName),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _phoneController,
-                          decoration: InputDecoration(
-                            labelText: l10n.phoneLabel,
-                            hintText: l10n.phoneHint,
-                          ),
-                          keyboardType: TextInputType.phone,
-                          validator: (value) {
-                            final empty = (value ?? '').trim().isEmpty;
-                            if (empty) return keepIfSet(widget.private.phone)(value);
-                            return normalizePhone(value!) == null ? l10n.invalidPhoneMessage : null;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                private,
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: _isSaving ? null : _save,
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(l10n.saveButton),
-                  ),
-                ),
+                SizedBox(width: double.infinity, child: save),
               ],
             ),
           ),
