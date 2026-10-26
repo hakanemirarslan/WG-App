@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/layout.dart';
 import '../../../core/error_view.dart';
 import '../../../core/money.dart';
 import '../../../core/theme.dart';
@@ -98,7 +99,7 @@ class PersonDebtsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(isFormer ? '$name ${l10n.formerMemberSuffix}' : name)),
-      body: body(),
+      body: ContentWidth(child: body()),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/layout.dart';
 import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../domain/balance.dart';
@@ -154,7 +155,7 @@ class _MonthlySummaryPageState extends ConsumerState<MonthlySummaryPage> {
         ),
         centerTitle: true,
       ),
-      body: body(),
+      body: ContentWidth(child: body()),
     );
   }
 }

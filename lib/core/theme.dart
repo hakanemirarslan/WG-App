@@ -235,8 +235,24 @@ ThemeData _build(
         textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
       ),
     ),
+    // Desktop counterpart of the tab bar (GroupShell); same colours.
+    navigationRailTheme: NavigationRailThemeData(
+      backgroundColor: scheme.surface,
+      indicatorColor: scheme.primaryContainer,
+      labelType: NavigationRailLabelType.all,
+      selectedLabelTextStyle: textTheme.labelMedium?.copyWith(
+        fontWeight: FontWeight.w600,
+        color: scheme.onSurface,
+      ),
+      unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(
+        fontWeight: FontWeight.w600,
+        color: scheme.onSurfaceVariant,
+      ),
+    ),
     // clipBehavior keeps list rows and fields inside the rounded top corners.
     bottomSheetTheme: BottomSheetThemeData(
+      // Sheets (product picker) keep a phone-like width on wide windows.
+      constraints: const BoxConstraints(maxWidth: 640),
       backgroundColor: scheme.surfaceContainerLowest,
       surfaceTintColor: Colors.transparent,
       clipBehavior: Clip.antiAlias,

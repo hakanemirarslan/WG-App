@@ -146,6 +146,8 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
 
 Bos durumlar (ornek: henuz kalem yok) ve hata/yukleniyor durumlari her ekranda tasarlanir.
 
+**Duyarli duzen (2026-10-26):** pencere 840 px ve ustundeyse (Material "expanded") grup sekmeleri alt cubuk yerine soldaki dikey menude (`NavigationRail`), Ozet iki sutun (solda bakiye + alinacaklar, sagda son hareketler, en fazla 1100 px). Liste ve formlar okunabilirlik icin ortada en fazla 600 px (giris/kayit/ayarlar 400 px); arka plan ve ust cubuk pencere genisliginde. Telefon gorunumu degismedi. Sinir ve esik `core/layout.dart`'ta.
+
 ## 12. Cok dillilik
 
 - Diller: `de`, `en`, `tr` (Turkce 2026-10-24'te eklendi). Tercih `profiles.locale`'de saklanir, degisince hemen uygulanir. Cihaz dili bunlardan biri degilse `de` kullanilir.

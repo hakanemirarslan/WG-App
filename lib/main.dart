@@ -14,9 +14,6 @@ import 'l10n/app_localizations.dart';
 Duration? _retry(int retryCount, Object error) =>
     retryCount >= 1 ? null : const Duration(milliseconds: 600);
 
-/// Widest the app content gets on desktop browsers.
-const _maxContentWidth = 640.0;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
@@ -40,18 +37,9 @@ class MyApp extends ConsumerWidget {
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      // Full window width: each page limits its own content (core/layout.dart), and the
+      // group tabs switch to a side rail on wide screens.
       routerConfig: router,
-      // Phone-sized column on wide screens: content (and sheets/dialogs) stay centred.
-      builder: (context, child) => ColoredBox(
-        color: Theme.of(context).colorScheme.surface,
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-            child: child,
-          ),
-        ),
-      ),
     );
   }
 }

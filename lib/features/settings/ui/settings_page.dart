@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
+import '../../../core/layout.dart';
 import '../../../core/limits.dart';
 import '../../../core/widgets.dart';
 import '../../../domain/validation.dart';
@@ -42,12 +43,16 @@ class SettingsPage extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: body(),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: OutlinedButton.icon(
-            icon: const Icon(Icons.logout, size: 18),
-            onPressed: () => ref.read(authRepositoryProvider).signOut(),
-            label: Text(l10n.logoutButton),
+        child: ContentWidth(
+          maxWidth: 400,
+          fitHeight: true,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.logout, size: 18),
+              onPressed: () => ref.read(authRepositoryProvider).signOut(),
+              label: Text(l10n.logoutButton),
+            ),
           ),
         ),
       ),

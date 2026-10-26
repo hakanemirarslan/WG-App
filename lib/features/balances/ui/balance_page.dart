@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/layout.dart';
 import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
@@ -86,98 +87,100 @@ class BalancePage extends ConsumerWidget {
         leading: BackButton(onPressed: () => context.go('/home')),
         title: Text(groupName),
       ),
-      body: balanceAsync.when(
-        loading: () => const LoadingView(),
-        error: (error, _) => ErrorView(
-          error: error,
-          onRetry: () {
-            ref.invalidate(expensesProvider(groupId));
-            ref.invalidate(settlementsProvider(groupId));
-            ref.invalidate(groupMembersProvider(groupId));
-          },
-        ),
-        data: (data) {
-          final visible = data.visibleUserIds;
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              if (!data.consistent) _MismatchNotice(message: l10n.balancesMismatchMessage),
-              MyBalanceCard(
-                cents: data.balances[myId] ?? 0,
-                debts: expenses == null || settlements == null
-                    ? const []
-                    : pairDebtsForUser(myId, expenses, settlements),
-                names: data.names,
-                lang: lang,
-              ),
-              SectionHeader(l10n.balancesTitle),
-              AppCard(
-                child: Column(
-                  children: [
-                    for (final (index, id) in visible.indexed) ...[
-                      if (index > 0) const Divider(indent: 16, endIndent: 16),
-                      _MemberRow(
-                        name: data.names[id] ?? '',
-                        isFormer: !data.activeMemberIds.contains(id),
-                        cents: data.balances[id]!,
-                        lang: lang,
-                        onTap: () => context.push('/group/$groupId/balance/person/$id'),
-                      ),
-                    ],
-                  ],
+      body: ContentWidth(
+        child: balanceAsync.when(
+          loading: () => const LoadingView(),
+          error: (error, _) => ErrorView(
+            error: error,
+            onRetry: () {
+              ref.invalidate(expensesProvider(groupId));
+              ref.invalidate(settlementsProvider(groupId));
+              ref.invalidate(groupMembersProvider(groupId));
+            },
+          ),
+          data: (data) {
+            final visible = data.visibleUserIds;
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (!data.consistent) _MismatchNotice(message: l10n.balancesMismatchMessage),
+                MyBalanceCard(
+                  cents: data.balances[myId] ?? 0,
+                  debts: expenses == null || settlements == null
+                      ? const []
+                      : pairDebtsForUser(myId, expenses, settlements),
+                  names: data.names,
+                  lang: lang,
                 ),
-              ),
-              SectionHeader(l10n.suggestedPaymentsTitle),
-              if (data.transfers.isEmpty)
-                AppCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Icon(Icons.check_circle_outline, color: AppColors.of(context).positive),
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(l10n.allSettledUp)),
-                      ],
-                    ),
-                  ),
-                )
-              else
+                SectionHeader(l10n.balancesTitle),
                 AppCard(
                   child: Column(
                     children: [
-                      for (final (index, transfer) in data.transfers.indexed) ...[
+                      for (final (index, id) in visible.indexed) ...[
                         if (index > 0) const Divider(indent: 16, endIndent: 16),
-                        _TransferRow(
-                          text: l10n.transferLine(
-                            data.names[transfer.from] ?? '',
-                            data.names[transfer.to] ?? '',
-                          ),
-                          cents: transfer.cents,
+                        _MemberRow(
+                          name: data.names[id] ?? '',
+                          isFormer: !data.activeMemberIds.contains(id),
+                          cents: data.balances[id]!,
                           lang: lang,
-                          // Only the payer or the receiver may record the payment (SPEC 9).
-                          onMarkPaid: transfer.from == myId || transfer.to == myId
-                              ? () => _markPaid(context, ref, data, transfer)
-                              : null,
+                          onTap: () => context.push('/group/$groupId/balance/person/$id'),
                         ),
                       ],
                     ],
                   ),
                 ),
-              const SizedBox(height: 8),
-              AnimatedPressCard(
-                onTap: () => context.push('/group/$groupId/balance/summary'),
-                child: ListTile(
-                  leading: Icon(
-                    Icons.calendar_month_outlined,
-                    color: Theme.of(context).colorScheme.primary,
+                SectionHeader(l10n.suggestedPaymentsTitle),
+                if (data.transfers.isEmpty)
+                  AppCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle_outline, color: AppColors.of(context).positive),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text(l10n.allSettledUp)),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  AppCard(
+                    child: Column(
+                      children: [
+                        for (final (index, transfer) in data.transfers.indexed) ...[
+                          if (index > 0) const Divider(indent: 16, endIndent: 16),
+                          _TransferRow(
+                            text: l10n.transferLine(
+                              data.names[transfer.from] ?? '',
+                              data.names[transfer.to] ?? '',
+                            ),
+                            cents: transfer.cents,
+                            lang: lang,
+                            // Only the payer or the receiver may record the payment (SPEC 9).
+                            onMarkPaid: transfer.from == myId || transfer.to == myId
+                                ? () => _markPaid(context, ref, data, transfer)
+                                : null,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                  title: Text(l10n.monthlySummaryButton),
-                  trailing: const Icon(Icons.chevron_right),
+                const SizedBox(height: 8),
+                AnimatedPressCard(
+                  onTap: () => context.push('/group/$groupId/balance/summary'),
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.calendar_month_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    title: Text(l10n.monthlySummaryButton),
+                    trailing: const Icon(Icons.chevron_right),
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }

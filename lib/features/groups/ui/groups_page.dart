@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/widgets.dart';
 import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
+import '../../../core/layout.dart';
 import '../../../core/limits.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
@@ -103,31 +104,33 @@ class GroupsPage extends ConsumerWidget {
                 onCreate: () => _create(context, ref),
                 onJoin: () => _joinWithCode(context),
               )
-            : ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  for (final (index, group) in groups.indexed)
-                    FadeSlide(
-                      delay: Duration(milliseconds: 60 + math.min(index, 8) * 60),
-                      child: AnimatedPressCard(
-                        onTap: () => context.go('/group/${group.id}'),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                            child: Icon(
-                              Icons.home_rounded,
-                              size: 20,
-                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            : ContentWidth(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    for (final (index, group) in groups.indexed)
+                      FadeSlide(
+                        delay: Duration(milliseconds: 60 + math.min(index, 8) * 60),
+                        child: AnimatedPressCard(
+                          onTap: () => context.go('/group/${group.id}'),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                              child: Icon(
+                                Icons.home_rounded,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              ),
                             ),
+                            title: Text(group.name),
+                            subtitle: _BalanceStatus(groupId: group.id),
+                            trailing: _BalancePill(groupId: group.id),
                           ),
-                          title: Text(group.name),
-                          subtitle: _BalanceStatus(groupId: group.id),
-                          trailing: _BalancePill(groupId: group.id),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
       ),
       // Both actions side by side at the bottom, always reachable. Without a group the
@@ -135,26 +138,29 @@ class GroupsPage extends ConsumerWidget {
       bottomNavigationBar: (groupsAsync.value?.isEmpty ?? true)
           ? null
           : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        icon: const Icon(Icons.add, size: 18),
-                        onPressed: () => _create(context, ref),
-                        label: Text(l10n.createGroupButton),
+              child: ContentWidth(
+                fitHeight: true,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.add, size: 18),
+                          onPressed: () => _create(context, ref),
+                          label: Text(l10n.createGroupButton),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.vpn_key_outlined, size: 18),
-                        onPressed: () => _joinWithCode(context),
-                        label: Text(l10n.joinWithCodeButton),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.vpn_key_outlined, size: 18),
+                          onPressed: () => _joinWithCode(context),
+                          label: Text(l10n.joinWithCodeButton),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

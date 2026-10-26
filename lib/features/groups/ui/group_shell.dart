@@ -1,39 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/layout.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Bottom navigation around the five group tabs (SPEC 11, screen 3).
+/// Navigation around the five group tabs (SPEC 11, screen 3): a bottom tab bar on
+/// phones, a rail on the left on wide windows (`wideLayoutBreakpoint`).
 /// [navigationShell] keeps each tab's state alive while switching tabs.
 class GroupShell extends StatelessWidget {
   const GroupShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
+  void _select(int index) =>
+      navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final divider = Theme.of(context).colorScheme.outlineVariant;
+    final tabs = [
+      (icon: Icons.home_outlined, label: l10n.overviewTab),
+      (icon: Icons.checklist, label: l10n.tabList),
+      (icon: Icons.receipt_long, label: l10n.tabExpenses),
+      (icon: Icons.account_balance_wallet_outlined, label: l10n.tabBalance),
+      (icon: Icons.group, label: l10n.tabGroup),
+    ];
+
+    if (isWideLayout(context)) {
+      return Scaffold(
+        body: Row(
+          children: [
+            SafeArea(
+              child: NavigationRail(
+                selectedIndex: navigationShell.currentIndex,
+                onDestinationSelected: _select,
+                groupAlignment: -0.85,
+                destinations: [
+                  for (final tab in tabs)
+                    NavigationRailDestination(icon: Icon(tab.icon), label: Text(tab.label)),
+                ],
+              ),
+            ),
+            VerticalDivider(width: 1, thickness: 1, color: divider),
+            Expanded(child: navigationShell),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: DecoratedBox(
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+          border: Border(top: BorderSide(color: divider)),
         ),
         child: NavigationBar(
           selectedIndex: navigationShell.currentIndex,
-          onDestinationSelected: (index) => navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          ),
+          onDestinationSelected: _select,
           destinations: [
-            NavigationDestination(icon: const Icon(Icons.home_outlined), label: l10n.overviewTab),
-            NavigationDestination(icon: const Icon(Icons.checklist), label: l10n.tabList),
-            NavigationDestination(icon: const Icon(Icons.receipt_long), label: l10n.tabExpenses),
-            NavigationDestination(
-              icon: const Icon(Icons.account_balance_wallet_outlined),
-              label: l10n.tabBalance,
-            ),
-            NavigationDestination(icon: const Icon(Icons.group), label: l10n.tabGroup),
+            for (final tab in tabs) NavigationDestination(icon: Icon(tab.icon), label: tab.label),
           ],
         ),
       ),

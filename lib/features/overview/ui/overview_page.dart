@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/error_view.dart';
+import '../../../core/layout.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/widgets.dart';
@@ -76,87 +77,117 @@ class OverviewPage extends ConsumerWidget {
       final settlementsById = {for (final s in settlements) s.id: s};
       final theme = Theme.of(context);
 
-      return Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: ListView(
-            padding: const EdgeInsets.all(16),
+      final greeting = myName == null
+          ? null
+          : Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+              child: Text(l10n.greeting(myName), style: theme.textTheme.headlineSmall),
+            );
+      final left = <Widget>[
+        MyBalanceCard(
+          cents: balances.balances[myId] ?? 0,
+          debts: pairDebtsForUser(myId, expenses, settlements),
+          names: balances.names,
+          lang: lang,
+          onTap: () => context.go('/group/$groupId/balance'),
+        ),
+        _SectionRow(
+          title: l10n.openItemsCount(open.length),
+          actionLabel: open.isEmpty ? null : l10n.seeAllAction,
+          onAction: () => context.go('/group/$groupId/list'),
+        ),
+        AppCard(
+          child: Column(
             children: [
-              if (myName != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
-                  child: Text(l10n.greeting(myName), style: theme.textTheme.headlineSmall),
+              for (final entry in open.take(_previewItems)) ...[
+                ListTile(
+                  leading: Icon(Icons.radio_button_unchecked, color: theme.colorScheme.primary),
+                  title: Text(entry.name.localized(lang)),
+                  subtitle: entry.note == null ? null : Text(entry.note!),
+                  onTap: () => context.go('/group/$groupId/list'),
                 ),
-              MyBalanceCard(
-                cents: balances.balances[myId] ?? 0,
-                debts: pairDebtsForUser(myId, expenses, settlements),
-                names: balances.names,
-                lang: lang,
-                onTap: () => context.go('/group/$groupId/balance'),
+                const Divider(indent: 16, endIndent: 16),
+              ],
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: Text(l10n.addItemButton),
+                textColor: theme.colorScheme.primary,
+                iconColor: theme.colorScheme.primary,
+                onTap: () => addShoppingItemFlow(context, ref, groupId),
               ),
-              _SectionRow(
-                title: l10n.openItemsCount(open.length),
-                actionLabel: open.isEmpty ? null : l10n.seeAllAction,
-                onAction: () => context.go('/group/$groupId/list'),
+            ],
+          ),
+        ),
+      ];
+      final right = <Widget>[
+        SectionHeader(l10n.recentActivityTitle),
+        if (activity.isEmpty)
+          AppCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                l10n.noActivityYet,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
-              AppCard(
-                child: Column(
+            ),
+          )
+        else
+          AppCard(
+            child: Column(
+              children: [
+                for (var i = 0; i < activity.length; i++) ...[
+                  if (i > 0) const Divider(indent: 16, endIndent: 16),
+                  _ActivityTile(
+                    activity: activity[i],
+                    expenses: expensesById,
+                    entries: entriesById,
+                    settlements: settlementsById,
+                    groupId: groupId,
+                    lang: lang,
+                  ),
+                ],
+              ],
+            ),
+          ),
+      ];
+
+      // Wide windows: greeting across the top, balance and list on the left, activity
+      // on the right. Phones: one column in the same order.
+      if (isWideLayout(context)) {
+        return ContentWidth(
+          maxWidth: wideContentMaxWidth,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ?greeting,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final entry in open.take(_previewItems)) ...[
-                      ListTile(
-                        leading: Icon(
-                          Icons.radio_button_unchecked,
-                          color: theme.colorScheme.primary,
-                        ),
-                        title: Text(entry.name.localized(lang)),
-                        subtitle: entry.note == null ? null : Text(entry.note!),
-                        onTap: () => context.go('/group/$groupId/list'),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: left),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: right,
                       ),
-                      const Divider(indent: 16, endIndent: 16),
-                    ],
-                    ListTile(
-                      leading: const Icon(Icons.add),
-                      title: Text(l10n.addItemButton),
-                      textColor: theme.colorScheme.primary,
-                      iconColor: theme.colorScheme.primary,
-                      onTap: () => addShoppingItemFlow(context, ref, groupId),
                     ),
                   ],
                 ),
-              ),
-              SectionHeader(l10n.recentActivityTitle),
-              if (activity.isEmpty)
-                AppCard(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      l10n.noActivityYet,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                )
-              else
-                AppCard(
-                  child: Column(
-                    children: [
-                      for (var i = 0; i < activity.length; i++) ...[
-                        if (i > 0) const Divider(indent: 16, endIndent: 16),
-                        _ActivityTile(
-                          activity: activity[i],
-                          expenses: expensesById,
-                          entries: entriesById,
-                          settlements: settlementsById,
-                          groupId: groupId,
-                          lang: lang,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
+        );
+      }
+      return ContentWidth(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [?greeting, ...left, ...right],
         ),
       );
     }
