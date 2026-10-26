@@ -71,7 +71,8 @@ class _GroupPageState extends ConsumerState<GroupPage> {
     final l10n = AppLocalizations.of(context)!;
     await Clipboard.setData(ClipboardData(text: _inviteLink!));
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.linkCopiedMessage)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.linkCopiedMessage, textAlign: TextAlign.center)));
   }
 
   Future<void> _setAdmin(Member member, bool admin) async {

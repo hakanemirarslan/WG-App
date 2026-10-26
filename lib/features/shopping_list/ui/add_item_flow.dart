@@ -32,8 +32,14 @@ Future<void> addShoppingItemFlow(BuildContext context, WidgetRef ref, String gro
     );
     if (existing.isNotEmpty) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.alreadyOnList(existing.first.addedByName))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.alreadyOnList(existing.first.addedByName),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
       }
       return;
     }

@@ -125,7 +125,9 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
       ref.read(appLocaleProvider.notifier).state = Locale(_selectedLocale);
       ref.invalidate(myProfileProvider);
       ref.invalidate(myPrivateProfileProvider);
-      messenger.showSnackBar(SnackBar(content: Text(l10n.settingsSavedMessage)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.settingsSavedMessage, textAlign: TextAlign.center)),
+      );
     } catch (error) {
       messenger.showSnackBar(
         // Debug builds also show the raw error so unexpected failures are diagnosable.
