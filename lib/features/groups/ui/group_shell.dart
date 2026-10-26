@@ -36,7 +36,7 @@ class GroupShell extends StatelessWidget {
                 selectedIndex: navigationShell.currentIndex,
                 onDestinationSelected: _select,
                 groupAlignment: -0.85,
-                minWidth: 96,
+                minWidth: 104,
                 leading: const SizedBox(height: 8),
                 destinations: [
                   for (final tab in tabs)

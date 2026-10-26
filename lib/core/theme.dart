@@ -240,11 +240,12 @@ ThemeData _build(
       backgroundColor: scheme.surface,
       indicatorColor: scheme.primaryContainer,
       labelType: NavigationRailLabelType.all,
-      selectedLabelTextStyle: textTheme.labelMedium?.copyWith(
+      // Same small label size as the bottom tab bar, so "Harcamalar" fits.
+      selectedLabelTextStyle: textTheme.labelSmall?.copyWith(
         fontWeight: FontWeight.w600,
         color: scheme.onSurface,
       ),
-      unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(
+      unselectedLabelTextStyle: textTheme.labelSmall?.copyWith(
         fontWeight: FontWeight.w600,
         color: scheme.onSurfaceVariant,
       ),
