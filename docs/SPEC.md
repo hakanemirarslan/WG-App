@@ -140,7 +140,7 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
    - **Liste:** acik kalemler (ustte), "Son alinanlar", ekleme butonu (+).
    - **Harcamalar:** kronolojik liste (tarih, odeyen, tutar, kalemler), ekleme butonu.
    - **Bakiye:** uye bakiyeleri, onerilen odemeler, aylik ozet.
-   - **Grup:** uyeler, davet linki olustur/paylas, ayril.
+   - **Grup:** uyeler, davet linki olustur/paylas, ayril. "Davet et" linki olusturup sistemin Paylas menusunu acar (WhatsApp, Telegram, SMS; `share_plus`, webde Web Share API). Paylas menusu olmayan tarayicida link panoya kopyalanir (e-posta acilmaz).
 4. **Urun secici** (sheet), **Harcama formu**, **Harcama detayi** (duzenle/sil).
 5. **Ayarlar:** dil (DE/EN/TR), gorunen ad, cikis.
 

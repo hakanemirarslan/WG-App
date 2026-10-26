@@ -52,6 +52,9 @@
   "@activitySettlement": {"placeholders": {"from": {"type": "String"}, "to": {"type": "String"}}},
   "todayLabel": "Today",
   "yesterdayLabel": "Yesterday",
+  "shareInviteButton": "Share",
+  "inviteShareText": "Join \"{group}\" on WG App: {link}",
+  "@inviteShareText": {"placeholders": {"group": {"type": "String"}, "link": {"type": "String"}}},
 
   "homeTitle": "Home",
   "settingsTitle": "Settings",

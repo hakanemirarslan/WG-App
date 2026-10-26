@@ -45,6 +45,8 @@
   "activitySettlement": "{from} hat {to} bezahlt",
   "todayLabel": "Heute",
   "yesterdayLabel": "Gestern",
+  "shareInviteButton": "Teilen",
+  "inviteShareText": "Tritt \"{group}\" in der WG App bei: {link}",
 
   "homeTitle": "Start",
   "settingsTitle": "Einstellungen",

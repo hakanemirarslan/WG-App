@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
@@ -40,9 +41,29 @@ class _GroupPageState extends ConsumerState<GroupPage> {
   Future<void> _createInvite() async {
     try {
       final code = await ref.read(groupsRepositoryProvider).createInvite(widget.groupId);
-      if (mounted) setState(() => _inviteLink = _linkFor(code));
+      if (!mounted) return;
+      setState(() => _inviteLink = _linkFor(code));
+      await _shareInvite();
     } catch (error) {
       if (mounted) _showError(error);
+    }
+  }
+
+  /// Opens the system share sheet (WhatsApp, Telegram, SMS...). Where there is none
+  /// (some desktop browsers) the link is copied instead of opening a mail program.
+  Future<void> _shareInvite() async {
+    final l10n = AppLocalizations.of(context)!;
+    final groupName = ref.read(groupProvider(widget.groupId)).value?.name ?? '';
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: l10n.inviteShareText(groupName, _inviteLink!),
+          subject: l10n.appTitle,
+          mailToFallbackEnabled: false,
+        ),
+      );
+    } catch (_) {
+      await _copyInvite();
     }
   }
 
@@ -265,11 +286,19 @@ class _GroupPageState extends ConsumerState<GroupPage> {
                             label: Text(l10n.createInviteButton),
                           )
                         : FilledButton.icon(
-                            icon: const Icon(Icons.copy, size: 18),
-                            onPressed: _copyInvite,
-                            label: Text(l10n.copyLinkButton),
+                            icon: const Icon(Icons.share_outlined, size: 18),
+                            onPressed: _shareInvite,
+                            label: Text(l10n.shareInviteButton),
                           ),
                   ),
+                  if (_inviteLink != null) ...[
+                    const SizedBox(width: 8),
+                    IconButton.outlined(
+                      icon: const Icon(Icons.copy, size: 18),
+                      tooltip: l10n.copyLinkButton,
+                      onPressed: _copyInvite,
+                    ),
+                  ],
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(

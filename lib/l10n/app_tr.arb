@@ -44,6 +44,8 @@
   "activitySettlement": "{from}, {to} kişisine ödedi",
   "todayLabel": "Bugün",
   "yesterdayLabel": "Dün",
+  "shareInviteButton": "Paylaş",
+  "inviteShareText": "WG App'te \"{group}\" grubuna katıl: {link}",
 
   "homeTitle": "Ana sayfa",
   "settingsTitle": "Ayarlar",
