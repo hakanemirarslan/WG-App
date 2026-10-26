@@ -312,7 +312,7 @@ class _BalancePill extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         child: Text(
-          '${cents > 0 ? '+' : '−'}${formatCents(cents.abs(), locale: lang)}',
+          formatCents(cents.abs(), locale: lang),
           style: moneyStyle(
             theme.textTheme.titleSmall?.copyWith(color: onBalanceContainerColor(context, cents)),
           ),

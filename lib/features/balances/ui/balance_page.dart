@@ -13,6 +13,7 @@ import '../../groups/providers/groups_providers.dart';
 import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/ui/group_error_text.dart';
 import '../providers/balances_providers.dart';
+import 'my_balance_card.dart';
 
 /// "Balance" tab (SPEC 9, 11): my balance, member balances and suggested payments.
 class BalancePage extends ConsumerWidget {
@@ -76,6 +77,8 @@ class BalancePage extends ConsumerWidget {
     final lang = Localizations.localeOf(context).languageCode;
     final groupName = ref.watch(groupProvider(groupId)).value?.name ?? '';
     final balanceAsync = ref.watch(balancesProvider(groupId));
+    final expenses = ref.watch(expensesProvider(groupId)).value;
+    final settlements = ref.watch(settlementsProvider(groupId)).value;
     final myId = supabase.auth.currentUser!.id;
 
     return Scaffold(
@@ -99,7 +102,14 @@ class BalancePage extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               if (!data.consistent) _MismatchNotice(message: l10n.balancesMismatchMessage),
-              _MyBalanceCard(cents: data.balances[myId] ?? 0, lang: lang),
+              MyBalanceCard(
+                cents: data.balances[myId] ?? 0,
+                debts: expenses == null || settlements == null
+                    ? const []
+                    : pairDebtsForUser(myId, expenses, settlements),
+                names: data.names,
+                lang: lang,
+              ),
               SectionHeader(l10n.balancesTitle),
               AppCard(
                 child: Column(
@@ -200,90 +210,9 @@ class _MismatchNotice extends StatelessWidget {
   }
 }
 
-/// The signed amount for the user's own balance, big and coloured by sign, with a
-/// short status line ("you get money back" / "you owe money" / "all settled").
-class _MyBalanceCard extends StatelessWidget {
-  const _MyBalanceCard({required this.cents, required this.lang});
-
-  final int cents;
-  final String lang;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colors = AppColors.of(context);
-    final amountColor = cents > 0
-        ? colors.positive
-        : cents < 0
-        ? colors.negative
-        : theme.colorScheme.onSurface;
-    final status = cents > 0
-        ? l10n.youAreOwedStatus
-        : cents < 0
-        ? l10n.youOweStatus
-        : l10n.allSettledUp;
-
-    return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.yourBalanceLabel,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _signed(cents, lang),
-              style: moneyStyle(
-                theme.textTheme.displaySmall?.copyWith(
-                  color: amountColor,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            _StatusPill(
-              text: status,
-              background:
-                  balanceContainerColor(context, cents) ?? theme.colorScheme.surfaceContainer,
-              foreground: onBalanceContainerColor(context, cents) ?? theme.colorScheme.onSurface,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.text, required this.background, required this.foreground});
-
-  final String text;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: foreground),
-        ),
-      ),
-    );
-  }
-}
-
-/// One member: initial avatar, name, short "gets back / owes" line and the signed
-/// amount on a green or coral pill (the sign keeps it readable without colour).
+/// One member: initial avatar, name, "is owed / owes" in words and the amount on a
+/// green or coral pill. No +/- sign: the word says the direction (a signed number
+/// read as confusing).
 class _MemberRow extends StatelessWidget {
   const _MemberRow({
     required this.name,
@@ -325,7 +254,7 @@ class _MemberRow extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Text(
-            _signed(cents, lang),
+            formatCents(cents.abs(), locale: lang),
             style: moneyStyle(
               theme.textTheme.titleSmall?.copyWith(color: onBalanceContainerColor(context, cents)),
             ),
@@ -390,6 +319,3 @@ class _TransferRow extends StatelessWidget {
     );
   }
 }
-
-String _signed(int cents, String lang) =>
-    '${cents > 0 ? '+' : ''}${formatCents(cents, locale: lang)}';

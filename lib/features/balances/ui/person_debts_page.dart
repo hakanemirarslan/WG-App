@@ -7,7 +7,6 @@ import '../../../core/error_view.dart';
 import '../../../core/money.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
-import '../../../domain/balance.dart';
 import '../../../domain/pair_debts.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../expenses/data/expenses_repository.dart';
@@ -47,20 +46,7 @@ class PersonDebtsPage extends ConsumerWidget {
       }
       if (data == null || expenses == null || settlements == null) return const LoadingView();
 
-      final debts = pairDebtsOf(
-        userId,
-        expenses: balanceExpensesOf(expenses),
-        settlements: [
-          for (final s in settlements)
-            BalanceSettlement(
-              id: s.id,
-              from: s.from,
-              to: s.to,
-              cents: s.cents,
-              createdAt: s.createdAt,
-            ),
-        ],
-      );
+      final debts = pairDebtsForUser(userId, expenses, settlements);
       final expensesById = {for (final e in expenses) e.id: e};
       final owes = debts.where((d) => d.cents > 0).toList();
       final isOwed = debts.where((d) => d.cents < 0).toList();
@@ -144,7 +130,7 @@ class _PersonHeader extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Text(
-                  '${cents > 0 ? '+' : ''}${formatCents(cents, locale: lang)}',
+                  formatCents(cents.abs(), locale: lang),
                   style: moneyStyle(
                     theme.textTheme.titleSmall?.copyWith(
                       color: onBalanceContainerColor(context, cents) ?? theme.colorScheme.onSurface,

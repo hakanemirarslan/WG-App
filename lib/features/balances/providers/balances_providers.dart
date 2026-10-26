@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/supabase_client.dart';
 import '../../../domain/balance.dart';
 import '../../../domain/debt_simplifier.dart';
+import '../../../domain/pair_debts.dart';
 import '../../../domain/split.dart';
 import '../../expenses/data/expenses_repository.dart';
 import '../../expenses/providers/expenses_providers.dart';
@@ -53,6 +54,24 @@ List<BalanceExpense> balanceExpensesOf(List<Expense> expenses) {
         shares: [for (final s in e.shares) ExpenseShare(s.userId, s.shareCents)],
       ),
   ];
+}
+
+/// Who owes whom for [userId], one net amount per other person (`pairDebtsOf`), from the
+/// live expense and settlement lists. Used by the overview, the Balance tab and the
+/// person page so all three show the same numbers.
+List<PairDebt> pairDebtsForUser(
+  String userId,
+  List<Expense> expenses,
+  List<Settlement> settlements,
+) {
+  return pairDebtsOf(
+    userId,
+    expenses: balanceExpensesOf(expenses),
+    settlements: [
+      for (final s in settlements)
+        BalanceSettlement(id: s.id, from: s.from, to: s.to, cents: s.cents, createdAt: s.createdAt),
+    ],
+  );
 }
 
 /// Everything the balance screens need, computed from the live expense,

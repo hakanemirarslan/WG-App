@@ -6,12 +6,12 @@ import 'package:intl/intl.dart';
 import '../../../core/error_view.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
-import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../domain/activity_feed.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../balances/data/settlements_repository.dart';
 import '../../balances/providers/balances_providers.dart';
+import '../../balances/ui/my_balance_card.dart';
 import '../../expenses/data/expenses_repository.dart';
 import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/providers/groups_providers.dart';
@@ -87,8 +87,10 @@ class OverviewPage extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
                   child: Text(l10n.greeting(myName), style: theme.textTheme.headlineSmall),
                 ),
-              _BalanceCard(
+              MyBalanceCard(
                 cents: balances.balances[myId] ?? 0,
+                debts: pairDebtsForUser(myId, expenses, settlements),
+                names: balances.names,
                 lang: lang,
                 onTap: () => context.go('/group/$groupId/balance'),
               ),
@@ -165,83 +167,6 @@ class OverviewPage extends ConsumerWidget {
         title: Text(groupName),
       ),
       body: body(),
-    );
-  }
-}
-
-/// My balance in this group, tappable to open the Balance tab.
-class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({required this.cents, required this.lang, required this.onTap});
-
-  final int cents;
-  final String lang;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final colors = AppColors.of(context);
-    final amountColor = cents > 0
-        ? colors.positive
-        : cents < 0
-        ? colors.negative
-        : theme.colorScheme.onSurface;
-    final status = cents > 0
-        ? l10n.youAreOwedStatus
-        : cents < 0
-        ? l10n.youOweStatus
-        : l10n.allSettledUp;
-    final sign = cents > 0 ? '+' : (cents < 0 ? '−' : '');
-
-    return AnimatedPressCard(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.yourBalanceLabel,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$sign${formatCents(cents.abs(), locale: lang)}',
-                    style: moneyStyle(theme.textTheme.headlineMedium?.copyWith(color: amountColor)),
-                  ),
-                  const SizedBox(height: 8),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color:
-                          balanceContainerColor(context, cents) ??
-                          theme.colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      child: Text(
-                        status,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color:
-                              onBalanceContainerColor(context, cents) ??
-                              theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: theme.colorScheme.onSurfaceVariant),
-          ],
-        ),
-      ),
     );
   }
 }
