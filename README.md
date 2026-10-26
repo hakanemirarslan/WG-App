@@ -1,5 +1,7 @@
 # WG App
 
+[![CI](https://github.com/hakanemirarslan/WG-App/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanemirarslan/WG-App/actions/workflows/ci.yml)
+
 A shared-household app for flatmates (WG): **list what is missing, do the shopping, split the cost automatically.**
 
 Built with Flutter (web first, Android/iOS from the same code later) and Supabase. German, English and Turkish UI.

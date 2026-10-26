@@ -1,0 +1,35 @@
+# Runs on every push and pull request: the same checks as before a commit
+# (CLAUDE.md: analyze clean, tests green). No secrets needed, the tests do not
+# talk to Supabase.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      # The localization classes are generated, not committed (.gitignore).
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
