@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets.dart';
-import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
 import '../../../domain/split.dart';
@@ -57,7 +56,9 @@ class ShoppingListPage extends ConsumerWidget {
 
     final expenses = ref.read(expensesRepositoryProvider);
     String? expenseId;
-    String message;
+    // Success is silent (the expense shows up in the overview and the expenses tab);
+    // only a failure is reported.
+    String? message;
     try {
       final members = await ref.read(groupMembersProvider(groupId).future);
       expenseId = await expenses.saveExpense(
@@ -70,7 +71,6 @@ class ShoppingListPage extends ConsumerWidget {
       );
       // Remember the expense so that undoing "bought" can delete it again.
       await shopping.linkExpense(entry.id, expenseId);
-      message = l10n.boughtExpenseRecorded(formatCents(cents, locale: lang));
     } catch (_) {
       try {
         // Remove a half-finished expense too, then put the item back on the list.
@@ -83,7 +83,7 @@ class ShoppingListPage extends ConsumerWidget {
         message = l10n.boughtExpenseFailedTickedOff;
       }
     }
-    if (context.mounted) {
+    if (message != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     }
   }

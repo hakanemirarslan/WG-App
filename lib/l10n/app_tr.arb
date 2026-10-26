@@ -118,7 +118,6 @@
   "undoBoughtExpenseNotAllowed": "İlgili harcamayı yalnızca onu oluşturan kişi ya da bir yönetici silebilir. Ürün alındı olarak kalır.",
   "boughtExpenseFailedKeptOpen": "Harcama kaydedilemedi. Ürün listede kaldı, lütfen tekrar dene.",
   "boughtExpenseFailedTickedOff": "Ürün alındı olarak işaretlendi ama harcama kaydedilemedi. Lütfen Harcamalar bölümünden elle ekle.",
-  "boughtExpenseRecorded": "{amount} tutarında harcama kaydedildi",
   "markBoughtTooltip": "Alındı olarak işaretle",
   "undoBoughtTooltip": "Listeye geri koy",
   "deleteEntryAction": "Kaldır",
