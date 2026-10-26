@@ -6,16 +6,14 @@ import '../../../core/widgets.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
-import '../../../core/limits.dart';
 import '../../../domain/split.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../catalog/providers/catalog_providers.dart';
-import '../../catalog/ui/product_picker_sheet.dart';
 import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../../groups/ui/group_error_text.dart';
 import '../data/shopping_repository.dart';
 import '../providers/shopping_providers.dart';
+import 'add_item_flow.dart';
 import 'bought_price_dialog.dart';
 
 /// "List" tab (SPEC 11): open items on top, "Recently bought" below.
@@ -23,70 +21,6 @@ class ShoppingListPage extends ConsumerWidget {
   const ShoppingListPage({super.key, required this.groupId});
 
   final String groupId;
-
-  Future<void> _add(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context)!;
-    final catalogRepository = ref.read(catalogRepositoryProvider);
-    final picked = await showProductPicker(context, groupId);
-    if (picked == null || !context.mounted) return;
-
-    try {
-      final groupItemId = await catalogRepository.getOrCreateGroupItem(
-        groupId,
-        catalogItemId: picked.catalogItemId,
-        customName: picked.customName,
-      );
-
-      // Same product already open on the list: point to it instead of adding a copy.
-      final entries = ref.read(shoppingEntriesProvider(groupId)).value ?? const [];
-      final existing = entries.where((e) => !e.isBought && e.groupItemId == groupItemId);
-      if (existing.isNotEmpty) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.alreadyOnList(existing.first.addedByName))));
-        }
-        return;
-      }
-
-      if (!context.mounted) return;
-      final note = await _askNote(context);
-      if (note == null) return;
-
-      await ref
-          .read(shoppingRepositoryProvider)
-          .addEntry(groupId, groupItemId, note.isEmpty ? null : note);
-      await catalogRepository.touchGroupItem(groupItemId);
-      ref.invalidate(frequentItemsProvider(groupId));
-    } catch (error) {
-      if (context.mounted) _showError(context, error);
-    }
-  }
-
-  /// Returns the note ('' for none) or null if the user cancelled.
-  Future<String?> _askNote(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(labelText: l10n.noteLabel, hintText: l10n.noteHint),
-          inputFormatters: limitTo(maxNoteLength),
-          onSubmitted: (value) => Navigator.pop(context, value.trim()),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancelButton)),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: Text(l10n.addToListButton),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showError(BuildContext context, Object error) {
     final l10n = AppLocalizations.of(context)!;
@@ -223,7 +157,7 @@ class ShoppingListPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         heroTag: null, // see ExpensesPage: the tabs share one route
         tooltip: l10n.addItemButton,
-        onPressed: () => _add(context, ref),
+        onPressed: () => addShoppingItemFlow(context, ref, groupId),
         child: const Icon(Icons.add),
       ),
       body: entriesAsync.when(
@@ -258,7 +192,7 @@ class ShoppingListPage extends ConsumerWidget {
                       icon: Icons.shopping_basket_outlined,
                       message: l10n.openItemsEmpty,
                       actionLabel: l10n.addItemButton,
-                      onAction: () => _add(context, ref),
+                      onAction: () => addShoppingItemFlow(context, ref, groupId),
                     )
                   else
                     // One card for all open items, thin dividers between the rows.

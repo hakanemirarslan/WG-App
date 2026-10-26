@@ -38,6 +38,9 @@ class Expense {
   final String? description;
   final DateTime date;
   final String createdBy;
+
+  /// When it was entered (not the expense date); orders the overview's activity feed.
+  final DateTime createdAt;
   final List<ExpenseShareDetail> shares;
   final List<ExpenseItem> items;
 
@@ -49,6 +52,7 @@ class Expense {
     required this.description,
     required this.date,
     required this.createdBy,
+    required this.createdAt,
     required this.shares,
     required this.items,
   });
@@ -64,6 +68,7 @@ class Expense {
       description: map['description'] as String?,
       date: DateTime.parse(map['expense_date'] as String),
       createdBy: map['created_by'] as String,
+      createdAt: DateTime.parse(map['created_at'] as String),
       shares: [
         for (final share in shares)
           ExpenseShareDetail(
@@ -93,7 +98,7 @@ class ExpensesRepository {
     final rows = await supabase
         .from('expenses')
         .select(
-          'id, paid_by, amount_cents, description, expense_date, created_by, '
+          'id, paid_by, amount_cents, description, expense_date, created_by, created_at, '
           'payer:profiles!expenses_paid_by_fkey(display_name), '
           'expense_shares(user_id, share_cents, profiles(display_name)), '
           'expense_items(group_items(catalog_item_id, custom_name, catalog_items(name_de, name_en, name_tr)))',

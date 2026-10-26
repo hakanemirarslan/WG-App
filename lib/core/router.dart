@@ -17,6 +17,7 @@ import '../features/groups/ui/group_page.dart';
 import '../features/groups/ui/group_shell.dart';
 import '../features/groups/ui/groups_page.dart';
 import '../features/groups/ui/join_page.dart';
+import '../features/overview/ui/overview_page.dart';
 import '../features/settings/ui/settings_page.dart';
 import '../features/shopping_list/ui/shopping_list_page.dart';
 import 'supabase_client.dart';
@@ -81,12 +82,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/group/:id',
         redirect: (context, state) =>
-            state.uri.pathSegments.length == 2 ? '${state.uri.path}/list' : null,
+            state.uri.pathSegments.length == 2 ? '${state.uri.path}/overview' : null,
         routes: [
           StatefulShellRoute.indexedStack(
             builder: (context, state, navigationShell) =>
                 GroupShell(navigationShell: navigationShell),
             branches: [
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: 'overview',
+                    builder: (context, state) => OverviewPage(groupId: state.pathParameters['id']!),
+                  ),
+                ],
+              ),
               StatefulShellBranch(
                 routes: [
                   GoRoute(
