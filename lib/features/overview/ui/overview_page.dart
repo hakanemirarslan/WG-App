@@ -28,6 +28,7 @@ class OverviewPage extends ConsumerWidget {
   final String groupId;
 
   static const _previewItems = 3;
+  static const _recentActivityCount = 3;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,9 +61,13 @@ class OverviewPage extends ConsumerWidget {
       }
 
       final open = entries.where((e) => !e.isBought).toList();
-      final bought = entries.where((e) => e.isBought && e.boughtAt != null);
-      final activity = recentActivity([
-        for (final e in expenses) Activity(ActivityKind.expense, e.id, e.createdAt),
+      final bought = entries.where((e) => e.isBought && e.boughtAt != null).toList();
+      // Ticking an item off with a price also creates an expense: one action, so it is
+      // shown once, as "bought" with the expense's amount.
+      final linkedExpenseIds = {for (final e in bought) ?e.expenseId};
+      final activity = recentActivity(limit: _recentActivityCount, [
+        for (final e in expenses)
+          if (!linkedExpenseIds.contains(e.id)) Activity(ActivityKind.expense, e.id, e.createdAt),
         for (final e in bought) Activity(ActivityKind.bought, e.id, e.boughtAt!),
         for (final s in settlements) Activity(ActivityKind.settlement, s.id, s.createdAt),
       ]);
@@ -309,8 +314,13 @@ class _ActivityTile extends StatelessWidget {
         onTap = () => context.push('/group/$groupId/expenses/${expense.id}');
       case ActivityKind.bought:
         final entry = entries[activity.sourceId]!;
+        final linked = entry.expenseId == null ? null : expenses[entry.expenseId];
         person = entry.boughtByName ?? '';
         text = l10n.activityBought(person, entry.name.localized(lang));
+        if (linked != null) {
+          cents = linked.amountCents;
+          onTap = () => context.push('/group/$groupId/expenses/${linked.id}');
+        }
       case ActivityKind.settlement:
         final settlement = settlements[activity.sourceId]!;
         person = settlement.fromName;

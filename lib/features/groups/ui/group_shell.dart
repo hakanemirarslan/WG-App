@@ -15,20 +15,27 @@ class GroupShell extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) =>
-            navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex),
-        destinations: [
-          NavigationDestination(icon: const Icon(Icons.home_outlined), label: l10n.overviewTab),
-          NavigationDestination(icon: const Icon(Icons.checklist), label: l10n.tabList),
-          NavigationDestination(icon: const Icon(Icons.receipt_long), label: l10n.tabExpenses),
-          NavigationDestination(
-            icon: const Icon(Icons.account_balance_wallet_outlined),
-            label: l10n.tabBalance,
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+        ),
+        child: NavigationBar(
+          selectedIndex: navigationShell.currentIndex,
+          onDestinationSelected: (index) => navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
           ),
-          NavigationDestination(icon: const Icon(Icons.group), label: l10n.tabGroup),
-        ],
+          destinations: [
+            NavigationDestination(icon: const Icon(Icons.home_outlined), label: l10n.overviewTab),
+            NavigationDestination(icon: const Icon(Icons.checklist), label: l10n.tabList),
+            NavigationDestination(icon: const Icon(Icons.receipt_long), label: l10n.tabExpenses),
+            NavigationDestination(
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              label: l10n.tabBalance,
+            ),
+            NavigationDestination(icon: const Icon(Icons.group), label: l10n.tabGroup),
+          ],
+        ),
       ),
     );
   }

@@ -223,8 +223,10 @@ ThemeData _build(
       extendedTextStyle: textTheme.labelLarge,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
+    // Same colour as the page (a different one showed as a floating block next to the
+    // centred 640 px column); GroupShell draws a thin line on top instead.
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: scheme.surfaceContainerLowest,
+      backgroundColor: scheme.surface,
       surfaceTintColor: Colors.transparent,
       indicatorColor: scheme.primaryContainer,
       elevation: 0,
