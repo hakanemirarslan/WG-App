@@ -134,7 +134,7 @@ Kullanici simdilik canliya almaya hazir degil; bu maddeler bilincli olarak ertel
   - [ ] iOS platformu eklenir: `flutter create . --platforms ios` (Windows'ta klasor olusur, derleme macOS'ta olur)
   - [ ] Bulutta macOS derleme kurulur (Codemagic veya GitHub Actions macOS runner), Apple Developer Program uyeligi alinir (guncel fiyat/kosullari Apple'dan dogrula)
   - [ ] **Davet linkleri:** `/join/<code>` adresinin uygulamada acilmasi icin iOS universal links (ve Android app links) ayari; web'de ek is yok
-  - [ ] **Uygulama icinden hesap silme** (Apple, hesap olusturan uygulamalardan bunu istiyor; guncel kurali Apple'dan dogrula). Davranis icin SPEC 16'ya bak. Bu madde mağaza surumunden once zorunlu
+  - [x] **Uygulama icinden hesap silme** (2026-11-01 V1'de yapildi: Ayarlar > Hesabi sil, `delete_my_account()`; ayrinti `docs/GIZLILIK-ENVANTERI.md`) (Apple, hesap olusturan uygulamalardan bunu istiyor; guncel kurali Apple'dan dogrula). Davranis icin SPEC 16'ya bak. Bu madde mağaza surumunden once zorunlu
   - [ ] TestFlight ile gercek iPhone'da test, sonra App Store incelemesi (gizlilik politikasi ve App Privacy bilgileri hazir olmali)
 - Gezi/etkinlik grup turu
 

@@ -101,6 +101,42 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
     super.dispose();
   }
 
+  /// Asks twice-careful confirmation, then deletes the account. Afterwards the router
+  /// sends the (now signed-out) user to the login page.
+  Future<void> _deleteAccount() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteAccountConfirmTitle),
+        content: Text(l10n.deleteAccountConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancelButton),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.deleteAccountButton),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await ref.read(authRepositoryProvider).deleteMyAccount();
+    } catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(kDebugMode ? '${l10n.errorGeneric}\n$error' : l10n.errorGeneric)),
+      );
+    }
+  }
+
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
@@ -287,6 +323,12 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
           : Text(l10n.saveButton),
     );
+    final deleteAccount = TextButton.icon(
+      icon: const Icon(Icons.delete_forever_outlined, size: 18),
+      style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+      onPressed: _deleteAccount,
+      label: Text(l10n.deleteAccountButton),
+    );
 
     // Wide windows (inside the group, next to the sidebar): profile across the top,
     // general settings and personal details side by side, actions bottom right.
@@ -321,8 +363,9 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
                 ),
                 const SizedBox(height: 16),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    deleteAccount,
+                    const Spacer(),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.logout, size: 18),
                       onPressed: () => ref.read(authRepositoryProvider).signOut(),
@@ -356,6 +399,8 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
                 private,
                 const SizedBox(height: 16),
                 SizedBox(width: double.infinity, child: save),
+                const SizedBox(height: 8),
+                deleteAccount,
               ],
             ),
           ),

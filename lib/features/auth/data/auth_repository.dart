@@ -28,6 +28,19 @@ class AuthRepository {
   }
 
   Future<void> signOut() => supabase.auth.signOut();
+
+  /// Deletes the account (`delete_my_account`, SPEC 16): leaves all groups, deletes the
+  /// optional details and the login, keeps an anonymised profile ("Gelöschter Nutzer")
+  /// so the groups' expenses and balances stay correct. Then clears the local session;
+  /// the server-side sign-out can fail because the user no longer exists.
+  Future<void> deleteMyAccount() async {
+    await supabase.rpc('delete_my_account');
+    try {
+      await supabase.auth.signOut(scope: SignOutScope.local);
+    } catch (_) {
+      // Session already invalid: the local copy is removed either way.
+    }
+  }
 }
 
 /// Why a login or signup failed, from the error code Supabase Auth sends

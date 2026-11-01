@@ -6,8 +6,11 @@
 -- 1) TABLOLAR
 -- ============================================================
 
+-- id = auth.users.id, but deliberately WITHOUT a foreign key: when an account is deleted
+-- (delete_my_account) the profile stays as an anonymised placeholder, because expenses,
+-- shares and settlements of the other members still point to it.
 create table public.profiles (
-  id           uuid primary key references auth.users(id) on delete cascade,
+  id           uuid primary key,
   display_name text not null constraint profiles_display_name_length check (char_length(display_name) <= 50)
                             constraint profiles_display_name_not_blank check (btrim(display_name) <> ''),
   locale       text not null default 'de' check (locale in ('de', 'en', 'tr')),
@@ -261,6 +264,34 @@ begin
   update public.memberships set left_at = now(), role = 'member'
   where group_id = gid and user_id = auth.uid();
   return 'left';
+end;
+$$;
+
+-- Hesabi sil (SPEC 16, DSGVO Art. 17). Uygulamadaki "Hesabi sil":
+--   1. aktif gruplardan ayril (leave_group: tek admin -> rol en eski uyeye, son uye -> grup silinir)
+--   2. istege bagli bilgileri (profile_private) sil
+--   3. profili anonimlestir: gorunen ad 'Gelöschter Nutzer' (gecmis harcamalar ve bakiyeler dogru kalir)
+--   4. giris hesabini (auth.users) sil: e-posta, sifre ve oturumlar gider
+-- Hata kodu: not_authenticated
+create or replace function public.delete_my_account()
+returns void
+language plpgsql security definer set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  gid uuid;
+begin
+  if uid is null then
+    raise exception 'not_authenticated';
+  end if;
+  for gid in
+    select group_id from public.memberships where user_id = uid and left_at is null
+  loop
+    perform public.leave_group(gid);
+  end loop;
+  delete from public.profile_private where id = uid;
+  update public.profiles set display_name = 'Gelöschter Nutzer', locale = 'de' where id = uid;
+  delete from auth.users where id = uid;
 end;
 $$;
 
@@ -666,7 +697,8 @@ revoke execute on function
   public.save_expense(uuid, uuid, uuid, integer, text, date, jsonb, jsonb),
   public.record_settlement(uuid, uuid, uuid, integer),
   public.guard_shopping_entry(),
-  public.touch_group_item(uuid)
+  public.touch_group_item(uuid),
+  public.delete_my_account()
 from public, anon;
 revoke execute on function public.handle_new_user(), public.guard_shopping_entry() from authenticated;
 -- Girisli kullanici: yetkiyi PUBLIC'ten miras almak yerine acikca alir (PUBLIC kapandi).
@@ -679,7 +711,8 @@ grant execute on function
   public.get_or_create_group_item(uuid, uuid, text),
   public.save_expense(uuid, uuid, uuid, integer, text, date, jsonb, jsonb),
   public.record_settlement(uuid, uuid, uuid, integer),
-  public.touch_group_item(uuid)
+  public.touch_group_item(uuid),
+  public.delete_my_account()
 to authenticated;
 -- Bundan sonra olusturulacak fonksiyonlar da varsayilan olarak anon/PUBLIC'e acik olmasin.
 -- (PUBLIC'in varsayilani semaya degil geneldir, bu yuzden iki ayri satir.)

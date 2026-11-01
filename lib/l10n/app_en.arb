@@ -14,6 +14,9 @@
   "loginButton": "Log in",
   "signupButton": "Sign up",
   "logoutButton": "Log out",
+  "deleteAccountButton": "Delete account",
+  "deleteAccountConfirmTitle": "Delete your account?",
+  "deleteAccountConfirmBody": "Your login (email, password) and your optional details (name, phone) are deleted for good. You leave all groups; a group you are the last member of is deleted. In your groups' past expenses your name is replaced by \"Gelöschter Nutzer\" so the balances stay correct. This cannot be undone.",
 
   "noAccountSwitchToSignup": "No account yet? Sign up",
   "haveAccountSwitchToLogin": "Already have an account? Log in",

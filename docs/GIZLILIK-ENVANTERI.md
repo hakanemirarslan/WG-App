@@ -23,13 +23,11 @@ Bu dosya **hukuki tavsiye degildir.** Datenschutzerklaerung ve Impressum icin ne
 - **Google CDN (2026-10-24'te denendi):** `flutter build web` varsayilan olarak CanvasKit'i `www.gstatic.com/flutter-canvaskit` ve yedek fontlari `fonts.gstatic.com` adresinden ceker; ziyaretci IP'si Google'a gider. `--no-web-resources-cdn` ile derlenince CanvasKit ve Roboto yedek fontu kendi alan adindan gelir (`useLocalCanvasKit: true`, `assets/fonts/fallback/Roboto-Regular.ttf`). **Kalan istisna:** Inter/Roboto'nun karsilamadigi bir karakter (ornek: urun adina yazilan emoji) gorunurse Flutter eksik yedek fontu `fonts.gstatic.com/s/` adresinden indirir. Karar: Datenschutzerklaerung'da bir cumleyle belirtilir. Build ciktisinin statik incelemesi yapildi; canli adreste tarayici Network sekmesiyle dogrulanmali.
 - Uygulama fontu (Inter) pakete gomulu, dis istek yok.
 
-## Hesap silme (karar, uygulama sonra)
+## Hesap silme (V1'de uygulandi, 2026-11-01)
 
-- **Karar:** hesap silinince gorunen ad anonimlestirilir ("Geloeschter Nutzer" / "Deleted user", tek etiket), harcamalar ve odemeler kalir, bakiyeler bozulmaz.
-- **Tek admin kurali:** silinen kisi bir grupta tek adminse ve grupta baska aktif uye varsa, admin rolu en eski aktif uyeye (`joined_at`) otomatik devredilir.
-- **Teknik tasarim (V2, iOS magaza surumunden once zorunlu):**
-  1. `profiles.id` -> `auth.users` FK'si kaldirilir, `profiles.deleted_at` eklenir (neden: `paid_by`, `created_by`, `added_by`, `from_user`, `to_user`, `expense_shares.user_id` kolonlari `profiles`'a `on delete` kuralsiz bagli; cascade silme FK hatasi verir).
-  2. `delete_my_account()` RPC'si (`security definer`, sabit `search_path`): aktif uyelikleri kapatir, tek admin ise rolu devreder, profili anonimlestirir, `auth.users` satirini siler. Gercek Supabase projesinde `auth.users` silmenin calistigi denenecek; olmazsa yedek yol Edge Function.
-  3. Ayarlar ekraninda "Konto loeschen" dugmesi, onay penceresi, acik bakiye varsa mevcut "hesap kapanmadi" uyarisi; basarili olunca oturum kapatilir.
-  4. Silinmis kullanici adi l10n'dan gelir (iki dilde); `display_name` okunan yerler `deleted_at`'e gore ayarlanir.
-  5. Gecici PostgreSQL'de test: harcamalar kalir, bakiyeler tutar, diger uyeler anonim profili okuyabilir (`profiles_read` bunu zaten saglar).
+- **Uygulamada:** Ayarlar > "Hesabi sil" -> acik bir onay penceresi -> `delete_my_account()` RPC'si -> oturum kapanir, giris ekranina donulur.
+- **Ne olur (sirayla, tek islemde):** 1) aktif gruplardan ayrilir (`leave_group`: tek admin ise rol en eski aktif uyeye devredilir, son uye ise grup tum verisiyle silinir); 2) `profile_private` (ad, soyad, telefon) silinir; 3) `profiles` anonimlestirilir: gorunen ad sabit "Gelöschter Nutzer", dil `de`; 4) `auth.users` satiri silinir (e-posta, sifre hash'i, oturumlar).
+- **Kalanlar:** gecmis harcamalar, paylar, odemeler, liste kayitlari ve uyelik kaydi (ayrilma zamaniyla) anonim profile bagli kalir; diger uyelerin bakiyeleri bozulmaz. Anonim profilde kisiye ait bilgi kalmaz (ad sabit etiket).
+- **Sema:** `profiles.id` -> `auth.users` yabanci anahtari kaldirildi (yoksa giris hesabi silinince profil de silinmeye calisilir ve harcamalara bagli oldugu icin hata verir).
+- **Tasarimdan sapmalar:** `profiles.deleted_at` sutunu ve dile gore degisen etiket yerine veritabaninda sabit "Gelöschter Nutzer" (Datenschutz metni bu etiketi kullaniyor). Acik bakiye uyarisi henuz yok.
+- **Dogrulama:** gecici PostgreSQL'de (Supabase auth taklidi) denendi: giris hesabi ve ozel bilgiler siliniyor, profil anonim, harcama ve iki pay duruyor, diger uye harcamayi "Gelöschter Nutzer" olarak goruyor, yonetici devri ve son uyede grup silme calisiyor, girissiz cagri reddediliyor. Gercek Supabase'de `delete from auth.users`'in calistigi migration'dan sonra elle denenmeli.

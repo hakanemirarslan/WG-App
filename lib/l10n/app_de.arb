@@ -11,6 +11,9 @@
   "loginButton": "Anmelden",
   "signupButton": "Registrieren",
   "logoutButton": "Abmelden",
+  "deleteAccountButton": "Konto löschen",
+  "deleteAccountConfirmTitle": "Konto wirklich löschen?",
+  "deleteAccountConfirmBody": "Deine Anmeldedaten (E-Mail, Passwort) und deine freiwilligen Angaben (Name, Telefon) werden endgültig gelöscht. Du verlässt alle Gruppen; eine Gruppe, in der du das letzte Mitglied bist, wird gelöscht. In früheren Ausgaben deiner Gruppen wird dein Name durch \"Gelöschter Nutzer\" ersetzt, damit die Salden stimmen. Das kann nicht rückgängig gemacht werden.",
 
   "noAccountSwitchToSignup": "Noch kein Konto? Registrieren",
   "haveAccountSwitchToLogin": "Schon ein Konto? Anmelden",

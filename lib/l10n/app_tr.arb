@@ -10,6 +10,9 @@
   "loginButton": "Giriş yap",
   "signupButton": "Kayıt ol",
   "logoutButton": "Çıkış yap",
+  "deleteAccountButton": "Hesabı sil",
+  "deleteAccountConfirmTitle": "Hesabın silinsin mi?",
+  "deleteAccountConfirmBody": "Giriş bilgilerin (e-posta, şifre) ve isteğe bağlı bilgilerin (ad, telefon) kalıcı olarak silinir. Tüm gruplardan ayrılırsın; son üyesi olduğun grup silinir. Gruplarının geçmiş harcamalarında adın \"Gelöschter Nutzer\" olarak görünür, böylece bakiyeler doğru kalır. Bu işlem geri alınamaz.",
 
   "noAccountSwitchToSignup": "Hesabın yok mu? Kayıt ol",
   "haveAccountSwitchToLogin": "Zaten hesabın var mı? Giriş yap",
