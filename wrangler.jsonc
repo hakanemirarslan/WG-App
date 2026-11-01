@@ -1,0 +1,18 @@
+// Cloudflare Workers (static assets only) config for the Flutter web build.
+// Docs: https://developers.cloudflare.com/workers/static-assets/routing/single-page-application/
+{
+  // "name" is deliberately missing: it becomes the public address
+  // (<name>.<account-subdomain>.workers.dev) and is chosen by the project owner.
+  // Without it `wrangler deploy` stops, so nothing can be published by accident.
+
+  // Newest date the local Workers runtime (wrangler 4.156) supports; a newer one
+  // stops `wrangler dev`. Only selects runtime behaviour, irrelevant for static files.
+  "compatibility_date": "2026-10-30",
+  "assets": {
+    // Output of: flutter build web --release --no-web-resources-cdn --dart-define-from-file=env.json
+    "directory": "./build/web",
+    // Single-page app: a path without a file (e.g. /join/<code>) serves index.html
+    // with 200, so invite links survive a page reload. Without this they would 404.
+    "not_found_handling": "single-page-application"
+  }
+}
