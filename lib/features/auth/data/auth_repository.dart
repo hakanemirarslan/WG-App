@@ -7,26 +7,19 @@ class AuthRepository {
 
   Session? get currentSession => supabase.auth.currentSession;
 
-  /// The sign-up trigger (`handle_new_user`) copies the metadata into `profiles`
-  /// (display name, seen by the group) and `profile_private` (name and phone, only
-  /// seen by the user). [phone] is already normalised (`+491512345678`).
+  /// Only the display name goes into the auth metadata (the sign-up trigger copies it
+  /// to `profiles`). The optional first/last name and phone are written to
+  /// `profile_private` after sign-up instead: a copy in `auth.users` metadata would
+  /// survive the user clearing them in the settings (withdrawing consent).
   Future<void> signUp({
     required String email,
     required String password,
     required String displayName,
-    required String firstName,
-    required String lastName,
-    required String phone,
   }) {
     return supabase.auth.signUp(
       email: email,
       password: password,
-      data: {
-        'display_name': displayName,
-        'first_name': firstName,
-        'last_name': lastName,
-        'phone': phone,
-      },
+      data: {'display_name': displayName},
     );
   }
 

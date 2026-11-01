@@ -143,12 +143,6 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    // Accounts from before the signup fields existed may leave them empty; a value
-    // that is already stored cannot be cleared again (signup made it required).
-    FormFieldValidator<String> keepIfSet(String? stored) =>
-        (value) =>
-            (value ?? '').trim().isEmpty && stored != null ? l10n.requiredFieldMessage : null;
-
     final header = AppCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -254,27 +248,32 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _firstNameController,
-              decoration: InputDecoration(labelText: l10n.firstNameLabel),
+              // Optional (consent): clearing a field and saving deletes the value.
+              decoration: InputDecoration(
+                labelText: '${l10n.firstNameLabel} ${l10n.optionalSuffix}',
+              ),
               inputFormatters: limitTo(maxPersonNameLength),
               textCapitalization: TextCapitalization.words,
-              validator: keepIfSet(widget.private.firstName),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _lastNameController,
-              decoration: InputDecoration(labelText: l10n.lastNameLabel),
+              decoration: InputDecoration(
+                labelText: '${l10n.lastNameLabel} ${l10n.optionalSuffix}',
+              ),
               inputFormatters: limitTo(maxPersonNameLength),
               textCapitalization: TextCapitalization.words,
-              validator: keepIfSet(widget.private.lastName),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phoneController,
-              decoration: InputDecoration(labelText: l10n.phoneLabel, hintText: l10n.phoneHint),
+              decoration: InputDecoration(
+                labelText: '${l10n.phoneLabel} ${l10n.optionalSuffix}',
+                hintText: l10n.phoneHint,
+              ),
               keyboardType: TextInputType.phone,
               validator: (value) {
-                final empty = (value ?? '').trim().isEmpty;
-                if (empty) return keepIfSet(widget.private.phone)(value);
+                if ((value ?? '').trim().isEmpty) return null;
                 return normalizePhone(value!) == null ? l10n.invalidPhoneMessage : null;
               },
             ),

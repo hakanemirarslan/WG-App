@@ -8,12 +8,14 @@ import '../../../core/locale_provider.dart';
 import '../../../core/router.dart';
 import '../../../domain/validation.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../settings/data/profile_repository.dart';
 import '../../settings/providers/profile_providers.dart';
 import '../providers/auth_providers.dart';
 import 'auth_error_text.dart';
 
-/// Signup (SPEC 11). Every field is required: first and last name and phone are only
-/// visible to the user (`profile_private`), the display name is what the group sees.
+/// Signup (SPEC 11). Display name, email and password are required. First and last
+/// name and phone are optional (consent, Art. 6(1)(a) GDPR) and only visible to the
+/// user (`profile_private`); the display name is what the group sees.
 class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
 
@@ -66,14 +68,18 @@ class _SignupPageState extends ConsumerState<SignupPage> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
             displayName: displayName,
-            firstName: _firstNameController.text.trim(),
-            lastName: _lastNameController.text.trim(),
-            phone: normalizePhone(_phoneController.text)!,
           );
       // The signup trigger only sets display_name; apply the chosen locale too.
-      await ref
-          .read(profileRepositoryProvider)
-          .updateProfile(displayName: displayName, locale: _selectedLocale);
+      final profiles = ref.read(profileRepositoryProvider);
+      await profiles.updateProfile(displayName: displayName, locale: _selectedLocale);
+      final private = PrivateProfile(
+        firstName: _optional(_firstNameController.text),
+        lastName: _optional(_lastNameController.text),
+        phone: _phoneController.text.trim().isEmpty ? null : normalizePhone(_phoneController.text),
+      );
+      if (private.firstName != null || private.lastName != null || private.phone != null) {
+        await profiles.savePrivateProfile(private);
+      }
       ref.read(appLocaleProvider.notifier).state = Locale(_selectedLocale);
     } catch (e) {
       if (mounted) setState(() => _errorMessage = authErrorText(AppLocalizations.of(context)!, e));
@@ -82,22 +88,20 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     }
   }
 
+  static String? _optional(String text) => text.trim().isEmpty ? null : text.trim();
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    String? required(String? value) =>
-        (value ?? '').trim().isEmpty ? l10n.requiredFieldMessage : null;
-
     Widget nameField(TextEditingController controller, String label, String autofill) =>
         TextFormField(
           controller: controller,
-          decoration: InputDecoration(labelText: label),
+          decoration: InputDecoration(labelText: '$label ${l10n.optionalSuffix}'),
           inputFormatters: limitTo(maxPersonNameLength),
           textCapitalization: TextCapitalization.words,
           textInputAction: TextInputAction.next,
           autofillHints: [autofill],
-          validator: required,
         );
 
     return Scaffold(
@@ -158,14 +162,15 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       TextFormField(
                         controller: _phoneController,
                         decoration: InputDecoration(
-                          labelText: l10n.phoneLabel,
+                          labelText: '${l10n.phoneLabel} ${l10n.optionalSuffix}',
                           hintText: l10n.phoneHint,
                         ),
                         keyboardType: TextInputType.phone,
                         textInputAction: TextInputAction.next,
                         autofillHints: const [AutofillHints.telephoneNumber],
+                        // Optional, but when given it must have a country code.
                         validator: (value) {
-                          if ((value ?? '').trim().isEmpty) return l10n.requiredFieldMessage;
+                          if ((value ?? '').trim().isEmpty) return null;
                           return normalizePhone(value!) == null ? l10n.invalidPhoneMessage : null;
                         },
                       ),
