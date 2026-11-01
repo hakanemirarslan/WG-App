@@ -146,6 +146,8 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
 
 Bos durumlar (ornek: henuz kalem yok) ve hata/yukleniyor durumlari her ekranda tasarlanir.
 
+**Hukuki sayfalar (2026-11-01):** `/datenschutz` ve `/impressum`, girissiz de acilir (router'da `_publicPaths`). Metinler Markdown dosyalarinda: `assets/legal/datenschutz.md`, `assets/legal/impressum.md` (Almanca; kod degismeden duzenlenir). Linkler giris ve kayit formlarinin altinda ve Ayarlar'da.
+
 **Duyarli duzen (2026-10-26):** pencere 840 px ve ustundeyse (Material "expanded") grup sekmeleri alt cubuk yerine soldaki kenar cubugunda (`NavigationRail`, extended: ikon ve yazi yan yana, 180 px; en altta Ayarlar), Ozet iki sutun (solda bakiye + alinacaklar, sagda son hareketler, en fazla 1100 px). Liste ve formlar okunabilirlik icin ortada en fazla 600 px (giris/kayit/ayarlar 400 px); arka plan ve ust cubuk pencere genisliginde. Telefon gorunumu degismedi. Sinir ve esik `core/layout.dart`'ta.
 
 ## 12. Cok dillilik

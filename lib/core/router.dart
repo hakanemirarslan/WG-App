@@ -17,6 +17,7 @@ import '../features/groups/ui/group_page.dart';
 import '../features/groups/ui/group_shell.dart';
 import '../features/groups/ui/groups_page.dart';
 import '../features/groups/ui/join_page.dart';
+import '../features/legal/ui/legal_page.dart';
 import '../features/overview/ui/overview_page.dart';
 import '../features/settings/ui/settings_page.dart';
 import '../features/shopping_list/ui/shopping_list_page.dart';
@@ -45,6 +46,8 @@ String authPath(String path, String? from) =>
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
+const _publicPaths = {'/datenschutz', '/impressum'};
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final refreshListenable = GoRouterRefreshStream(authRepository.onAuthStateChange);
@@ -57,6 +60,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggedIn = supabase.auth.currentSession != null;
       final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/signup';
+      // Legal pages must be readable by everyone, signed in or not.
+      if (_publicPaths.contains(state.matchedLocation)) return null;
 
       if (!isLoggedIn) {
         if (isAuthRoute) return null;
@@ -188,6 +193,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => JoinPage(code: state.pathParameters['code']!),
       ),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsPage()),
+      GoRoute(
+        path: '/datenschutz',
+        builder: (context, state) => const LegalPage(document: LegalDocument.privacy),
+      ),
+      GoRoute(
+        path: '/impressum',
+        builder: (context, state) => const LegalPage(document: LegalDocument.imprint),
+      ),
     ],
   );
 });

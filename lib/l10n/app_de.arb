@@ -64,6 +64,8 @@
 
   "homeTitle": "Start",
   "settingsTitle": "Einstellungen",
+  "privacyPolicyTitle": "Datenschutz",
+  "imprintTitle": "Impressum",
   "generalSettingsTitle": "Allgemein",
   "languageLabel": "Sprache",
   "germanLanguage": "Deutsch",

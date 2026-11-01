@@ -6,6 +6,7 @@ import '../../../core/widgets.dart';
 import '../../../core/router.dart';
 import '../../../domain/validation.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../legal/ui/legal_page.dart';
 import '../providers/auth_providers.dart';
 import 'auth_error_text.dart';
 
@@ -113,6 +114,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         child: Text(l10n.noAccountSwitchToSignup),
                       ),
+                      const SizedBox(height: 8),
+                      const LegalLinks(),
                     ],
                   ),
                 ),

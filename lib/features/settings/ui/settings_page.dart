@@ -11,6 +11,7 @@ import '../../../core/widgets.dart';
 import '../../../domain/validation.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../../legal/ui/legal_page.dart';
 import '../data/profile_repository.dart';
 import '../providers/profile_providers.dart';
 
@@ -375,6 +376,8 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
                     SizedBox(width: 160, child: save),
                   ],
                 ),
+                const SizedBox(height: 16),
+                const LegalLinks(),
               ],
             ),
           ),
@@ -401,6 +404,7 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
                 SizedBox(width: double.infinity, child: save),
                 const SizedBox(height: 8),
                 deleteAccount,
+                const LegalLinks(),
               ],
             ),
           ),

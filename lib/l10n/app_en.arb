@@ -75,6 +75,8 @@
 
   "homeTitle": "Home",
   "settingsTitle": "Settings",
+  "privacyPolicyTitle": "Privacy policy",
+  "imprintTitle": "Legal notice",
   "generalSettingsTitle": "General",
   "languageLabel": "Language",
   "germanLanguage": "German",
