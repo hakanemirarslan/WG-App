@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../domain/image_file.dart';
+import '../l10n/app_localizations.dart';
 import 'supabase_client.dart';
 
 /// Photos (SPEC 18): one private bucket, shown through short-lived signed URLs.
@@ -74,11 +75,59 @@ class ImageRepository {
     }
   }
 
+  /// Points a row from [oldPath] to [newPath] (null = no photo) through [save], then
+  /// deletes the old file. Order matters: the delete rule only lets most members remove
+  /// a file no row points to (SPEC 18). If saving fails, the new upload is removed again.
+  Future<void> replace({
+    required String? oldPath,
+    required String? newPath,
+    required Future<void> Function(String? path) save,
+  }) async {
+    try {
+      await save(newPath);
+    } catch (_) {
+      if (newPath != oldPath) await remove([newPath]);
+      rethrow;
+    }
+    if (oldPath != newPath) await remove([oldPath]);
+  }
+
   Future<String> signedUrl(String path) =>
       supabase.storage.from(_bucket).createSignedUrl(path, _signedUrlSeconds);
 }
 
 final imageRepositoryProvider = Provider<ImageRepository>((ref) => ImageRepository());
+
+/// Lets the user pick a photo and uploads it under [ownerId] (group or user id).
+/// Returns the new Storage path, or null if cancelled or failed; failures are shown as
+/// a snackbar, so callers only handle the success case.
+/// [onPicked] runs once a photo was chosen, before the upload: the place to show a
+/// spinner. (Not earlier: older browsers never report a cancelled file dialog.)
+Future<String?> pickAndUploadImage(
+  BuildContext context,
+  WidgetRef ref,
+  ImageKind kind,
+  String ownerId, {
+  VoidCallback? onPicked,
+}) async {
+  final l10n = AppLocalizations.of(context)!;
+  final messenger = ScaffoldMessenger.of(context);
+  final images = ref.read(imageRepositoryProvider);
+  try {
+    final picked = await images.pick(kind);
+    if (picked == null) return null;
+    onPicked?.call();
+    return await images.upload(kind, ownerId, picked);
+  } on UnsupportedImageException {
+    messenger.showSnackBar(SnackBar(content: Text(l10n.imageUnsupportedMessage)));
+  } on ImageTooLargeException {
+    messenger.showSnackBar(SnackBar(content: Text(l10n.imageTooLargeMessage)));
+  } catch (e) {
+    debugPrint('Image upload failed: $e');
+    messenger.showSnackBar(SnackBar(content: Text(l10n.imageUploadFailedMessage)));
+  }
+  return null;
+}
 
 /// Signed URL per path, reused while it is valid. Paths never change content (new name
 /// on every upload), so the browser cache also works within that time.

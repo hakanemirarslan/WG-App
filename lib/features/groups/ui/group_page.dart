@@ -8,13 +8,16 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
+import '../../../core/images.dart';
 import '../../../core/limits.dart';
 import '../../../core/widgets.dart';
+import '../../../domain/image_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../balances/providers/balances_providers.dart';
 import '../data/groups_repository.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
+import 'group_photo.dart';
 
 /// Group screen. For now only the "Group" tab content (members, invite,
 /// leave); the shopping list / expenses / balance tabs come in later weeks.
@@ -29,6 +32,7 @@ class GroupPage extends ConsumerStatefulWidget {
 
 class _GroupPageState extends ConsumerState<GroupPage> {
   String? _inviteLink;
+  bool _photoBusy = false;
 
   String _linkFor(String code) => kIsWeb ? '${Uri.base.origin}/join/$code' : '/join/$code';
 
@@ -121,6 +125,39 @@ class _GroupPageState extends ConsumerState<GroupPage> {
     }
   }
 
+  /// Admins set, change or remove (`remove: true`) the group photo (SPEC 18).
+  Future<void> _updatePhoto(Group group, {bool remove = false}) async {
+    try {
+      final String? newPath;
+      if (remove) {
+        setState(() => _photoBusy = true);
+        newPath = null;
+      } else {
+        newPath = await pickAndUploadImage(
+          context,
+          ref,
+          ImageKind.groupCover,
+          widget.groupId,
+          onPicked: () => setState(() => _photoBusy = true),
+        );
+        if (newPath == null) return;
+      }
+      await ref
+          .read(imageRepositoryProvider)
+          .replace(
+            oldPath: group.photoPath,
+            newPath: newPath,
+            save: (path) => ref.read(groupsRepositoryProvider).setGroupPhoto(widget.groupId, path),
+          );
+      ref.invalidate(groupProvider(widget.groupId));
+      ref.invalidate(myGroupsProvider);
+    } catch (error) {
+      if (mounted) _showError(error);
+    } finally {
+      if (mounted) setState(() => _photoBusy = false);
+    }
+  }
+
   Future<void> _leave() async {
     final l10n = AppLocalizations.of(context)!;
     final lang = Localizations.localeOf(context).languageCode;
@@ -209,12 +246,55 @@ class _GroupPageState extends ConsumerState<GroupPage> {
         data: (members) {
           final iAmAdmin = members.any((m) => m.userId == myId && m.isAdmin);
           final theme = Theme.of(context);
+          final group = groupAsync.value;
           return Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  if (group != null) ...[
+                    Center(
+                      child: Semantics(
+                        label: l10n.groupPhotoTitle,
+                        image: true,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            GroupPhoto(photoPath: group.photoPath, radius: 48),
+                            if (_photoBusy) const CircularProgressIndicator(),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (iAmAdmin)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 8,
+                          children: [
+                            TextButton.icon(
+                              icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                              onPressed: _photoBusy ? null : () => _updatePhoto(group),
+                              label: Text(
+                                group.photoPath == null
+                                    ? l10n.choosePhotoButton
+                                    : l10n.changePhotoButton,
+                              ),
+                            ),
+                            if (group.photoPath != null)
+                              TextButton.icon(
+                                icon: const Icon(Icons.delete_outline, size: 18),
+                                onPressed: _photoBusy
+                                    ? null
+                                    : () => _updatePhoto(group, remove: true),
+                                label: Text(l10n.removePhotoButton),
+                              ),
+                          ],
+                        ),
+                      ),
+                  ],
                   SectionHeader(l10n.membersTitle),
                   AppCard(
                     child: Column(

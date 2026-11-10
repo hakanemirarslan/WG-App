@@ -6,11 +6,19 @@ class Group {
   final String id;
   final String name;
 
-  Group({required this.id, required this.name});
+  /// Storage path of the group photo (SPEC 18), null = none.
+  final String? photoPath;
 
-  factory Group.fromMap(Map<String, dynamic> map) =>
-      Group(id: map['id'] as String, name: map['name'] as String);
+  Group({required this.id, required this.name, this.photoPath});
+
+  factory Group.fromMap(Map<String, dynamic> map) => Group(
+    id: map['id'] as String,
+    name: map['name'] as String,
+    photoPath: map['photo_path'] as String?,
+  );
 }
+
+const _groupColumns = 'id, name, photo_path';
 
 class Member {
   final String userId;
@@ -59,12 +67,12 @@ GroupError groupErrorFrom(Object error) {
 class GroupsRepository {
   /// RLS only returns groups where I am an active member.
   Future<List<Group>> fetchMyGroups() async {
-    final rows = await supabase.from('groups').select('id, name').order('created_at');
+    final rows = await supabase.from('groups').select(_groupColumns).order('created_at');
     return rows.map(Group.fromMap).toList();
   }
 
   Future<Group> fetchGroup(String groupId) async {
-    final row = await supabase.from('groups').select('id, name').eq('id', groupId).single();
+    final row = await supabase.from('groups').select(_groupColumns).eq('id', groupId).single();
     return Group.fromMap(row);
   }
 
@@ -101,6 +109,18 @@ class GroupsRepository {
   /// Renames the group. Only admins may (RLS policy `groups_update_admin`).
   Future<void> renameGroup(String groupId, String name) =>
       supabase.from('groups').update({'name': name}).eq('id', groupId);
+
+  /// Sets or clears (null) the group photo. Only admins may: `groups_update_admin`
+  /// for the row, `image_access()` for the file. `.select()` makes a refused update
+  /// (RLS hides the row, 0 rows changed) an error instead of a silent no-op.
+  Future<void> setGroupPhoto(String groupId, String? path) async {
+    final rows = await supabase
+        .from('groups')
+        .update({'photo_path': path})
+        .eq('id', groupId)
+        .select('id');
+    if (rows.isEmpty) throw StateError('not_admin');
+  }
 
   /// Leaves the group. Returns true if I was the last active member and the group was
   /// deleted with all its data (SPEC 10); a sole admin hands the role on automatically.

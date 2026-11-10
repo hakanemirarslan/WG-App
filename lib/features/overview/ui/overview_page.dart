@@ -16,6 +16,7 @@ import '../../balances/ui/my_balance_card.dart';
 import '../../expenses/data/expenses_repository.dart';
 import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/providers/groups_providers.dart';
+import '../../groups/ui/group_photo.dart';
 import '../../settings/providers/profile_providers.dart';
 import '../../shopping_list/data/shopping_repository.dart';
 import '../../shopping_list/providers/shopping_providers.dart';
@@ -35,7 +36,8 @@ class OverviewPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final lang = Localizations.localeOf(context).languageCode;
-    final groupName = ref.watch(groupProvider(groupId)).value?.name ?? '';
+    final group = ref.watch(groupProvider(groupId)).value;
+    final groupName = group?.name ?? '';
     final myName = ref.watch(myProfileProvider).value?.displayName;
     final balanceAsync = ref.watch(balancesProvider(groupId));
     final entriesAsync = ref.watch(shoppingEntriesProvider(groupId));
@@ -196,7 +198,15 @@ class OverviewPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go('/home')),
-        title: Text(groupName),
+        title: Row(
+          children: [
+            if (group?.photoPath != null) ...[
+              GroupPhoto(photoPath: group!.photoPath, radius: 16),
+              const SizedBox(width: 12),
+            ],
+            Flexible(child: Text(groupName, overflow: TextOverflow.ellipsis)),
+          ],
+        ),
       ),
       body: body(),
     );

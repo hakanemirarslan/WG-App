@@ -16,6 +16,7 @@ import '../../balances/providers/balances_providers.dart';
 import '../../settings/providers/profile_providers.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
+import 'group_photo.dart';
 
 /// Group selection screen (SPEC 11, screen 2).
 /// Also syncs the app-wide locale to `profiles.locale` on login (SPEC 12).
@@ -114,15 +115,7 @@ class GroupsPage extends ConsumerWidget {
                         child: AnimatedPressCard(
                           onTap: () => context.go('/group/${group.id}'),
                           child: ListTile(
-                            leading: CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                              child: Icon(
-                                Icons.home_rounded,
-                                size: 20,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                              ),
-                            ),
+                            leading: GroupPhoto(photoPath: group.photoPath),
                             title: Text(group.name),
                             subtitle: _BalanceStatus(groupId: group.id),
                             trailing: _BalancePill(groupId: group.id),
