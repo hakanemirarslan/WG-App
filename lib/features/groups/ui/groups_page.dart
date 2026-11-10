@@ -14,6 +14,7 @@ import '../../../core/supabase_client.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../balances/providers/balances_providers.dart';
 import '../../settings/providers/profile_providers.dart';
+import '../providers/group_live_updates.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
 import 'group_photo.dart';
@@ -85,6 +86,7 @@ class GroupsPage extends ConsumerWidget {
         ref.read(appLocaleProvider.notifier).state = Locale(profile.locale);
       });
     });
+    ref.watch(groupLiveUpdatesProvider); // new group photos/names without a reload
     final l10n = AppLocalizations.of(context)!;
     final groupsAsync = ref.watch(myGroupsProvider);
 

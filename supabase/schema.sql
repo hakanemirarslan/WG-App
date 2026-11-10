@@ -746,6 +746,10 @@ alter default privileges revoke execute on functions from public;
 alter publication supabase_realtime add table public.shopping_entries;
 alter publication supabase_realtime add table public.expenses;
 alter publication supabase_realtime add table public.settlements;
+-- Grup adi/fotografi ve profil adi/fotografi diger uyelerde yenilemeden guncellensin
+-- (2026-11-11). RLS burada da gecerli: herkes sadece okuyabildigi satirlarin olayini alir.
+alter publication supabase_realtime add table public.groups;
+alter publication supabase_realtime add table public.profiles;
 
 -- ============================================================
 -- 5) KATALOG: WG'de ortak alinan esyalar (yiyecek yok; kategoriler: household, cleaning, bathroom)

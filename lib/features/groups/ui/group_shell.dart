@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/layout.dart';
 import '../../../l10n/app_localizations.dart';
+import '../providers/group_live_updates.dart';
 
 /// Navigation around the five group tabs (SPEC 11, screen 3): a bottom tab bar on
 /// phones, a sidebar on the left on wide windows (`wideLayoutBreakpoint`).
 /// [navigationShell] keeps each tab's state alive while switching tabs.
-class GroupShell extends StatelessWidget {
+class GroupShell extends ConsumerWidget {
   const GroupShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
@@ -21,7 +23,9 @@ class GroupShell extends StatelessWidget {
       navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // One subscription for all tabs: group photo/name and member changes arrive live.
+    ref.watch(groupLiveUpdatesProvider);
     final l10n = AppLocalizations.of(context)!;
     final divider = Theme.of(context).colorScheme.outlineVariant;
     final tabs = [
