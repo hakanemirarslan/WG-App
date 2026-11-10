@@ -119,26 +119,10 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const AuthHeader(),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: nameField(
-                              _firstNameController,
-                              l10n.firstNameLabel,
-                              AutofillHints.givenName,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: nameField(
-                              _lastNameController,
-                              l10n.lastNameLabel,
-                              AutofillHints.familyName,
-                            ),
-                          ),
-                        ],
-                      ),
+                      // One below the other: side by side, "Soyad (isteğe bağlı)" did not fit.
+                      nameField(_firstNameController, l10n.firstNameLabel, AutofillHints.givenName),
+                      const SizedBox(height: 12),
+                      nameField(_lastNameController, l10n.lastNameLabel, AutofillHints.familyName),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _displayNameController,
