@@ -232,8 +232,37 @@ Hukuki tavsiye degildir; Hafta 6'dan once kullanicinin kendisi arastirmali:
 - Push bildirimleri ve hatirlatmalar
 - Coklu para birimi
 - Yuzde bolusum modu
-- Harcama yorumlari, fotograf/ek dosya
+- Harcama yorumlari, fotograf disindaki ek dosyalar (PDF vb.). Fotograflar 2026-11-11'de V1'e alindi, bkz. Bolum 18.
 - Mobil uygulama paketleme ve mağaza yayini (Android Play Store, iOS App Store): web bitince, V2+
 - iOS platform klasoru / iOS derlemesi (Windows'ta yapilamaz)
 - Ev tipi dışındaki grup turleri (gezi/etkinlik)
 - Genel katalogu kullanicilarin duzenlemesi
+
+## 18. Fotograflar (2026-11-11, yayindan once V1'e eklendi)
+
+Dort yer, hepsi istege bagli: **grup fotografi**, **profil fotografi**, **alisveris kaydina resim**, **harcamaya fis fotografi**.
+
+**Kim gorur, kim degistirir**
+
+| Fotograf | Gorur | Ekler / degistirir / kaldirir |
+|---|---|---|
+| Grup fotografi | grubun aktif uyeleri | sadece admin (grup adi kuraliyla ayni) |
+| Profil fotografi | kendisi + ayni grupta bulundugu kisiler (`profiles_read` ile ayni) | sadece kendisi |
+| Alisveris kaydi resmi | grubun aktif uyeleri | kaydi ekleyen veya admin (silme kuraliyla ayni) |
+| Fis fotografi | grubun aktif uyeleri | harcamayi olusturan veya admin (silme kuraliyla ayni) |
+
+**Depolama**
+- Tek, gizli (public olmayan) Supabase Storage bucket'i: `images`. Gosterim kisa sureli imzali linkle (signed URL). Herkese acik link yok.
+- Dosya yolu: `groups/<grup_id>/cover|items|receipts/<uuid>.<uzanti>` ve `users/<kullanici_id>/avatar/<uuid>.<uzanti>`. Tablolarda URL degil sadece bu yol saklanir: `groups.photo_path`, `profiles.avatar_path`, `shopping_entries.photo_path`, `expenses.receipt_path`. Check constraint'ler yolun o satirin grubuna/kullanicisina ait olmasini zorlar.
+- Erisim `storage.objects` uzerindeki RLS ile (`image_access()`): okuma yukaridaki tablo; yukleme grup klasorlerinde aktif uyeler (kapak: admin), kendi profil klasorunde sadece sahibi; silme: admin her zaman, digerleri sadece artik hicbir satirin gostermedigi dosyayi. Boylece dosyayi kimin silebilecegini satirin kurali belirler (once satir guncellenir/silinir, sonra dosya).
+- Uzerine yazma (upsert) yok: her yuklemede yeni ad, eski dosya sonra silinir (onbellek sorunu da olmaz).
+- Sadece JPEG, PNG, WebP; dosya basina en fazla 2 MB (bucket ayari). Ucretsiz planda sunucuda resim kucultme yok, bu yuzden resim **yuklemeden once tarayicida** kucultulur (en uzun kenar: profil 512 px, grup ve alisveris 1024 px, fis 2000 px).
+- Ucretsiz plan: toplam 1 GB depolama (kucultulmus resimle bir WG icin yeterli).
+
+**Silme ve yasam dongusu**
+- Fotografi degistir/kaldir: satir guncellenir, eski dosya silinir.
+- Alisveris kaydi silinince resmi de silinir. "Alindi" olunca resim kalir.
+- Harcama silinince (listeden "alindi" geri alininca da) fis fotografi silinir.
+- Hesap silme: once profil fotografi silinir, sonra `delete_my_account()`. Kullanicinin gruplara ekledigi fis ve alisveris resimleri grubun gecmisine aittir ve harcamalar gibi kalir.
+- Son uye ayrilinca (grup silinir) uygulama once grubun tum dosyalarini siler.
+- **Bilinen bosluk:** SQL ile dosya silinemez (Supabase: dosya depoda "yetim" kalir), silme uygulamadan Storage API ile yapilir. Bu adim yarida kalirsa (ag hatasi) dosya yetim kalabilir. Kesin cozum sunucu kodu (Edge Function) ister. V1'de sunucu kodu yok, bu yuzden kabul edildi.

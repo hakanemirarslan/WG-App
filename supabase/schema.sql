@@ -165,6 +165,17 @@ as $$
   );
 $$;
 
+-- Kullanici bu grubun aktif admin'i mi? (fotograf ve liste kurallari, Bolum 6)
+create or replace function public.is_group_admin(gid uuid)
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.memberships
+    where group_id = gid and user_id = auth.uid() and role = 'admin' and left_at is null
+  );
+$$;
+
 -- Yeni kullanici kaydolunca otomatik profil olustur. Ad bos ya da sadece bosluksa e-postanin
 -- '@' oncesi kullanilir; uzunluk siniri (50) asilmasin diye kirpilir. Ozel bilgiler profile_private'a.
 create or replace function public.handle_new_user()
@@ -290,7 +301,9 @@ begin
     perform public.leave_group(gid);
   end loop;
   delete from public.profile_private where id = uid;
-  update public.profiles set display_name = 'Gelöschter Nutzer', locale = 'de' where id = uid;
+  -- The app removes the avatar file first (Storage API); SQL cannot delete stored files.
+  update public.profiles set display_name = 'Gelöschter Nutzer', locale = 'de', avatar_path = null
+  where id = uid;
   delete from auth.users where id = uid;
 end;
 $$;
@@ -540,6 +553,12 @@ begin
     raise exception 'not_allowed';
   end if;
 
+  -- Photo: same rule as deleting the entry (adder or admin, SPEC 18).
+  if new.photo_path is distinct from old.photo_path
+     and old.added_by <> auth.uid() and not public.is_group_admin(old.group_id) then
+    raise exception 'not_allowed';
+  end if;
+
   if new.status = 'open' then
     new.bought_by := null;
     new.bought_at := null;
@@ -688,6 +707,7 @@ create policy "settlements_select" on public.settlements for select
 -- is_group_member RLS politikalarinin icinde calistigi icin authenticated'da kalmali.
 revoke execute on function
   public.is_group_member(uuid),
+  public.is_group_admin(uuid),
   public.handle_new_user(),
   public.create_group(text),
   public.join_group(text),
@@ -704,6 +724,7 @@ revoke execute on function public.handle_new_user(), public.guard_shopping_entry
 -- Girisli kullanici: yetkiyi PUBLIC'ten miras almak yerine acikca alir (PUBLIC kapandi).
 grant execute on function
   public.is_group_member(uuid),
+  public.is_group_admin(uuid),
   public.create_group(text),
   public.join_group(text),
   public.leave_group(uuid),
@@ -773,3 +794,124 @@ insert into public.catalog_items (name_de, name_en, name_tr, category) values
   ('WC-Duftstein', 'Toilet freshener', 'Tuvalet bloğu', 'bathroom')
 on conflict (name_de) do update set
   name_en = excluded.name_en, name_tr = excluded.name_tr, category = excluded.category;
+
+-- ============================================================
+-- 6) FOTOGRAFLAR (SPEC 18, 2026-11-11)
+-- ============================================================
+-- Var olan veritabaninda bu bolum tek basina calistirilabilir (tekrar calistirmak zararsiz).
+-- Tablolarda URL degil sadece Storage yolu saklanir; check'ler yolun o satira ait olmasini zorlar.
+-- Yol bicimi: groups/<grup_id>/cover|items|receipts/<uuid>.<jpg|png|webp>
+--             users/<kullanici_id>/avatar/<uuid>.<jpg|png|webp>
+alter table public.groups add column if not exists photo_path text
+  constraint groups_photo_path_check
+  check (photo_path ~ ('^groups/' || id::text || '/cover/[0-9a-f-]{36}\.(jpg|png|webp)$'));
+alter table public.profiles add column if not exists avatar_path text
+  constraint profiles_avatar_path_check
+  check (avatar_path ~ ('^users/' || id::text || '/avatar/[0-9a-f-]{36}\.(jpg|png|webp)$'));
+alter table public.shopping_entries add column if not exists photo_path text
+  constraint shopping_entries_photo_path_check
+  check (photo_path ~ ('^groups/' || group_id::text || '/items/[0-9a-f-]{36}\.(jpg|png|webp)$'));
+alter table public.expenses add column if not exists receipt_path text
+  constraint expenses_receipt_path_check
+  check (receipt_path ~ ('^groups/' || group_id::text || '/receipts/[0-9a-f-]{36}\.(jpg|png|webp)$'));
+
+-- Gizli bucket: gosterim imzali linkle. Resim istemcide kucultulur (ucretsiz planda sunucuda
+-- kucultme yok), bu yuzden 2 MB fazlasiyla yeter.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('images', 'images', false, 2097152, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+-- Bir Storage dosyasina erisim (action: 'read' | 'write' | 'delete'). Policy'lerin tek kaynagi.
+--   avatar: sahibi her sey; ayni grupta bulunan biri sadece okur (profiles_read ile ayni)
+--   grup klasorleri: aktif uye okur; admin her sey; kapagi (cover) sadece admin yazar/siler;
+--   digerleri items/receipts'e yukler ve sadece hicbir satirin gostermedigi dosyayi siler.
+--   Boylece silme yetkisi satirin kuralina baglidir: once satir guncellenir/silinir, sonra dosya.
+-- Bicimi bozuk yol her zaman false (uuid'ye cevirme hatasi da olmaz).
+create or replace function public.image_access(object_name text, action text)
+returns boolean
+language plpgsql stable security definer set search_path = public
+as $$
+declare
+  parts text[] := string_to_array(object_name, '/');
+  folder_id uuid;
+begin
+  if auth.uid() is null or action not in ('read', 'write', 'delete')
+     or coalesce(array_length(parts, 1), 0) <> 4
+     or parts[2] !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+     or parts[4] !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$' then
+    return false;
+  end if;
+  folder_id := parts[2]::uuid;
+
+  if parts[1] = 'users' and parts[3] = 'avatar' then
+    if folder_id = auth.uid() then
+      return true;
+    end if;
+    return action = 'read' and exists (
+      select 1 from public.memberships m1
+      join public.memberships m2 on m1.group_id = m2.group_id
+      where m1.user_id = auth.uid() and m1.left_at is null and m2.user_id = folder_id
+    );
+  end if;
+
+  if parts[1] <> 'groups' or parts[3] not in ('cover', 'items', 'receipts')
+     or not public.is_group_member(folder_id) then
+    return false;
+  end if;
+  if action = 'read' or public.is_group_admin(folder_id) then
+    return true;
+  end if;
+  if parts[3] = 'cover' then
+    return false;
+  end if;
+  if action = 'write' then
+    return true;
+  end if;
+  if parts[3] = 'items' then
+    return not exists (select 1 from public.shopping_entries where photo_path = object_name);
+  end if;
+  return not exists (select 1 from public.expenses where receipt_path = object_name);
+end;
+$$;
+
+-- Fis fotografini bagla / kaldir (path null). expenses'a dogrudan yazma yok (Bolum 3), bu yuzden RPC.
+-- Yetki: harcamayi olusturan veya admin (silme kuraliyla ayni). Yolun bicimini check denetler.
+-- Hata kodlari: expense_not_found, not_allowed
+create or replace function public.set_expense_receipt(eid uuid, path text)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+declare
+  gid uuid;
+  creator uuid;
+begin
+  select group_id, created_by into gid, creator from public.expenses where id = eid for update;
+  if gid is null or not public.is_group_member(gid) then
+    raise exception 'expense_not_found';
+  end if;
+  if creator <> auth.uid() and not public.is_group_admin(gid) then
+    raise exception 'not_allowed';
+  end if;
+  update public.expenses set receipt_path = path where id = eid;
+end;
+$$;
+
+revoke execute on function public.image_access(text, text), public.set_expense_receipt(uuid, text)
+from public, anon;
+-- image_access Storage policy'lerinin icinde, girisli kullanicinin yetkisiyle calisir.
+grant execute on function public.image_access(text, text), public.set_expense_receipt(uuid, text)
+to authenticated;
+
+-- Uzerine yazma (upsert) yok, bu yuzden update policy'si de yok: her yukleme yeni bir ad alir.
+drop policy if exists "images_select" on storage.objects;
+drop policy if exists "images_insert" on storage.objects;
+drop policy if exists "images_delete" on storage.objects;
+create policy "images_select" on storage.objects for select to authenticated
+  using (bucket_id = 'images' and public.image_access(name, 'read'));
+create policy "images_insert" on storage.objects for insert to authenticated
+  with check (bucket_id = 'images' and public.image_access(name, 'write'));
+create policy "images_delete" on storage.objects for delete to authenticated
+  using (bucket_id = 'images' and public.image_access(name, 'delete'));
