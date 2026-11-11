@@ -17,7 +17,7 @@ import '../../balances/providers/balances_providers.dart';
 import '../data/groups_repository.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
-import 'group_photo.dart';
+import 'group_cover.dart';
 
 /// Group screen. For now only the "Group" tab content (members, invite,
 /// leave); the shopping list / expenses / balance tabs come in later weeks.
@@ -253,48 +253,16 @@ class _GroupPageState extends ConsumerState<GroupPage> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  if (group != null) ...[
-                    Center(
-                      child: Semantics(
-                        label: l10n.groupPhotoTitle,
-                        image: true,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            GroupPhoto(photoPath: group.photoPath, radius: 48),
-                            if (_photoBusy) const CircularProgressIndicator(),
-                          ],
-                        ),
-                      ),
+                  if (group != null)
+                    GroupCover(
+                      group: group,
+                      memberCount: members.length,
+                      busy: _photoBusy,
+                      onChange: iAmAdmin ? () => _updatePhoto(group) : null,
+                      onRemove: iAmAdmin && group.photoPath != null
+                          ? () => _updatePhoto(group, remove: true)
+                          : null,
                     ),
-                    if (iAmAdmin)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: 8,
-                          children: [
-                            TextButton.icon(
-                              icon: const Icon(Icons.photo_camera_outlined, size: 18),
-                              onPressed: _photoBusy ? null : () => _updatePhoto(group),
-                              label: Text(
-                                group.photoPath == null
-                                    ? l10n.choosePhotoButton
-                                    : l10n.changePhotoButton,
-                              ),
-                            ),
-                            if (group.photoPath != null)
-                              TextButton.icon(
-                                icon: const Icon(Icons.delete_outline, size: 18),
-                                onPressed: _photoBusy
-                                    ? null
-                                    : () => _updatePhoto(group, remove: true),
-                                label: Text(l10n.removePhotoButton),
-                              ),
-                          ],
-                        ),
-                      ),
-                  ],
                   SectionHeader(l10n.membersTitle),
                   AppCard(
                     child: Column(

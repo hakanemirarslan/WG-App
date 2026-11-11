@@ -31,6 +31,7 @@
   "hidePasswordTooltip": "Passwort verbergen",
   "renameGroupTitle": "Gruppe umbenennen",
   "groupPhotoTitle": "Gruppenfoto",
+  "memberCount": "{count, plural, =1{1 Mitglied} other{{count} Mitglieder}}",
   "choosePhotoButton": "Foto auswählen",
   "changePhotoButton": "Foto ändern",
   "removePhotoButton": "Foto entfernen",

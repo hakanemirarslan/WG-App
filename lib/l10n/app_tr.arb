@@ -30,6 +30,7 @@
   "hidePasswordTooltip": "Şifreyi gizle",
   "renameGroupTitle": "Grup adını değiştir",
   "groupPhotoTitle": "Grup fotoğrafı",
+  "memberCount": "{count, plural, other{{count} üye}}",
   "choosePhotoButton": "Fotoğraf seç",
   "changePhotoButton": "Fotoğrafı değiştir",
   "removePhotoButton": "Fotoğrafı kaldır",
