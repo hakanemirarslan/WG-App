@@ -16,7 +16,7 @@ import '../../balances/ui/my_balance_card.dart';
 import '../../expenses/data/expenses_repository.dart';
 import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/providers/groups_providers.dart';
-import '../../groups/ui/group_photo.dart';
+import '../../groups/ui/group_cover.dart';
 import '../../settings/providers/profile_providers.dart';
 import '../../shopping_list/data/shopping_repository.dart';
 import '../../shopping_list/providers/shopping_providers.dart';
@@ -36,8 +36,7 @@ class OverviewPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final lang = Localizations.localeOf(context).languageCode;
-    final group = ref.watch(groupProvider(groupId)).value;
-    final groupName = group?.name ?? '';
+    final groupName = ref.watch(groupProvider(groupId)).value?.name ?? '';
     final myName = ref.watch(myProfileProvider).value?.displayName;
     final balanceAsync = ref.watch(balancesProvider(groupId));
     final entriesAsync = ref.watch(shoppingEntriesProvider(groupId));
@@ -80,12 +79,11 @@ class OverviewPage extends ConsumerWidget {
       final settlementsById = {for (final s in settlements) s.id: s};
       final theme = Theme.of(context);
 
-      final greeting = myName == null
-          ? null
-          : Padding(
-              padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
-              child: Text(l10n.greeting(myName), style: theme.textTheme.headlineSmall),
-            );
+      // Group name on the photo, the greeting under it.
+      final greeting = GroupTabHeader(
+        title: groupName,
+        subtitle: myName == null ? null : l10n.greeting(myName),
+      );
       final left = <Widget>[
         MyBalanceCard(
           cents: balances.balances[myId] ?? 0,
@@ -166,7 +164,7 @@ class OverviewPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ?greeting,
+                greeting,
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -188,26 +186,14 @@ class OverviewPage extends ConsumerWidget {
         );
       }
       return ContentWidth(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [?greeting, ...left, ...right],
-        ),
+        child: ListView(padding: const EdgeInsets.all(16), children: [greeting, ...left, ...right]),
       );
     }
 
+    // Transparent: the group's backdrop (GroupShell) shows through.
     return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
-        title: Row(
-          children: [
-            if (group?.photoPath != null) ...[
-              GroupPhoto(photoPath: group!.photoPath, radius: 16),
-              const SizedBox(width: 12),
-            ],
-            Flexible(child: Text(groupName, overflow: TextOverflow.ellipsis)),
-          ],
-        ),
-      ),
+      backgroundColor: Colors.transparent,
+      appBar: const GroupTabAppBar(),
       body: body(),
     );
   }

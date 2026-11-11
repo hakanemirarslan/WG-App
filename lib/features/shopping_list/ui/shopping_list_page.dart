@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets.dart';
 import '../../../core/supabase_client.dart';
@@ -9,6 +8,7 @@ import '../../../domain/split.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/providers/groups_providers.dart';
+import '../../groups/ui/group_cover.dart';
 import '../../groups/ui/group_error_text.dart';
 import '../data/shopping_repository.dart';
 import '../providers/shopping_providers.dart';
@@ -148,11 +148,10 @@ class ShoppingListPage extends ConsumerWidget {
     final myId = supabase.auth.currentUser!.id;
     final iAmAdmin = members.any((m) => m.userId == myId && m.isAdmin);
 
+    // Transparent: the group's backdrop (GroupShell) shows through.
     return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
-        title: Text(groupName),
-      ),
+      backgroundColor: Colors.transparent,
+      appBar: const GroupTabAppBar(),
       floatingActionButton: FloatingActionButton(
         heroTag: null, // see ExpensesPage: the tabs share one route
         tooltip: l10n.addItemButton,
@@ -186,8 +185,9 @@ class ShoppingListPage extends ConsumerWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 88),
                 children: [
+                  GroupTabHeader(title: groupName, subtitle: l10n.openItemsCount(open.length)),
                   if (open.isEmpty)
                     EmptyView(
                       icon: Icons.shopping_basket_outlined,

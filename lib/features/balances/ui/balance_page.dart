@@ -11,6 +11,7 @@ import '../../../domain/debt_simplifier.dart';
 import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../groups/providers/groups_providers.dart';
+import '../../groups/ui/group_cover.dart';
 import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/ui/group_error_text.dart';
 import '../providers/balances_providers.dart';
@@ -82,11 +83,10 @@ class BalancePage extends ConsumerWidget {
     final settlements = ref.watch(settlementsProvider(groupId)).value;
     final myId = supabase.auth.currentUser!.id;
 
+    // Transparent: the group's backdrop (GroupShell) shows through.
     return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
-        title: Text(groupName),
-      ),
+      backgroundColor: Colors.transparent,
+      appBar: const GroupTabAppBar(),
       body: ContentWidth(
         child: balanceAsync.when(
           loading: () => const LoadingView(),
@@ -100,9 +100,18 @@ class BalancePage extends ConsumerWidget {
           ),
           data: (data) {
             final visible = data.visibleUserIds;
+            final mine = data.balances[myId] ?? 0;
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               children: [
+                GroupTabHeader(
+                  title: groupName,
+                  subtitle: mine > 0
+                      ? l10n.youAreOwedStatus
+                      : mine < 0
+                      ? l10n.youOweStatus
+                      : l10n.allSettledUp,
+                ),
                 if (!data.consistent) _MismatchNotice(message: l10n.balancesMismatchMessage),
                 MyBalanceCard(
                   cents: data.balances[myId] ?? 0,

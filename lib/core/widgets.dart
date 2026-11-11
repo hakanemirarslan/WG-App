@@ -153,9 +153,12 @@ class AppCard extends StatelessWidget {
 
 /// Small heading above a group of cards (also used for the day headers).
 class SectionHeader extends StatelessWidget {
-  const SectionHeader(this.text, {super.key});
+  const SectionHeader(this.text, {super.key, this.color});
 
   final String text;
+
+  /// Overrides the muted default, e.g. white on a photo.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +167,9 @@ class SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
       child: Text(
         text,
-        style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        style: theme.textTheme.titleSmall?.copyWith(
+          color: color ?? theme.colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }

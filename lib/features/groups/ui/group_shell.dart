@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/layout.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/group_live_updates.dart';
+import '../providers/groups_providers.dart';
+import 'group_cover.dart';
 
 /// Navigation around the five group tabs (SPEC 11, screen 3): a bottom tab bar on
 /// phones, a sidebar on the left on wide windows (`wideLayoutBreakpoint`).
@@ -38,6 +40,42 @@ class GroupShell extends ConsumerWidget {
 
     final onSettings = navigationShell.currentIndex == _settingsBranch;
     final scheme = Theme.of(context).colorScheme;
+
+    // Every tab of a group has that group's photo (or a gradient) behind it (SPEC 18).
+    // It stays put while the tabs scroll; the tabs have transparent backgrounds and
+    // read its height and colour from GroupBackdropScope. Settings keeps its own.
+    final groupId = GoRouterState.of(context).pathParameters['id'];
+    final photoPath = groupId == null ? null : ref.watch(groupProvider(groupId)).value?.photoPath;
+    final page = Theme.of(context).scaffoldBackgroundColor;
+    Widget withBackdrop(Widget child) => LayoutBuilder(
+      builder: (context, constraints) {
+        final height = GroupBackdrop.heightFor(constraints.maxWidth);
+        return GroupBackdropScope(
+          height: height,
+          hasPhoto: photoPath != null,
+          child: Stack(
+            children: [
+              Positioned.fill(child: ColoredBox(color: page)),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: height,
+                child: GroupBackdrop(photoPath: photoPath),
+              ),
+              // No scrollbars on the group tabs: they sat over the photo. Scrolling
+              // with the wheel, touch or keyboard still works.
+              Positioned.fill(
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                  child: child,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
 
     if (isWideLayout(context)) {
       return Scaffold(
@@ -85,14 +123,14 @@ class GroupShell extends ConsumerWidget {
               ),
             ),
             VerticalDivider(width: 1, thickness: 1, color: divider),
-            Expanded(child: navigationShell),
+            Expanded(child: withBackdrop(navigationShell)),
           ],
         ),
       );
     }
 
     return Scaffold(
-      body: navigationShell,
+      body: withBackdrop(navigationShell),
       bottomNavigationBar: DecoratedBox(
         decoration: BoxDecoration(
           border: Border(top: BorderSide(color: divider)),

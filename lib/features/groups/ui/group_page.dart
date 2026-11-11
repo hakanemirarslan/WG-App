@@ -34,6 +34,9 @@ class _GroupPageState extends ConsumerState<GroupPage> {
   String? _inviteLink;
   bool _photoBusy = false;
 
+  /// Width of the member cards and the bottom buttons on wide windows.
+  static const _contentWidth = 460.0;
+
   String _linkFor(String code) => kIsWeb ? '${Uri.base.origin}/join/$code' : '/join/$code';
 
   void _showError(Object error) {
@@ -224,11 +227,28 @@ class _GroupPageState extends ConsumerState<GroupPage> {
     final groupName = groupAsync.value?.name;
     final iAmAdminNow = (membersAsync.value ?? const []).any((m) => m.userId == myId && m.isAdmin);
 
+    final group = groupAsync.value;
+    final hasPhoto = group?.photoPath != null;
+    final onBackdrop = GroupBackdropScope.foregroundOf(context);
+
+    // Transparent: the group's backdrop (GroupShell) shows through.
     return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
-        title: Text(groupName ?? ''),
+      backgroundColor: Colors.transparent,
+      appBar: GroupTabAppBar(
         actions: [
+          if (iAmAdminNow && group != null) ...[
+            IconButton(
+              icon: const Icon(Icons.photo_camera_outlined),
+              tooltip: hasPhoto ? l10n.changePhotoButton : l10n.choosePhotoButton,
+              onPressed: _photoBusy ? null : () => _updatePhoto(group),
+            ),
+            if (hasPhoto)
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: l10n.removePhotoButton,
+                onPressed: _photoBusy ? null : () => _updatePhoto(group, remove: true),
+              ),
+          ],
           if (iAmAdminNow && groupName != null)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
@@ -246,74 +266,80 @@ class _GroupPageState extends ConsumerState<GroupPage> {
         data: (members) {
           final iAmAdmin = members.any((m) => m.userId == myId && m.isAdmin);
           final theme = Theme.of(context);
-          final group = groupAsync.value;
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  if (group != null)
-                    GroupCover(
-                      group: group,
-                      memberCount: members.length,
-                      busy: _photoBusy,
-                      onChange: iAmAdmin ? () => _updatePhoto(group) : null,
-                      onRemove: iAmAdmin && group.photoPath != null
-                          ? () => _updatePhoto(group, remove: true)
-                          : null,
-                    ),
-                  SectionHeader(l10n.membersTitle),
-                  AppCard(
-                    child: Column(
-                      children: [
-                        for (var i = 0; i < members.length; i++) ...[
-                          if (i > 0) const Divider(indent: 16, endIndent: 16),
-                          ListTile(
-                            leading: InitialAvatar(name: members[i].displayName),
-                            title: Text(
-                              members[i].userId == myId
-                                  ? '${members[i].displayName} ${l10n.youSuffix}'
-                                  : members[i].displayName,
-                            ),
-                            subtitle: members[i].isAdmin ? Text(l10n.adminRole) : null,
-                            trailing: iAmAdmin && members[i].userId != myId
-                                ? TextButton(
-                                    onPressed: () => _setAdmin(members[i], !members[i].isAdmin),
-                                    child: Text(
-                                      members[i].isAdmin
-                                          ? l10n.removeAdminAction
-                                          : l10n.makeAdminAction,
-                                    ),
-                                  )
-                                : null,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  // The generated link; the buttons to create/copy it are in the bottom bar.
-                  if (_inviteLink != null) ...[
-                    SectionHeader(l10n.inviteLinkReady),
-                    AppCard(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: SelectableText(_inviteLink!),
-                          ),
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: _contentWidth),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      GroupTabHeader(
+                        title: group?.name ?? '',
+                        subtitle: l10n.memberCount(members.length),
+                        busy: _photoBusy,
+                      ),
+                      SectionHeader(l10n.membersTitle, color: onBackdrop.withValues(alpha: 0.85)),
+                      AppCard(
+                        child: Column(
+                          children: [
+                            for (var i = 0; i < members.length; i++) ...[
+                              if (i > 0) const Divider(indent: 16, endIndent: 16),
+                              ListTile(
+                                // Roomier rows than a plain list: the card is narrow now.
+                                minTileHeight: 72,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 8,
+                                ),
+                                titleTextStyle: theme.textTheme.titleMedium,
+                                leading: InitialAvatar(name: members[i].displayName, radius: 22),
+                                title: Text(
+                                  members[i].userId == myId
+                                      ? '${members[i].displayName} ${l10n.youSuffix}'
+                                      : members[i].displayName,
+                                ),
+                                subtitle: members[i].isAdmin ? Text(l10n.adminRole) : null,
+                                trailing: iAmAdmin && members[i].userId != myId
+                                    ? TextButton(
+                                        onPressed: () => _setAdmin(members[i], !members[i].isAdmin),
+                                        child: Text(
+                                          members[i].isAdmin
+                                              ? l10n.removeAdminAction
+                                              : l10n.makeAdminAction,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ],
+                      // The generated link; the buttons to create/copy it are in the bottom bar.
+                      if (_inviteLink != null) ...[
+                        SectionHeader(l10n.inviteLinkReady),
+                        AppCard(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surfaceContainer,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: SelectableText(_inviteLink!),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           );
         },
       ),
@@ -322,7 +348,7 @@ class _GroupPageState extends ConsumerState<GroupPage> {
         child: Center(
           heightFactor: 1,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
+            constraints: const BoxConstraints(maxWidth: _contentWidth),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: Row(
