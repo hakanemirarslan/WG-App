@@ -11,6 +11,7 @@ import '../../../core/layout.dart';
 import '../../../core/limits.dart';
 import '../../../core/money.dart';
 import '../../../core/supabase_client.dart';
+import '../../../domain/invite_code.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../balances/providers/balances_providers.dart';
 import '../../settings/providers/profile_providers.dart';
@@ -68,8 +69,15 @@ class GroupsPage extends ConsumerWidget {
 
   Future<void> _joinWithCode(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final code = await _askText(context, l10n.inviteCodeLabel, l10n.joinButton);
-    if (code == null || code.isEmpty || !context.mounted) return;
+    final input = await _askText(context, l10n.inviteCodeLabel, l10n.joinButton);
+    if (input == null || input.isEmpty || !context.mounted) return;
+    // People paste the whole link as often as the code; both work.
+    final code = extractInviteCode(input);
+    if (code == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.inviteCodeInvalidMessage)));
+      return;
+    }
     context.go('/join/$code');
   }
 
