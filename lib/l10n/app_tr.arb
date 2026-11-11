@@ -50,6 +50,8 @@
   "greeting": "Merhaba {name}",
   "openItemsCount": "{count, plural, =0{Alınacak bir şey yok} other{Alınacaklar ({count})}}",
   "seeAllAction": "Tümü",
+  "showMoreButton": "Daha fazla göster",
+  "showLessButton": "Daha az göster",
   "recentActivityTitle": "Son hareketler",
   "noActivityYet": "Henüz hareket yok. Bir ürün ekle ya da harcama gir.",
   "activityBought": "{name}, {item} aldı",

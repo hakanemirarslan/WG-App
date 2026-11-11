@@ -12,28 +12,41 @@ import '../../../core/error_view.dart';
 import '../../../domain/group_by_day.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../groups/providers/groups_providers.dart';
+import '../../groups/ui/group_cover.dart';
 import '../data/expenses_repository.dart';
 import '../providers/expenses_providers.dart';
 
-/// "Expenses" tab (SPEC 11): chronological list, newest first.
-class ExpensesPage extends ConsumerWidget {
+/// "Expenses" tab (SPEC 11): chronological list, newest first. Shows [_pageSize]
+/// expenses at first and more on request, so a long history does not make the tab
+/// endless.
+class ExpensesPage extends ConsumerStatefulWidget {
   const ExpensesPage({super.key, required this.groupId});
 
   final String groupId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ExpensesPage> createState() => _ExpensesPageState();
+}
+
+class _ExpensesPageState extends ConsumerState<ExpensesPage> {
+  static const _pageSize = 7;
+
+  /// How many of the newest expenses are shown; "Show more" adds [_pageSize].
+  int _visibleCount = _pageSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final groupId = widget.groupId;
     final l10n = AppLocalizations.of(context)!;
     final lang = Localizations.localeOf(context).languageCode;
     final groupName = ref.watch(groupProvider(groupId)).value?.name ?? '';
     final expensesAsync = ref.watch(expensesProvider(groupId));
     final dateFormat = DateFormat.yMMMEd(lang);
 
+    // Transparent: the group's backdrop (GroupShell) shows through.
     return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go('/home')),
-        title: Text(groupName),
-      ),
+      backgroundColor: Colors.transparent,
+      appBar: const GroupTabAppBar(),
       floatingActionButton: FloatingActionButton(
         // The tabs stay alive side by side, so two FABs share one route: without
         // this, both use the default hero tag and pushing a page throws.
@@ -56,12 +69,15 @@ class ExpensesPage extends ConsumerWidget {
                 onAction: () => context.push('/group/$groupId/expenses/new'),
               );
             }
+            // The list is newest first, so the first [_visibleCount] are the latest.
+            final shown = expenses.take(_visibleCount).toList();
+            final hasMore = expenses.length > shown.length;
+            // More than the first page is open: offer to fold back to it.
+            final canShowLess = shown.length > _pageSize;
+            final hasFooter = hasMore || canShowLess;
             // One date header per day, followed by that day's expenses.
             final rows = <Object>[
-              for (final group in groupByDay(expenses, (e) => e.date)) ...[
-                group.day,
-                ...group.items,
-              ],
+              for (final group in groupByDay(shown, (e) => e.date)) ...[group.day, ...group.items],
             ];
             return RefreshIndicator(
               onRefresh: () async {
@@ -69,9 +85,42 @@ class ExpensesPage extends ConsumerWidget {
                 await ref.read(expensesProvider(groupId).future);
               },
               child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
-                itemCount: rows.length,
-                itemBuilder: (context, index) {
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 88),
+                // First row: the group name on the photo; last: "Show more" / "Show
+                // less" when there is something to open or close.
+                itemCount: rows.length + 1 + (hasFooter ? 1 : 0),
+                itemBuilder: (context, position) {
+                  if (position == 0) {
+                    return GroupTabHeader(
+                      title: groupName,
+                      subtitle: l10n.expenseCount(expenses.length),
+                    );
+                  }
+                  if (position == rows.length + 1) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (hasMore)
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.expand_more),
+                              label: Text(l10n.showMoreButton),
+                              onPressed: () => setState(() => _visibleCount += _pageSize),
+                            ),
+                          if (canShowLess)
+                            TextButton.icon(
+                              icon: const Icon(Icons.expand_less),
+                              label: Text(l10n.showLessButton),
+                              onPressed: () => setState(() => _visibleCount = _pageSize),
+                            ),
+                        ],
+                      ),
+                    );
+                  }
+                  final index = position - 1;
                   final row = rows[index];
                   if (row is DateTime) return SectionHeader(dateFormat.format(row));
                   final expense = row as Expense;
