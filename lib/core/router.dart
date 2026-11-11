@@ -44,6 +44,21 @@ class GoRouterRefreshStream extends ChangeNotifier {
 String authPath(String path, String? from) =>
     from == null ? path : Uri(path: path, queryParameters: {'from': from}).toString();
 
+/// Where to go after login or signup: the `?from=` value if it is a path inside the
+/// app, else `/home` (SPEC 10). A link like `/login?from=...` can be made by anyone,
+/// so the value is not trusted: no scheme or host (`https://…`, `//host`), no
+/// backslashes (some parsers treat them as slashes), and not the auth pages themselves.
+String safeReturnPath(String? from) {
+  const fallback = '/home';
+  if (from == null || !from.startsWith('/') || from.startsWith('//') || from.contains(r'\')) {
+    return fallback;
+  }
+  final uri = Uri.tryParse(from);
+  if (uri == null || uri.hasScheme || uri.hasAuthority) return fallback;
+  if (uri.path == '/login' || uri.path == '/signup') return fallback;
+  return from;
+}
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 const _publicPaths = {'/datenschutz', '/impressum'};
@@ -70,7 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return authPath('/login', target);
       }
       if (isAuthRoute) {
-        return state.uri.queryParameters['from'] ?? '/home';
+        return safeReturnPath(state.uri.queryParameters['from']);
       }
       if (state.matchedLocation == '/') {
         return '/home';
