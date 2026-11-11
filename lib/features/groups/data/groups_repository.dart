@@ -20,6 +20,30 @@ class Group {
 
 const _groupColumns = 'id, name, photo_path';
 
+/// The group behind an invite code, as far as someone who has not joined may see it.
+class InvitePreview {
+  final String groupId;
+  final String groupName;
+  final int memberCount;
+
+  /// Already an active member: the invite screen goes straight to the group.
+  final bool alreadyMember;
+
+  InvitePreview({
+    required this.groupId,
+    required this.groupName,
+    required this.memberCount,
+    required this.alreadyMember,
+  });
+
+  factory InvitePreview.fromMap(Map<String, dynamic> map) => InvitePreview(
+    groupId: map['group_id'] as String,
+    groupName: map['group_name'] as String,
+    memberCount: map['member_count'] as int,
+    alreadyMember: map['already_member'] as bool,
+  );
+}
+
 class Member {
   final String userId;
   final String displayName;
@@ -79,6 +103,13 @@ class GroupsRepository {
   Future<String> createGroup(String name) async {
     final id = await supabase.rpc('create_group', params: {'group_name': name});
     return id as String;
+  }
+
+  /// What the invite screen shows before joining (SPEC 10): `invite_preview` only
+  /// returns the group's name and member count. Throws `invalid_or_expired_invite`.
+  Future<InvitePreview> previewInvite(String code) async {
+    final rows = await supabase.rpc('invite_preview', params: {'invite_code': code}) as List;
+    return InvitePreview.fromMap(rows.single as Map<String, dynamic>);
   }
 
   Future<String> joinGroup(String code) async {

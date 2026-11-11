@@ -232,6 +232,30 @@ begin
 end;
 $$;
 
+-- Davet ekrani (SPEC 10, 2026-11-12): katilmadan once grubun adi ve uye sayisi, ve
+-- cagiran zaten uye mi. Uye olmayan groups/invites'i okuyamaz (RLS), bu yuzden definer.
+-- Gecerli kodu bilen zaten katilabilir; burada ondan fazlasi verilmez.
+-- Hata kodu: invalid_or_expired_invite
+create or replace function public.invite_preview(invite_code text)
+returns table (group_id uuid, group_name text, member_count integer, already_member boolean)
+language plpgsql stable security definer set search_path = public
+as $$
+#variable_conflict use_column
+begin
+  return query
+    select g.id, g.name,
+           (select count(*)::integer from public.memberships m
+            where m.group_id = g.id and m.left_at is null),
+           public.is_group_member(g.id)
+    from public.invites i
+    join public.groups g on g.id = i.group_id
+    where i.code = invite_code and i.expires_at > now();
+  if not found then
+    raise exception 'invalid_or_expired_invite';
+  end if;
+end;
+$$;
+
 -- Ayrilma (SPEC 10). Son aktif uye ayrilirsa grup tum verisiyle silinir ('deleted');
 -- tek admin ayrilirsa rol en eski aktif uyeye (joined_at) devredilir. Donus: 'left' | 'deleted'.
 -- Kayit silinmez, left_at dolar; rol 'member'a duser (geri donen eski admin otomatik admin olmaz).
@@ -244,6 +268,11 @@ declare
   my_role text;
   successor uuid;
 begin
+  -- Lock the group first: two members leaving at the same time otherwise both still
+  -- see the other as active (nobody deletes the empty group), and two admins leaving
+  -- together both see "another admin" (the group ends up without one). With the lock,
+  -- leave_group / set_member_role on the same group run one after the other.
+  perform 1 from public.groups where id = gid for update;
   select role into my_role from public.memberships
   where group_id = gid and user_id = auth.uid() and left_at is null
   for update;
@@ -318,6 +347,9 @@ begin
   if new_role not in ('admin', 'member') then
     raise exception 'invalid_role';
   end if;
+  -- Same group lock as leave_group: two admins removing each other at the same time
+  -- would otherwise both pass the last_admin check and leave the group without one.
+  perform 1 from public.groups where id = gid for update;
   if not exists (
     select 1 from public.memberships
     where group_id = gid and user_id = auth.uid() and role = 'admin' and left_at is null
@@ -711,6 +743,7 @@ revoke execute on function
   public.handle_new_user(),
   public.create_group(text),
   public.join_group(text),
+  public.invite_preview(text),
   public.leave_group(uuid),
   public.set_member_role(uuid, uuid, text),
   public.get_or_create_group_item(uuid, uuid, text),
@@ -727,6 +760,7 @@ grant execute on function
   public.is_group_admin(uuid),
   public.create_group(text),
   public.join_group(text),
+  public.invite_preview(text),
   public.leave_group(uuid),
   public.set_member_role(uuid, uuid, text),
   public.get_or_create_group_item(uuid, uuid, text),
