@@ -66,12 +66,25 @@ void main() {
     final parsed = InvitePreview.fromMap({
       'group_id': 'g1',
       'group_name': 'Hako',
+      'photo_path': 'groups/g1/cover/x.jpg',
       'member_count': 3,
       'already_member': true,
     });
     expect(
       (parsed.groupId, parsed.groupName, parsed.memberCount, parsed.alreadyMember),
       ('g1', 'Hako', 3, true),
+    );
+    expect(parsed.photoPath, 'groups/g1/cover/x.jpg');
+    // A group without a photo sends null.
+    expect(
+      InvitePreview.fromMap({
+        'group_id': 'g1',
+        'group_name': 'Hako',
+        'photo_path': null,
+        'member_count': 1,
+        'already_member': false,
+      }).photoPath,
+      isNull,
     );
   });
 }

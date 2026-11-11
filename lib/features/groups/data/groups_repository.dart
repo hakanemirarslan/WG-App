@@ -24,6 +24,9 @@ const _groupColumns = 'id, name, photo_path';
 class InvitePreview {
   final String groupId;
   final String groupName;
+
+  /// Cover photo; readable before joining while the group has a valid invite.
+  final String? photoPath;
   final int memberCount;
 
   /// Already an active member: the invite screen goes straight to the group.
@@ -32,6 +35,7 @@ class InvitePreview {
   InvitePreview({
     required this.groupId,
     required this.groupName,
+    this.photoPath,
     required this.memberCount,
     required this.alreadyMember,
   });
@@ -39,6 +43,7 @@ class InvitePreview {
   factory InvitePreview.fromMap(Map<String, dynamic> map) => InvitePreview(
     groupId: map['group_id'] as String,
     groupName: map['group_name'] as String,
+    photoPath: map['photo_path'] as String?,
     memberCount: map['member_count'] as int,
     alreadyMember: map['already_member'] as bool,
   );

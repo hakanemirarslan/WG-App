@@ -123,7 +123,7 @@ Duzenleme/silme: **sadece harcamayi olusturan veya grup admin'i.** Bakiyeler hes
 
 - **Olusturma:** `create_group(name)` RPC. Olusturan admin olur.
 - **Davet:** Uyeler davet kodu/linki uretir (`invites`), 7 gun gecerli, suresi icinde birden fazla kisi kullanabilir. Link: `/join/<code>`. Giris yapmamis kisi linke girerse once giris/kayit, sonra davet ekranina doner.
-- **Katilma (2026-11-12 degisti, guvenlik incelemesi):** linki acan kisi **otomatik katilmaz**. Davet ekrani `invite_preview(code)` ile grubun adini ve uye sayisini gosterir, kisi "Gruba katil" ile onaylar, sonra `join_group(code)`. Sebep: baskasinin linkiyle (ornegin `?from=/join/<kod>` ile giris) farkinda olmadan bir yabancinin grubuna dusmesin; o grup adini gorur ve onu iceren harcama girebilir. Zaten uyeyse ekran dogrudan gruba gider. Gecersiz/suresi dolmus kod -> anlasilir hata mesaji (`invalid_or_expired_invite`). Gecerli kodu bilen zaten katilabildigi icin grup adini gormesi yeni bir sizinti degildir.
+- **Katilma (2026-11-12 degisti, guvenlik incelemesi):** linki acan kisi **otomatik katilmaz**. Davet ekrani `invite_preview(code)` ile grubun adini, kapak fotografini ve uye sayisini gosterir, kisi "Gruba katil" ile onaylar, sonra `join_group(code)`. Sebep: baskasinin linkiyle (ornegin `?from=/join/<kod>` ile giris) farkinda olmadan bir yabancinin grubuna dusmesin; o grup adini gorur ve onu iceren harcama girebilir. Zaten uyeyse ekran dogrudan gruba gider. Gecersiz/suresi dolmus kod -> anlasilir hata mesaji (`invalid_or_expired_invite`). Gecerli kodu bilen zaten katilabildigi icin grup adini gormesi yeni bir sizinti degildir.
 - **Giristen sonra geri donus:** `?from=` sadece uygulama ici bir yol olabilir (`/` ile baslar, `//` ile baslamaz, sema/alan adi yok, giris/kayit sayfasi degil); degilse `/home`.
 - **Ayrilma:** `leave_group(group_id)`. Kayit silinmez, `left_at` dolar. Ayrilan kisi grubu artik gormez, ama diger uyeler gecmis harcamalarda onun adini gormeye devam eder.
   - Bakiyesi 0 degilse UI uyarir: "Hesabin kapanmadi (X €)". Yine de ayrilabilir; bakiye, sifirlanana kadar bakiye ekraninda "Eski uye" olarak kalir.
@@ -248,7 +248,7 @@ Dort yer, hepsi istege bagli: **grup fotografi**, **profil fotografi**, **alisve
 
 | Fotograf | Gorur | Ekler / degistirir / kaldirir |
 |---|---|---|
-| Grup fotografi | grubun aktif uyeleri | sadece admin (grup adi kuraliyla ayni) |
+| Grup fotografi | grubun aktif uyeleri; grubun suresi dolmamis bir daveti varken davet ekranindaki girisli kisi de (yol rastgele UUID icerir, sadece `invite_preview` verir) | sadece admin (grup adi kuraliyla ayni) |
 | Profil fotografi | kendisi + ayni grupta bulundugu kisiler (`profiles_read` ile ayni) | sadece kendisi |
 | Alisveris kaydi resmi | grubun aktif uyeleri | kaydi ekleyen veya admin (silme kuraliyla ayni) |
 | Fis fotografi | grubun aktif uyeleri | harcamayi olusturan veya admin (silme kuraliyla ayni) |

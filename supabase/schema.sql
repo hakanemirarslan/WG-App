@@ -234,16 +234,21 @@ $$;
 
 -- Davet ekrani (SPEC 10, 2026-11-12): katilmadan once grubun adi ve uye sayisi, ve
 -- cagiran zaten uye mi. Uye olmayan groups/invites'i okuyamaz (RLS), bu yuzden definer.
--- Gecerli kodu bilen zaten katilabilir; burada ondan fazlasi verilmez.
+-- Gecerli kodu bilen zaten katilabilir; burada ondan fazlasi verilmez. Kapak fotografinin
+-- yolu da doner; davetli kisi onu image_access() ile gorebilir (Bolum 6).
+-- Donus sutunlari degisirse "create or replace" yetmez, bu yuzden once drop.
 -- Hata kodu: invalid_or_expired_invite
-create or replace function public.invite_preview(invite_code text)
-returns table (group_id uuid, group_name text, member_count integer, already_member boolean)
+drop function if exists public.invite_preview(text);
+create function public.invite_preview(invite_code text)
+returns table (
+  group_id uuid, group_name text, photo_path text, member_count integer, already_member boolean
+)
 language plpgsql stable security definer set search_path = public
 as $$
 #variable_conflict use_column
 begin
   return query
-    select g.id, g.name,
+    select g.id, g.name, g.photo_path,
            (select count(*)::integer from public.memberships m
             where m.group_id = g.id and m.left_at is null),
            public.is_group_member(g.id)
@@ -895,9 +900,16 @@ begin
     );
   end if;
 
-  if parts[1] <> 'groups' or parts[3] not in ('cover', 'items', 'receipts')
-     or not public.is_group_member(folder_id) then
+  if parts[1] <> 'groups' or parts[3] not in ('cover', 'items', 'receipts') then
     return false;
+  end if;
+  if not public.is_group_member(folder_id) then
+    -- Invite screen (SPEC 10, 2026-11-12): while the group has an unexpired invite,
+    -- the cover photo (only that) may be read. Its path holds a random UUID and is
+    -- only handed out to members and, by invite_preview, to holders of a valid code.
+    return action = 'read' and parts[3] = 'cover' and exists (
+      select 1 from public.invites i where i.group_id = folder_id and i.expires_at > now()
+    );
   end if;
   if action = 'read' or public.is_group_admin(folder_id) then
     return true;

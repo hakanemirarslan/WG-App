@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../data/groups_repository.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
+import 'group_photo.dart';
 
 /// Opened via `/join/<code>` (SPEC 10). The router already sent logged-out users to
 /// login first, so here we are signed in. Nobody joins just by opening a link: the
@@ -123,11 +124,8 @@ class InviteConfirmView extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        CircleAvatar(
-          radius: 32,
-          backgroundColor: scheme.primaryContainer,
-          child: Icon(Icons.group_add_outlined, size: 32, color: scheme.onPrimaryContainer),
-        ),
+        // The group's cover photo, or the house icon when it has none.
+        Center(child: GroupPhoto(photoPath: preview.photoPath, radius: 48)),
         const SizedBox(height: 20),
         Text(
           l10n.inviteTitle,
