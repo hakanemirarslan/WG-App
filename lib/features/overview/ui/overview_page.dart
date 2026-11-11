@@ -18,6 +18,7 @@ import '../../expenses/providers/expenses_providers.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../../groups/ui/group_cover.dart';
 import '../../settings/providers/profile_providers.dart';
+import '../../settings/ui/user_avatar.dart';
 import '../../shopping_list/data/shopping_repository.dart';
 import '../../shopping_list/providers/shopping_providers.dart';
 import '../../shopping_list/ui/add_item_flow.dart';
@@ -254,6 +255,7 @@ class _ActivityTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final String person;
+    final String? personId;
     final String text;
     int? cents;
     VoidCallback? onTap;
@@ -262,6 +264,7 @@ class _ActivityTile extends StatelessWidget {
       case ActivityKind.expense:
         final expense = expenses[activity.sourceId]!;
         person = expense.paidByName;
+        personId = expense.paidBy;
         text = '$person · ${expense.displayTitle(lang) ?? l10n.defaultExpenseTitle}';
         cents = expense.amountCents;
         onTap = () => context.push('/group/$groupId/expenses/${expense.id}');
@@ -269,6 +272,7 @@ class _ActivityTile extends StatelessWidget {
         final entry = entries[activity.sourceId]!;
         final linked = entry.expenseId == null ? null : expenses[entry.expenseId];
         person = entry.boughtByName ?? '';
+        personId = entry.boughtBy;
         text = l10n.activityBought(person, entry.name.localized(lang));
         if (linked != null) {
           cents = linked.amountCents;
@@ -277,12 +281,15 @@ class _ActivityTile extends StatelessWidget {
       case ActivityKind.settlement:
         final settlement = settlements[activity.sourceId]!;
         person = settlement.fromName;
+        personId = settlement.from;
         text = l10n.activitySettlement(settlement.fromName, settlement.toName);
         cents = settlement.cents;
     }
 
     return ListTile(
-      leading: InitialAvatar(name: person),
+      leading: personId == null
+          ? InitialAvatar(name: person)
+          : UserAvatar(userId: personId, name: person),
       title: Text(text, maxLines: 2, overflow: TextOverflow.ellipsis),
       subtitle: Text(_when(l10n, activity.at)),
       trailing: cents == null

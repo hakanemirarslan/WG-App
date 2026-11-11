@@ -12,6 +12,7 @@ import '../../../domain/pair_debts.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../expenses/data/expenses_repository.dart';
 import '../../expenses/providers/expenses_providers.dart';
+import '../../settings/ui/user_avatar.dart';
 import '../providers/balances_providers.dart';
 
 /// Who owes whom for one person (opened from a member row on the Balance tab):
@@ -55,7 +56,7 @@ class PersonDebtsPage extends ConsumerWidget {
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _PersonHeader(name: name, cents: data.balances[userId] ?? 0, lang: lang),
+          _PersonHeader(userId: userId, name: name, cents: data.balances[userId] ?? 0, lang: lang),
           if (debts.isEmpty)
             AppCard(
               child: Padding(
@@ -106,8 +107,14 @@ class PersonDebtsPage extends ConsumerWidget {
 
 /// Avatar, name and the person's total balance.
 class _PersonHeader extends StatelessWidget {
-  const _PersonHeader({required this.name, required this.cents, required this.lang});
+  const _PersonHeader({
+    required this.userId,
+    required this.name,
+    required this.cents,
+    required this.lang,
+  });
 
+  final String userId;
   final String name;
   final int cents;
   final String lang;
@@ -120,7 +127,7 @@ class _PersonHeader extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            InitialAvatar(name: name, radius: 24),
+            UserAvatar(userId: userId, name: name, radius: 24),
             const SizedBox(width: 16),
             Expanded(child: Text(name, style: theme.textTheme.titleLarge)),
             DecoratedBox(
@@ -181,7 +188,7 @@ class _DebtCard extends StatelessWidget {
         shape: const Border(),
         collapsedShape: const Border(),
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        leading: InitialAvatar(name: otherName),
+        leading: UserAvatar(userId: debt.otherId, name: otherName),
         title: Text(otherName),
         trailing: DecoratedBox(
           decoration: BoxDecoration(color: pillColor, borderRadius: BorderRadius.circular(20)),

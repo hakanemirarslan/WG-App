@@ -29,6 +29,7 @@ final groupLiveUpdatesProvider = Provider.autoDispose<void>((ref) {
         table: 'profiles',
         callback: (payload) {
           ref.invalidate(groupMembersProvider);
+          ref.invalidate(avatarPathsProvider);
           if (payload.newRecord['id'] == supabase.auth.currentUser?.id) {
             ref.invalidate(myProfileProvider);
           }

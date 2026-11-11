@@ -11,6 +11,7 @@ class ShoppingEntry {
   final String addedBy;
   final String addedByName;
   final bool isBought;
+  final String? boughtBy;
   final String? boughtByName;
   final DateTime? boughtAt;
   final DateTime createdAt;
@@ -26,6 +27,7 @@ class ShoppingEntry {
     required this.addedBy,
     required this.addedByName,
     required this.isBought,
+    this.boughtBy,
     required this.boughtByName,
     required this.boughtAt,
     required this.createdAt,
@@ -45,6 +47,7 @@ class ShoppingEntry {
       addedBy: map['added_by'] as String,
       addedByName: (map['adder'] as Map<String, dynamic>?)?['display_name'] as String? ?? '',
       isBought: map['status'] == 'bought',
+      boughtBy: map['bought_by'] as String?,
       boughtByName: (map['buyer'] as Map<String, dynamic>?)?['display_name'] as String?,
       boughtAt: boughtAt == null ? null : DateTime.parse(boughtAt),
       createdAt: DateTime.parse(map['created_at'] as String),
@@ -62,7 +65,7 @@ class ShoppingRepository {
     final rows = await supabase
         .from('shopping_entries')
         .select(
-          'id, group_item_id, note, added_by, status, bought_at, created_at, expense_id, '
+          'id, group_item_id, note, added_by, status, bought_by, bought_at, created_at, expense_id, '
           'group_items(custom_name, catalog_items(name_de, name_en, name_tr)), '
           'adder:profiles!shopping_entries_added_by_fkey(display_name), '
           'buyer:profiles!shopping_entries_bought_by_fkey(display_name)',

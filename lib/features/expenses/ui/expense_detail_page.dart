@@ -10,6 +10,7 @@ import '../../../core/error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../../groups/ui/group_error_text.dart';
+import '../../settings/ui/user_avatar.dart';
 import '../providers/expenses_providers.dart';
 
 /// Expense detail (SPEC 11, screen 4) with edit and delete for the creator or an admin.
@@ -105,7 +106,11 @@ class ExpenseDetailPage extends ConsumerWidget {
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              InitialAvatar(name: expense.paidByName, radius: 14),
+                              UserAvatar(
+                                userId: expense.paidBy,
+                                name: expense.paidByName,
+                                radius: 14,
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -140,7 +145,10 @@ class ExpenseDetailPage extends ConsumerWidget {
                         for (var i = 0; i < expense.shares.length; i++) ...[
                           if (i > 0) const Divider(indent: 16, endIndent: 16),
                           ListTile(
-                            leading: InitialAvatar(name: expense.shares[i].name),
+                            leading: UserAvatar(
+                              userId: expense.shares[i].userId,
+                              name: expense.shares[i].name,
+                            ),
                             title: Text(expense.shares[i].name),
                             trailing: Text(
                               formatCents(expense.shares[i].shareCents, locale: lang),

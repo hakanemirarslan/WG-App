@@ -249,7 +249,7 @@ Dort yer, hepsi istege bagli: **grup fotografi**, **profil fotografi**, **alisve
 | Fotograf | Gorur | Ekler / degistirir / kaldirir |
 |---|---|---|
 | Grup fotografi | grubun aktif uyeleri; grubun suresi dolmamis bir daveti varken davet ekranindaki girisli kisi de (yol rastgele UUID icerir, sadece `invite_preview` verir) | sadece admin (grup adi kuraliyla ayni) |
-| Profil fotografi | kendisi + ayni grupta bulundugu kisiler (`profiles_read` ile ayni) | sadece kendisi |
+| Profil fotografi | kendisi + ayni grupta bulundugu kisiler (`profiles_read` ile ayni); uygulamadaki tum avatar yuvarlaklarinda (`UserAvatar`: uyeler, harcamalar, bakiye, ozet), fotografi olmayanda bas harf | sadece kendisi (Ayarlar) |
 | Alisveris kaydi resmi | grubun aktif uyeleri | kaydi ekleyen veya admin (silme kuraliyla ayni) |
 | Fis fotografi | grubun aktif uyeleri | harcamayi olusturan veya admin (silme kuraliyla ayni) |
 

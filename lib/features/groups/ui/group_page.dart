@@ -14,6 +14,7 @@ import '../../../core/widgets.dart';
 import '../../../domain/image_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../balances/providers/balances_providers.dart';
+import '../../settings/ui/user_avatar.dart';
 import '../data/groups_repository.dart';
 import '../providers/groups_providers.dart';
 import 'group_error_text.dart';
@@ -294,7 +295,11 @@ class _GroupPageState extends ConsumerState<GroupPage> {
                                   vertical: 8,
                                 ),
                                 titleTextStyle: theme.textTheme.titleMedium,
-                                leading: InitialAvatar(name: members[i].displayName, radius: 22),
+                                leading: UserAvatar(
+                                  userId: members[i].userId,
+                                  name: members[i].displayName,
+                                  radius: 22,
+                                ),
                                 title: Text(
                                   members[i].userId == myId
                                       ? '${members[i].displayName} ${l10n.youSuffix}'

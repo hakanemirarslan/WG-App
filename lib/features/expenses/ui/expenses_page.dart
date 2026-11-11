@@ -13,6 +13,7 @@ import '../../../domain/group_by_day.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../groups/providers/groups_providers.dart';
 import '../../groups/ui/group_cover.dart';
+import '../../settings/ui/user_avatar.dart';
 import '../data/expenses_repository.dart';
 import '../providers/expenses_providers.dart';
 
@@ -132,7 +133,7 @@ class _ExpensesPageState extends ConsumerState<ExpensesPage> {
                       onTap: () => context.push('/group/$groupId/expenses/${expense.id}'),
                       child: ListTile(
                         // The avatar shows who paid; the subtitle repeats it in words.
-                        leading: InitialAvatar(name: expense.paidByName),
+                        leading: UserAvatar(userId: expense.paidBy, name: expense.paidByName),
                         title: Text(
                           expense.displayTitle(lang) ?? l10n.defaultExpenseTitle,
                           maxLines: 1,

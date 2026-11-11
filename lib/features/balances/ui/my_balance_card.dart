@@ -5,6 +5,7 @@ import '../../../core/theme.dart';
 import '../../../core/widgets.dart';
 import '../../../domain/pair_debts.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../settings/ui/user_avatar.dart';
 
 /// My balance in words instead of a signed number: "You are owed 4,00 €" with one
 /// line per person ("Ana owes you 2,00 €"), or "You owe 2,00 €" ("You owe Hakan
@@ -86,7 +87,11 @@ class MyBalanceCard extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 6),
                       child: Row(
                         children: [
-                          InitialAvatar(name: names[debt.otherId] ?? '', radius: 12),
+                          UserAvatar(
+                            userId: debt.otherId,
+                            name: names[debt.otherId] ?? '',
+                            radius: 12,
+                          ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(

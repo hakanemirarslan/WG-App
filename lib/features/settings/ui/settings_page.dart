@@ -4,16 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale_provider.dart';
 import '../../../core/error_view.dart';
+import '../../../core/images.dart';
 import '../../../core/layout.dart';
 import '../../../core/limits.dart';
 import '../../../core/theme_mode_provider.dart';
 import '../../../core/widgets.dart';
+import '../../../domain/image_file.dart';
 import '../../../domain/validation.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../legal/ui/legal_page.dart';
 import '../data/profile_repository.dart';
 import '../providers/profile_providers.dart';
+import 'user_avatar.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -82,6 +85,7 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
   late final TextEditingController _phoneController;
   late String _selectedLocale;
   bool _isSaving = false;
+  bool _photoBusy = false;
 
   @override
   void initState() {
@@ -130,11 +134,52 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
     );
     if (confirmed != true) return;
     try {
+      // The photo file first: once the account is gone nobody may delete it (SPEC 18).
+      // Best effort, like all file cleanup; the account is deleted either way.
+      await ref.read(imageRepositoryProvider).remove([widget.profile.avatarPath]);
       await ref.read(authRepositoryProvider).deleteMyAccount();
     } catch (error) {
       messenger.showSnackBar(
         SnackBar(content: Text(kDebugMode ? '${l10n.errorGeneric}\n$error' : l10n.errorGeneric)),
       );
+    }
+  }
+
+  /// Sets, changes or removes (`remove: true`) my profile photo (SPEC 18). Same order
+  /// as the group photo: upload, point the row at it, then delete the old file.
+  Future<void> _updatePhoto({bool remove = false}) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final String? newPath;
+      if (remove) {
+        setState(() => _photoBusy = true);
+        newPath = null;
+      } else {
+        newPath = await pickAndUploadImage(
+          context,
+          ref,
+          ImageKind.avatar,
+          widget.profile.id,
+          onPicked: () => setState(() => _photoBusy = true),
+        );
+        if (newPath == null) return;
+      }
+      await ref
+          .read(imageRepositoryProvider)
+          .replace(
+            oldPath: widget.profile.avatarPath,
+            newPath: newPath,
+            save: (path) => ref.read(profileRepositoryProvider).setAvatar(path),
+          );
+      ref.invalidate(myProfileProvider);
+      ref.invalidate(avatarPathsProvider);
+    } catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(kDebugMode ? '${l10n.errorGeneric}\n$error' : l10n.errorGeneric)),
+      );
+    } finally {
+      if (mounted) setState(() => _photoBusy = false);
     }
   }
 
@@ -180,18 +225,56 @@ class _SettingsFormState extends ConsumerState<_SettingsForm> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
+    final hasPhoto = widget.profile.avatarPath != null;
     final header = AppCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            InitialAvatar(name: widget.profile.displayName, radius: 24),
+            Semantics(
+              label: l10n.profilePhotoTitle,
+              image: hasPhoto,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  UserAvatar(
+                    userId: widget.profile.id,
+                    name: widget.profile.displayName,
+                    radius: 32,
+                    photoPath: widget.profile.avatarPath,
+                  ),
+                  if (_photoBusy) const CircularProgressIndicator(),
+                ],
+              ),
+            ),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                widget.profile.displayName,
-                style: theme.textTheme.titleLarge,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.profile.displayName,
+                    style: theme.textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Photo: choose/change, and remove when there is one (SPEC 18).
+                  Wrap(
+                    spacing: 4,
+                    children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                        onPressed: _photoBusy ? null : _updatePhoto,
+                        label: Text(hasPhoto ? l10n.changePhotoButton : l10n.choosePhotoButton),
+                      ),
+                      if (hasPhoto)
+                        TextButton.icon(
+                          icon: const Icon(Icons.delete_outline, size: 18),
+                          onPressed: _photoBusy ? null : () => _updatePhoto(remove: true),
+                          label: Text(l10n.removePhotoButton),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],

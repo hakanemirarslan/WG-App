@@ -34,6 +34,7 @@
   "hidePasswordTooltip": "Hide password",
   "renameGroupTitle": "Rename group",
   "groupPhotoTitle": "Group photo",
+  "profilePhotoTitle": "Profile photo",
   "memberCount": "{count, plural, =1{1 member} other{{count} members}}",
   "@memberCount": {"placeholders": {"count": {"type": "int"}}},
   "choosePhotoButton": "Choose photo",

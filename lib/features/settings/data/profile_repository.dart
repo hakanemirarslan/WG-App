@@ -5,12 +5,16 @@ class Profile {
   final String displayName;
   final String locale;
 
-  Profile({required this.id, required this.displayName, required this.locale});
+  /// Storage path of the profile photo (SPEC 18), null = none.
+  final String? avatarPath;
+
+  Profile({required this.id, required this.displayName, required this.locale, this.avatarPath});
 
   factory Profile.fromMap(Map<String, dynamic> map) => Profile(
     id: map['id'] as String,
     displayName: map['display_name'] as String,
     locale: map['locale'] as String,
+    avatarPath: map['avatar_path'] as String?,
   );
 }
 
@@ -65,5 +69,21 @@ class ProfileRepository {
         .from('profiles')
         .update({'display_name': displayName, 'locale': locale})
         .eq('id', userId);
+  }
+
+  /// Sets or clears (null) my profile photo (`profiles_update_own`).
+  Future<void> setAvatar(String? path) async {
+    final userId = supabase.auth.currentUser!.id;
+    await supabase.from('profiles').update({'avatar_path': path}).eq('id', userId);
+  }
+
+  /// Photo path per user id for everyone whose profile I may read (RLS: myself and
+  /// the people I share a group with). One query for all avatars on screen.
+  Future<Map<String, String>> fetchAvatarPaths() async {
+    final rows = await supabase
+        .from('profiles')
+        .select('id, avatar_path')
+        .not('avatar_path', 'is', null);
+    return {for (final row in rows) row['id'] as String: row['avatar_path'] as String};
   }
 }
