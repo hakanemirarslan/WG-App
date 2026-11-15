@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/image_viewer.dart';
+import '../../../core/images.dart';
 import '../../../core/limits.dart';
+import '../../../domain/image_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../catalog/providers/catalog_providers.dart';
 import '../../catalog/ui/product_picker_sheet.dart';
@@ -45,12 +48,26 @@ Future<void> addShoppingItemFlow(BuildContext context, WidgetRef ref, String gro
     }
 
     if (!context.mounted) return;
-    final note = await _askNote(context);
-    if (note == null) return;
+    final details = await showDialog<_EntryDetails>(
+      context: context,
+      builder: (context) => _EntryDetailsDialog(groupId: groupId),
+    );
+    if (details == null) return;
 
-    await ref
-        .read(shoppingRepositoryProvider)
-        .addEntry(groupId, groupItemId, note.isEmpty ? null : note);
+    try {
+      await ref
+          .read(shoppingRepositoryProvider)
+          .addEntry(
+            groupId,
+            groupItemId,
+            details.note.isEmpty ? null : details.note,
+            photoPath: details.photoPath,
+          );
+    } catch (_) {
+      // Nothing points to the uploaded photo: remove it again (SPEC 18).
+      await ref.read(imageRepositoryProvider).remove([details.photoPath]);
+      rethrow;
+    }
     await catalogRepository.touchGroupItem(groupItemId);
     ref.invalidate(frequentItemsProvider(groupId));
   } catch (error) {
@@ -74,6 +91,7 @@ Future<void> deleteWithUndo(
   // Read everything now: the page may be gone when the bar closes.
   final pending = ref.read(pendingDeletionsProvider.notifier);
   final repository = ref.read(shoppingRepositoryProvider);
+  final images = ref.read(imageRepositoryProvider);
   final messenger = ScaffoldMessenger.of(context);
 
   pending.hide(entry.id);
@@ -98,30 +116,173 @@ Future<void> deleteWithUndo(
   } catch (error) {
     pending.restore(entry.id);
     messenger.showSnackBar(SnackBar(content: Text(groupErrorText(l10n, error))));
+    return;
+  }
+  // The row is gone, so its photo may be deleted now (SPEC 18). Best effort.
+  await images.remove([entry.photoPath]);
+}
+
+/// The optional details of a new entry: a note ('' for none) and a photo.
+typedef _EntryDetails = ({String note, String? photoPath});
+
+/// Note and optional photo for a new entry. The photo is uploaded as soon as it is
+/// picked (so the preview shows the real file); cancelling, or picking another one,
+/// deletes what was uploaded. Returns null if cancelled.
+class _EntryDetailsDialog extends ConsumerStatefulWidget {
+  const _EntryDetailsDialog({required this.groupId});
+
+  final String groupId;
+
+  @override
+  ConsumerState<_EntryDetailsDialog> createState() => _EntryDetailsDialogState();
+}
+
+class _EntryDetailsDialogState extends ConsumerState<_EntryDetailsDialog> {
+  final _noteController = TextEditingController();
+  String? _photoPath;
+  bool _uploading = false;
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickPhoto() async {
+    final images = ref.read(imageRepositoryProvider);
+    try {
+      final path = await pickAndUploadImage(
+        context,
+        ref,
+        ImageKind.shoppingItem,
+        widget.groupId,
+        onPicked: () => setState(() => _uploading = true),
+      );
+      if (path == null) return;
+      final previous = _photoPath;
+      if (mounted) {
+        setState(() => _photoPath = path);
+      } else {
+        await images.remove([path]); // dialog closed meanwhile
+      }
+      await images.remove([previous]);
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  Future<void> _removePhoto() async {
+    final path = _photoPath;
+    setState(() => _photoPath = null);
+    await ref.read(imageRepositoryProvider).remove([path]);
+  }
+
+  void _cancel() {
+    ref.read(imageRepositoryProvider).remove([_photoPath]);
+    Navigator.pop(context);
+  }
+
+  void _submit() => Navigator.pop<_EntryDetails>(context, (
+    note: _noteController.text.trim(),
+    photoPath: _photoPath,
+  ));
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final photo = _photoPath;
+    return PopScope(
+      // Closing by tapping outside or the back button counts as cancel.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_uploading) _cancel();
+      },
+      child: AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _noteController,
+              autofocus: true,
+              decoration: InputDecoration(labelText: l10n.noteLabel, hintText: l10n.noteHint),
+              inputFormatters: limitTo(maxNoteLength),
+              onSubmitted: (_) => _uploading ? null : _submit(),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                if (_uploading)
+                  const SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (photo != null)
+                  PhotoThumbnail(
+                    path: photo,
+                    size: 56,
+                    onTap: () => showImageViewer(context, path: photo),
+                  ),
+                if (_uploading || photo != null) const SizedBox(width: 12),
+                Expanded(
+                  child: Wrap(
+                    children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                        onPressed: _uploading ? null : _pickPhoto,
+                        label: Text(photo == null ? l10n.addPhotoButton : l10n.changePhotoButton),
+                      ),
+                      if (photo != null && !_uploading)
+                        TextButton.icon(
+                          icon: const Icon(Icons.delete_outline, size: 18),
+                          onPressed: _removePhoto,
+                          label: Text(l10n.removePhotoButton),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: _uploading ? null : _cancel, child: Text(l10n.cancelButton)),
+          FilledButton(onPressed: _uploading ? null : _submit, child: Text(l10n.addToListButton)),
+        ],
+      ),
+    );
   }
 }
 
-/// Returns the note ('' for none) or null if the user cancelled.
-Future<String?> _askNote(BuildContext context) {
+/// Lets the adder or an admin add, change or remove the photo of an existing entry
+/// (SPEC 18). Same order as everywhere: upload, point the row at it, delete the old.
+Future<void> updateEntryPhoto(
+  BuildContext context,
+  WidgetRef ref,
+  String groupId,
+  ShoppingEntry entry, {
+  bool remove = false,
+}) async {
   final l10n = AppLocalizations.of(context)!;
-  final controller = TextEditingController();
-  return showDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        decoration: InputDecoration(labelText: l10n.noteLabel, hintText: l10n.noteHint),
-        inputFormatters: limitTo(maxNoteLength),
-        onSubmitted: (value) => Navigator.pop(context, value.trim()),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancelButton)),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, controller.text.trim()),
-          child: Text(l10n.addToListButton),
-        ),
-      ],
-    ),
-  );
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    final String? newPath;
+    if (remove) {
+      newPath = null;
+    } else {
+      newPath = await pickAndUploadImage(context, ref, ImageKind.shoppingItem, groupId);
+      if (newPath == null) return;
+    }
+    await ref
+        .read(imageRepositoryProvider)
+        .replace(
+          oldPath: entry.photoPath,
+          newPath: newPath,
+          save: (path) => ref.read(shoppingRepositoryProvider).setEntryPhoto(entry.id, path),
+        );
+    ref.invalidate(shoppingEntriesProvider(groupId));
+  } catch (error) {
+    messenger.showSnackBar(SnackBar(content: Text(groupErrorText(l10n, error))));
+  }
 }

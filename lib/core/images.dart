@@ -145,6 +145,7 @@ class StorageImage extends ConsumerWidget {
     super.key,
     required this.path,
     required this.fallback,
+    this.errorFallback,
     this.fit = BoxFit.cover,
     this.width,
     this.height,
@@ -152,6 +153,10 @@ class StorageImage extends ConsumerWidget {
 
   final String path;
   final Widget fallback;
+
+  /// Shown when the photo cannot be loaded; defaults to [fallback]. Set it when the
+  /// fallback is a spinner, which would otherwise spin forever.
+  final Widget? errorFallback;
   final BoxFit fit;
   final double? width;
   final double? height;
@@ -159,16 +164,19 @@ class StorageImage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final url = ref.watch(signedImageUrlProvider(path));
+    final onError = errorFallback ?? fallback;
     return url.when(
       data: (value) => Image.network(
         value,
         fit: fit,
         width: width,
         height: height,
-        errorBuilder: (_, _, _) => fallback,
+        // While the bytes arrive: the fallback (Image.network shows nothing by itself).
+        loadingBuilder: (_, child, progress) => progress == null ? child : fallback,
+        errorBuilder: (_, _, _) => onError,
       ),
       loading: () => fallback,
-      error: (_, _) => fallback,
+      error: (_, _) => onError,
     );
   }
 }

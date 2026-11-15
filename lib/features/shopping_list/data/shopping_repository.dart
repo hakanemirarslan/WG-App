@@ -19,6 +19,9 @@ class ShoppingEntry {
   /// Expense created by ticking this item off with a price (null if none).
   final String? expenseId;
 
+  /// Storage path of a photo of the item ("this brand"), SPEC 18; null = none.
+  final String? photoPath;
+
   ShoppingEntry({
     required this.id,
     required this.groupItemId,
@@ -32,6 +35,7 @@ class ShoppingEntry {
     required this.boughtAt,
     required this.createdAt,
     required this.expenseId,
+    this.photoPath,
   });
 
   /// Joined rows can come back null when RLS hides them; such a row then shows an empty
@@ -52,6 +56,7 @@ class ShoppingEntry {
       boughtAt: boughtAt == null ? null : DateTime.parse(boughtAt),
       createdAt: DateTime.parse(map['created_at'] as String),
       expenseId: map['expense_id'] as String?,
+      photoPath: map['photo_path'] as String?,
     );
   }
 }
@@ -65,7 +70,8 @@ class ShoppingRepository {
     final rows = await supabase
         .from('shopping_entries')
         .select(
-          'id, group_item_id, note, added_by, status, bought_by, bought_at, created_at, expense_id, '
+          'id, group_item_id, note, added_by, status, bought_by, bought_at, created_at, '
+          'expense_id, photo_path, '
           'group_items(custom_name, catalog_items(name_de, name_en, name_tr)), '
           'adder:profiles!shopping_entries_added_by_fkey(display_name), '
           'buyer:profiles!shopping_entries_bought_by_fkey(display_name)',
@@ -76,14 +82,20 @@ class ShoppingRepository {
     return rows.map(ShoppingEntry.fromMap).toList();
   }
 
-  Future<void> addEntry(String groupId, String groupItemId, String? note) {
+  Future<void> addEntry(String groupId, String groupItemId, String? note, {String? photoPath}) {
     return supabase.from('shopping_entries').insert({
       'group_id': groupId,
       'group_item_id': groupItemId,
       'note': note,
       'added_by': supabase.auth.currentUser!.id,
+      'photo_path': photoPath,
     });
   }
+
+  /// Sets or clears (null) the photo of an entry. The database only lets the adder or
+  /// an admin do it (`guard_shopping_entry`, error `not_allowed`).
+  Future<void> setEntryPhoto(String entryId, String? path) =>
+      supabase.from('shopping_entries').update({'photo_path': path}).eq('id', entryId);
 
   Future<void> markBought(String entryId) {
     return supabase

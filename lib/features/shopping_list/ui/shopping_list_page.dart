@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/image_viewer.dart';
 import '../../../core/widgets.dart';
 import '../../../core/supabase_client.dart';
 import '../../../core/error_view.dart';
@@ -171,13 +172,51 @@ class ShoppingListPage extends ConsumerWidget {
           final bought = entries.where((e) => e.isBought).toList()
             ..sort((a, b) => b.boughtAt!.compareTo(a.boughtAt!));
 
-          Widget? deleteButton(ShoppingEntry entry) {
-            if (entry.addedBy != myId && !iAmAdmin) return null;
-            return IconButton(
-              icon: const Icon(Icons.delete_outline),
-              tooltip: l10n.deleteEntryAction,
-              onPressed: () => deleteWithUndo(context, ref, entry, lang),
-            );
+          // Right side of a row: the photo (tap = full screen, with change/remove for
+          // whoever may), an "add photo" button for them when there is none, delete.
+          Widget? trailing(ShoppingEntry entry) {
+            final canEdit = entry.addedBy == myId || iAmAdmin;
+            final photo = entry.photoPath;
+            final children = <Widget>[
+              if (photo != null)
+                PhotoThumbnail(
+                  path: photo,
+                  onTap: () => showImageViewer(
+                    context,
+                    path: photo,
+                    title: entry.name.localized(lang),
+                    actions: [
+                      if (canEdit) ...[
+                        ImageViewerAction(
+                          icon: Icons.photo_camera_outlined,
+                          label: l10n.changePhotoButton,
+                          onPressed: () => updateEntryPhoto(context, ref, groupId, entry),
+                        ),
+                        ImageViewerAction(
+                          icon: Icons.delete_outline,
+                          label: l10n.removePhotoButton,
+                          onPressed: () =>
+                              updateEntryPhoto(context, ref, groupId, entry, remove: true),
+                        ),
+                      ],
+                    ],
+                  ),
+                )
+              else if (canEdit)
+                IconButton(
+                  icon: const Icon(Icons.add_a_photo_outlined),
+                  tooltip: l10n.addPhotoButton,
+                  onPressed: () => updateEntryPhoto(context, ref, groupId, entry),
+                ),
+              if (canEdit)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: l10n.deleteEntryAction,
+                  onPressed: () => deleteWithUndo(context, ref, entry, lang),
+                ),
+            ];
+            if (children.isEmpty) return null;
+            return Row(mainAxisSize: MainAxisSize.min, spacing: 4, children: children);
           }
 
           final theme = Theme.of(context);
@@ -216,7 +255,7 @@ class ShoppingListPage extends ConsumerWidget {
                                   l10n.addedByLabel(open[i].addedByName),
                                 ].join(' · '),
                               ),
-                              trailing: deleteButton(open[i]),
+                              trailing: trailing(open[i]),
                             ),
                           ],
                         ],
@@ -243,7 +282,7 @@ class ShoppingListPage extends ConsumerWidget {
                                 ),
                               ),
                               subtitle: Text(l10n.boughtByLabel(bought[i].boughtByName ?? '')),
-                              trailing: deleteButton(bought[i]),
+                              trailing: trailing(bought[i]),
                             ),
                           ],
                         ],
